@@ -18,11 +18,19 @@ impl AppState {
         let process_pool = Arc::new(ProcessPool::new());
         let session_manager = SessionManager::new(Arc::clone(&process_pool));
 
+        let tab_manager = TabManager::new(
+            database.clone(),
+            session_manager.clone(),
+            Arc::clone(&process_pool),
+        );
+
+        let pane_manager = PaneManager::new(session_manager.clone());
+
         Self {
-            tab_manager: TabManager::new(),
+            tab_manager,
             session_manager,
             process_pool,
-            pane_manager: PaneManager::new(),
+            pane_manager,
             database,
         }
     }

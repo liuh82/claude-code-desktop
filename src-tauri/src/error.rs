@@ -28,6 +28,16 @@ pub enum AppError {
     SessionAlreadyRunning(String),
     #[error("Session not running: {0}")]
     SessionNotRunning(String),
+
+    // Tab-specific errors
+    #[error("Tab not found: {0}")]
+    TabNotFound(String),
+    #[error("Cannot close last pane in tab: {0}")]
+    CannotCloseLastPane(String),
+
+    // Pane-specific errors
+    #[error("Pane not found: {0}")]
+    PaneNotFound(String),
 }
 
 impl From<rusqlite::Error> for AppError {

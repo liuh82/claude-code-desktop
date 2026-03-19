@@ -5,7 +5,7 @@ use chrono::Utc;
 use crate::core::process_pool::ProcessPool;
 use crate::error::AppError;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Session {
     pub id: String,
     pub project_id: String,
@@ -19,14 +19,23 @@ pub struct Session {
 }
 
 pub struct SessionManager {
-    sessions: Mutex<HashMap<String, Session>>,
+    sessions: Arc<Mutex<HashMap<String, Session>>>,
     process_pool: Arc<ProcessPool>,
+}
+
+impl Clone for SessionManager {
+    fn clone(&self) -> Self {
+        Self {
+            sessions: Arc::clone(&self.sessions),
+            process_pool: Arc::clone(&self.process_pool),
+        }
+    }
 }
 
 impl SessionManager {
     pub fn new(process_pool: Arc<ProcessPool>) -> Self {
         Self {
-            sessions: Mutex::new(HashMap::new()),
+            sessions: Arc::new(Mutex::new(HashMap::new())),
             process_pool,
         }
     }
@@ -74,7 +83,6 @@ impl SessionManager {
         session.process_id = Some(pid);
         session.updated_at = Utc::now().to_rfc3339();
 
-        // Associate process with session in pool (outside sessions lock)
         let sid = session_id.to_string();
         let pane = session.pane_id.clone().unwrap_or_default();
         drop(sessions);
@@ -127,6 +135,15 @@ impl SessionManager {
         sessions
             .values()
             .filter(|s| s.project_id == project_id && s.status != "closed")
+            .cloned()
+            .collect()
+    }
+
+    pub async fn list_sessions_by_pane(&self, pane_id: &str) -> Vec<Session> {
+        let sessions = self.sessions.lock().await;
+        sessions
+            .values()
+            .filter(|s| s.pane_id.as_deref() == Some(pane_id) && s.status != "closed")
             .cloned()
             .collect()
     }

@@ -24,15 +24,27 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            // Tab commands
             commands::tab::create_tab,
+            commands::tab::close_tab,
+            commands::tab::list_tabs,
+            commands::tab::get_tab,
+            commands::tab::update_tab_layout,
+            commands::tab::set_active_pane,
             commands::tab::split_pane,
             commands::tab::close_pane,
             commands::tab::focus_pane,
-            commands::tab::close_tab,
+            // Session commands
             commands::session::create_session,
             commands::session::start_session,
             commands::session::send_input,
+            commands::session::send_to_session,
             commands::session::close_session,
+            commands::session::list_sessions,
+            // Project commands
+            commands::project::open_project,
+            commands::project::list_recent_projects,
+            // Settings commands
             commands::settings::get_config,
             commands::settings::set_config,
         ])

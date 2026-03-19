@@ -4,8 +4,9 @@ use rusqlite::Connection;
 use crate::db::migrations;
 use crate::error::AppError;
 
+#[derive(Clone)]
 pub struct Database {
-    conn: Mutex<Connection>,
+    conn: std::sync::Arc<Mutex<Connection>>,
 }
 
 impl Database {
@@ -18,7 +19,7 @@ impl Database {
         migrations::run_migrations(&conn)?;
 
         Ok(Self {
-            conn: Mutex::new(conn),
+            conn: std::sync::Arc::new(Mutex::new(conn)),
         })
     }
 
