@@ -1,9 +1,11 @@
 # Claude Code Desktop — 项目文档索引
 
-> **状态**：Phase 0 准备中
-> **架构师**：老张（system architect）
-> **架构文档版本**：v2.4
-> **目标**：用 Nexus 工作流系统开发此项目，同时作为 Nexus 的第一个端到端测试
+> **状态**：Phase 1 待执行
+> **架构师**：老张（system architect）+ 主 Agent 审核
+> **架构文档版本**：v3.0（已审核修订）
+> **仓库**：https://github.com/liuh82/claude-code-desktop（private）
+> **本地路径**：`/root/.openclaw/workspace/claude-code-desktop/`
+> **执行方式**：通过 Nexus Gateway → oc-bridge → Claude Code CLI
 
 ---
 
@@ -12,21 +14,14 @@
 ```
 claude-code-desktop/
 ├── docs/
-│   ├── README.md                    ← 你在这里
-│   ├── architecture.md              ← 完整架构设计（v2.4）
-│   ├── workflow-design/             ← Nexus 工作流设计（每个阶段一条）
-│   │   ├── phase0-system-validation.md
-│   │   ├── phase1-scaffold.md
-│   │   ├── phase2a-rust-core.md
-│   │   ├── phase2b-react-frontend.md
-│   │   ├── phase2c-database.md
-│   │   ├── phase3-integration.md
-│   │   └── phase4-ui-polish.md
-│   └── review/                      ← 评审记录
-│       └── architecture-review.md
-├── src/                             ← 源码（待创建）
-├── CLAUDE.md                        ← Claude Code 执行指南
-└── README.md                        ← 项目说明
+│   ├── README.md                ← 你在这里
+│   ├── architecture.md          ← 完整架构设计（v3.0 已审核）
+│   ├── openclaw-bridge-architecture.md  ← Bridge 架构参考
+│   ├── openclaw-bridge-requirements.md   ← Bridge 需求参考
+│   └── openclaw-exec-api-research.md    ← 执行 API 研究
+├── CLAUDE.md                    ← ⚠️ CC 执行约束（必读）
+├── README.md                    ← 项目说明
+└── .github/workflows/           ← CI/CD（Phase 1 创建）
 ```
 
 ---
@@ -42,81 +37,62 @@ claude-code-desktop/
 | 进程模型 | **每面板独立 CLI 进程** | 上下文隔离 + 故障隔离 |
 | 数据库 | **SQLite** | 本地存储，无需服务端 |
 | CI/CD | **GitHub Actions** | 跨平台构建（macOS/Linux/Windows） |
+| 样式 | **CSS Modules** | 作用域隔离，零运行时 |
 
 ---
 
-## 📋 开发阶段
+## 📋 Phase 规划
 
-### Phase 0：系统验证
-- **目标**：验证 Nexus 能跑通简单任务
-- **工作流**：Input → Agent(echo hello) → Output
-- **通过标准**：任务执行成功，输出正确
+### Phase 1: 项目脚手架 + CI/CD ← 📍 当前
+- **目标**：可编译的空壳 Tauri v2 项目 + GitHub Actions
+- **任务**：8 项（初始化、目录结构、配置、CI/CD、验证）
+- **验收**：`tsc --noEmit` ✅ + `cargo check` ✅ + `tauri dev` 空窗口 ✅
+- **预计**：1-2 次 CC 调用
 
-### Phase 1：项目脚手架
-- **目标**：Tauri v2 初始化 + 目录结构 + CI/CD 配置
-- **交付物**：可编译的空壳项目 + GitHub Actions workflow
-- **预计时间**：~15 分钟
+### Phase 2: Rust 核心层
+- **目标**：进程池 + CLI Bridge + 会话管理 + 标签页/面板管理 + SQLite
+- **任务**：15 项（error → db → process_pool → session → tab → parser → bridge → commands → app）
+- **验收**：`cargo test` ✅ + invoke 可创建标签页/启动 CLI
+- **预计**：3-5 次 CC 调用
 
-### Phase 2a：Rust 核心层
-- **目标**：进程池 + CLI Bridge + 会话管理 + 标签页/面板管理
-- **交付物**：`src-tauri/src/` 核心模块
-- **预计时间**：~30 分钟
+### Phase 3: React 前端
+- **目标**：多面板 UI + 终端组件 + 标签页 + 流式输出
+- **任务**：19 项（依赖 → types → stores → hooks → 组件 → 样式）
+- **验收**：`tsc --noEmit` ✅ + `npm run build` ✅ + UI 可交互
+- **预计**：3-5 次 CC 调用
 
-### Phase 2b：React 前端
-- **目标**：多面板容器 + 标签页 + 终端组件 + Monaco 集成
-- **交付物**：`src/` 前端组件
-- **预计时间**：~30 分钟
+### Phase 4: 集成联调
+- **目标**：前后端通信 + 端到端流程跑通
+- **任务**：8 项（IPC → 流式渲染 → 完整流程 → 持久化）
+- **验收**：完整用户流程可用 + 崩溃隔离 + 状态恢复
+- **预计**：2-3 次 CC 调用
 
-### Phase 2c：数据库层
-- **目标**：SQLite 表结构 + 持久化逻辑 + 会话历史
-- **交付物**：数据库模块 + migration
-- **预计时间**：~15 分钟
-
-### Phase 3：集成联调
-- **目标**：前后端通信 + 流式输出 + 事件系统
-- **交付物**：端到端可用的原型
-- **预计时间**：~20 分钟
-
-### Phase 4：UI 精化
-- **目标**：快捷键 + 布局保存/恢复 + 主题
-- **交付物**：完整可用版本
-- **预计时间**：~20 分钟
+### Phase 5: UI 精化
+- **目标**：快捷键 + 主题 + 布局保存 + 文件树 + 设置页
+- **任务**：8 项
+- **验收**：全部快捷键正常 + 明暗主题 + 布局恢复
+- **预计**：2-3 次 CC 调用
 
 ---
 
-## 🔧 环境要求
+## 🔧 Nexus 执行信息
 
-| 依赖 | 版本 | 用途 |
-|------|------|------|
-| Rust | stable | Tauri 后端 |
-| Node.js | v20+ | 前端构建 |
-| Tauri CLI | v2 | 项目管理 |
-| Claude Code | latest | 开发执行（Agent 节点） |
-| SQLite | 3.x | 本地数据存储 |
+- **Nexus 项目 ID**: `b8261dca-f7e9-458a-9bf2-9e8f1f4a82c3`
+- **Agent ID**: `e35c4fd5-96d1-4f22-9fb3-413df24dd43a`
+- **工作流 ID**: `f1d79d29-abdb-4c25-9ab6-92505c2581df`
+- **Gateway Token**: `nexus-gateway-ca15d4b47eaf67f1e86299056c03f589`
+- **Bridge WS**: `ws://127.0.0.1:8082/api/gateway/ws`
 
 ---
 
-## ⚠️ 已知风险
+## ⚠️ 执行约束（CC 必读）
 
-| 风险 | 应对 |
-|------|------|
-| Rust 编译时间长 | Agent timeout 设 600s+ |
-| Claude Code 不支持交互式执行 | 把交互拆成多步，每步有明确输入 |
-| macOS 构建 | GitHub Actions macOS runner |
-| CLI 版本兼容 | CLI Bridge 做版本检测 |
-| 进程泄漏 | 进程池限制 + 定期清理 |
+1. **CLAUDE.md 是最高优先级** — 所有编码行为必须遵守 CLAUDE.md 中的约束
+2. **架构文档 authority** — `docs/architecture.md` 定义数据结构和接口契约
+3. **目录结构必须严格遵循** — 不能自行创建额外目录
+4. **每个 Phase 完成后必须验收** — 按验收标准逐项检查
+5. **不要自行安装未列出的依赖** — 除非任务明确要求
 
 ---
 
-## 📌 决策记录
-
-| 日期 | 决策 | 原因 |
-|------|------|------|
-| 2026-03-18 | 用 Nexus 开发此项目 | 既是测试也是真需求 |
-| 2026-03-18 | 每阶段独立工作流 | 控制复杂度，降低风险 |
-| 2026-03-18 | 主 agent 接管日常推进 | 用户不定期查看进度 |
-| 2026-03-18 | Nexus 项目不结束 | 后续继续迭代优化 |
-
----
-
-*最后更新：2026-03-18*
+*最后更新：2026-03-19 — v3.0 审核修订完成*

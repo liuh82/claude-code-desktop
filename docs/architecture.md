@@ -1,9 +1,9 @@
 # Claude Code Desktop 应用架构设计方案
 
-**版本：** v2.4  
-**日期：** 2026-03-18  
-**作者：** 老张（系统架构师）  
-**状态：** 待评审  
+**版本：** v3.0  
+**日期：** 2026-03-19  
+**作者：** 老张（系统架构师）+ 主 Agent 审核  
+**状态：** 已审核，待执行  
 **核心设计**：每会话独立 CLI 进程 + 多面板分屏（tmux 风格）+ 可选记忆模块
 
 ---
@@ -40,8 +40,6 @@
 | | 模型选择与配置 | P0 | 多模型支持 |
 | | 主题与界面定制 | P1 | 明/暗主题 |
 | **记忆管理** | 自动捕获/回忆（可选） | P2 | 插件式模块 |
-| | 关键词搜索 | P2 | SQLite FTS |
-| | 语义搜索（可选） | P3 | 向量索引 |
 
 ### 1.3 技术难点
 1. **多会话进程隔离** — 每会话独立 CLI 进程，上下文隔离
@@ -57,101 +55,42 @@
 
 ### 2.1 架构图
 
-```mermaid
-graph TB
-    subgraph "用户层"
-        UI["桌面 GUI 界面"]
-    end
-    
-    subgraph "前端层 Webview"
-        React["React 18 + TS"]
-        Tabs["标签页管理"]
-        Panes["多面板容器"]
-        Store["Zustand 状态管理"]
-    end
-    
-    subgraph "Tauri 命令层 Rust"
-        TabCmd["标签页命令"]
-        PaneCmd["面板命令"]
-        SessionCmd["会话命令"]
-        ProcessCmd["进程命令"]
-        ConfigCmd["配置命令"]
-        MemoryCmd["记忆命令 可选"]
-    end
-    
-    subgraph "Rust 核心层"
-        TabMgr["标签页管理器"]
-        PaneMgr["面板管理器"]
-        SessionMgr["会话管理器"]
-        ProcessPool["进程池管理器"]
-        CLIBridge["CLI 桥接器"]
-        OutputCollector["输出采集器"]
-        MemoryMgr["记忆管理器 可选"]
-    end
-    
-    subgraph "数据层"
-        SQLite["SQLite 数据库"]
-        ConfigStore["配置存储"]
-        MemoryStore["记忆存储 可选"]
-    end
-    
-    subgraph "外部进程"
-        CLI1["Claude Code 进程 1"]
-        CLI2["Claude Code 进程 2"]
-        CLI3["Claude Code 进程 N"]
-    end
-    
-    UI --> React
-    React --> Tabs
-    React --> Panes
-    React --> Store
-    Store --> TabCmd
-    Store --> PaneCmd
-    Store --> SessionCmd
-    Store --> ProcessCmd
-    
-    TabCmd --> TabMgr
-    PaneCmd --> PaneMgr
-    SessionCmd --> SessionMgr
-    ProcessCmd --> ProcessPool
-    ProcessPool --> CLIBridge
-    CLIBridge --> CLI1
-    CLIBridge --> CLI2
-    CLIBridge --> CLI3
-    CLIBridge --> OutputCollector
-    
-    TabMgr --> SQLite
-    PaneMgr --> SQLite
-    SessionMgr --> SQLite
-    ProcessPool --> SQLite
-    MemoryMgr --> MemoryStore
+```
+┌─────────────────────────────────────────────────────┐
+│                   用户界面 (Webview)                  │
+│  ┌─────────┐  ┌──────────────────────────────────┐  │
+│  │ TabBar  │  │      PaneContainer               │  │
+│  │         │  │  ┌──────────┬──────────┐         │  │
+│  │ Tab1|T2 │  │  │ Pane 1   │ Pane 2   │         │  │
+│  │         │  │  │ (CLI #1) │ (CLI #2) │         │  │
+│  │         │  │  ├──────────┴──────────┤         │  │
+│  │         │  │  │     Pane 3            │         │  │
+│  │         │  │  │     (CLI #3)          │         │  │
+│  │         │  │  └───────────────────────┘         │  │
+│  └─────────┘  └──────────────────────────────────┘  │
+├─────────────────────────────────────────────────────┤
+│               React 18 + TypeScript                  │
+│         Zustand Stores + React Components            │
+├─────────────────────────────────────────────────────┤
+│              Tauri Commands (IPC)                    │
+│   invoke('create_tab') / app.emit('process:output') │
+├─────────────────────────────────────────────────────┤
+│              Rust Core Layer                         │
+│  ┌──────────┐ ┌──────────┐ ┌────────────────────┐  │
+│  │TabManager│ │PaneMgr   │ │  ProcessPool       │  │
+│  │          │ │          │ │  ┌──────┐┌──────┐  │  │
+│  │          │ │          │ │  │CLI #1││CLI #2│  │  │
+│  │          │ │          │ │  └──┬───┘└──┬───┘  │  │
+│  └──────────┘ └──────────┘ │  ┌──┴───┐        │  │
+│  ┌──────────┐ ┌──────────┐ │  │CLI #3│        │  │
+│  │SessionMgr│ │CLIBridge │ │  └──────┘        │  │
+│  └──────────┘ └──────────┘ └────────────────────┘  │
+├─────────────────────────────────────────────────────┤
+│              SQLite + Config Store                    │
+└─────────────────────────────────────────────────────┘
 ```
 
-### 2.2 多面板分屏架构
-
-```mermaid
-graph TB
-    subgraph "应用窗口"
-        TabBar["标签栏"]
-        subgraph "Tab 1: Project A"
-            subgraph "PaneContainer"
-                Pane1["Pane 1<br/>CLI 进程 1<br/>分析代码"]
-                Pane2["Pane 2<br/>CLI 进程 2<br/>运行测试"]
-                Pane3["Pane 3<br/>CLI 进程 3<br/>Git 操作"]
-            end
-        end
-        subgraph "Tab 2: Project B"
-            subgraph "PaneContainer2"
-                Pane4["Pane 4<br/>CLI 进程 4"]
-            end
-        end
-    end
-    
-    TabBar --> Tab1
-    TabBar --> Tab2
-```
-
-### 2.3 核心设计原则
+### 2.2 核心设计原则
 
 **每面板独立 CLI 进程**
 ```
@@ -177,382 +116,254 @@ Tab 2
 
 ### 3.1 标签页管理器（Tab Manager）
 
-**职责**
-- 管理标签页的创建、切换、关闭
-- 维护标签页与面板的关系
-- 持久化标签页布局
+**职责**：管理标签页 CRUD、面板关系、布局持久化
 
-**数据结构**
+**数据结构**：
 ```rust
-// src-tauri/src/tab/types.rs
-
-use serde::{Deserialize, Serialize};
-
-/// 面板布局类型
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum PaneLayout {
-    Horizontal,  // 水平分割
-    Vertical,    // 垂直分割
-}
-
-/// 分割方向
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum SplitDirection {
-    Horizontal,  // 左右分割
-    Vertical,    // 上下分割
-}
-
-/// 面板信息
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Pane {
-    pub pane_id: String,           // 面板唯一 ID
-    pub session_id: String,        // 关联的会话 ID
-    pub size: (f32, f32),          // 宽高比例 (0.0-1.0)
-    pub min_size: (f32, f32),      // 最小尺寸 (0.1, 0.1)
-    pub is_active: bool,           // 是否当前焦点
-}
-
-/// 标签页信息
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Tab {
-    pub tab_id: String,            // 标签页唯一 ID
-    pub project_id: String,        // 所属项目 ID
-    pub project_path: String,      // 项目路径
-    pub title: String,             // 标签页标题
-    pub panes: Vec<Pane>,          // 面板列表
-    pub active_pane_id: String,    // 当前焦点面板 ID
-    pub layout_tree: LayoutNode,   // 布局树
-    pub created_at: i64,
-    pub updated_at: i64,
-}
+// src-tauri/src/core/tab_manager.rs
 
 /// 布局树节点（支持递归分割）
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LayoutNode {
     pub node_type: LayoutNodeType,
-    pub direction: Option<PaneLayout>,
+    pub direction: Option<SplitDirection>,  // Split 节点才有
     pub children: Vec<LayoutNode>,
-    pub pane_id: Option<String>,   // 仅 Leaf 节点有
-    pub size: f32,                 // 占比 0.0-1.0
+    pub pane_id: Option<String>,            // Leaf 节点才有
+    pub size: f32,                          // 占比 0.0-1.0
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum LayoutNodeType {
-    Leaf,   // 叶子节点（包含实际面板）
-    Split,  // 分割节点（包含子节点）
+pub enum LayoutNodeType { Leaf, Split }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum SplitDirection { Horizontal, Vertical }
+
+/// 标签页
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Tab {
+    pub tab_id: String,
+    pub project_id: String,
+    pub project_path: String,
+    pub title: String,
+    pub active_pane_id: String,
+    pub layout_tree: LayoutNode,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+/// 面板
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Pane {
+    pub pane_id: String,
+    pub session_id: String,
+    pub is_active: bool,
 }
 ```
 
-**核心接口**
+**核心方法**：
 ```rust
-// src-tauri/src/tab/manager.rs
-
-pub struct TabManager {
-    db: Arc<Mutex<SqliteConnection>>,
-    process_pool: Arc<ProcessPool>,
-    session_manager: Arc<SessionManager>,
-}
-
 impl TabManager {
-    /// 创建新标签页
-    pub async fn create_tab(
-        &self,
-        project_id: String,
-        project_path: String,
-        title: String,
-    ) -> Result<Tab, TabError> {
-        let tab_id = uuid::Uuid::new_v4().to_string();
-        let pane_id = uuid::Uuid::new_v4().to_string();
-        
-        // 创建默认会话
-        let session = self.session_manager
-            .create_session(project_id.clone(), project_path.clone(), "Main".to_string())
-            .await?;
-        
-        // 创建初始面板
-        let pane = Pane {
-            pane_id: pane_id.clone(),
-            session_id: session.id.clone(),
-            size: (1.0, 1.0),
-            min_size: (0.1, 0.1),
-            is_active: true,
-        };
-        
-        // 创建布局树
-        let layout_tree = LayoutNode {
-            node_type: LayoutNodeType::Leaf,
-            direction: None,
-            children: vec![],
-            pane_id: Some(pane_id.clone()),
-            size: 1.0,
-        };
-        
-        let tab = Tab {
-            tab_id,
-            project_id,
-            project_path,
-            title,
-            panes: vec![pane],
-            active_pane_id: pane_id,
-            layout_tree,
-            created_at: chrono::Utc::now().timestamp(),
-            updated_at: chrono::Utc::now().timestamp(),
-        };
-        
-        self.db.insert_tab(&tab).await?;
-        
-        Ok(tab)
-    }
-    
-    /// 分割面板
-    pub async fn split_pane(
-        &self,
-        tab_id: &str,
-        pane_id: &str,
-        direction: SplitDirection,
-    ) -> Result<Pane, TabError> {
-        // ... 实现略
-    }
-    
-    /// 关闭面板
-    pub async fn close_pane(
-        &self,
-        tab_id: &str,
-        pane_id: &str,
-    ) -> Result<(), TabError> {
-        // ... 实现略
-    }
-    
-    /// 切换焦点面板
-    pub async fn focus_pane(
-        &self,
-        tab_id: &str,
-        pane_id: &str,
-    ) -> Result<(), TabError> {
-        // ... 实现略
-    }
-    
-    /// 按方向切换焦点
-    pub async fn focus_pane_by_direction(
-        &self,
-        tab_id: &str,
-        direction: FocusDirection,
-    ) -> Result<String, TabError> {
-        // ... 实现略
-    }
-}
-
-/// 焦点切换方向
-#[derive(Debug, Clone)]
-pub enum FocusDirection {
-    Up,
-    Down,
-    Left,
-    Right,
+    pub async fn create_tab(&self, project_id: String, project_path: String, title: String) -> Result<Tab, AppError>;
+    pub async fn split_pane(&self, tab_id: &str, pane_id: &str, direction: SplitDirection) -> Result<LayoutNode, AppError>;
+    pub async fn close_pane(&self, tab_id: &str, pane_id: &str) -> Result<LayoutNode, AppError>;
+    pub async fn focus_pane(&self, tab_id: &str, pane_id: &str) -> Result<(), AppError>;
+    pub async fn focus_next_pane(&self, tab_id: &str, direction: FocusDirection) -> Result<String, AppError>;
+    pub async fn resize_pane(&self, tab_id: &str, pane_id: &str, ratio: f32) -> Result<(), AppError>;
+    pub async fn get_tab_layout(&self, tab_id: &str) -> Result<LayoutNode, AppError>;
+    pub async fn close_tab(&self, tab_id: &str) -> Result<(), AppError>;
 }
 ```
-
----
 
 ### 3.2 会话管理器（Session Manager）
 
-**职责**
-- 管理会话的创建、切换、关闭
-- 维护会话与 CLI 进程的映射关系
-- 持久化会话状态到 SQLite
+**职责**：管理会话 CRUD、CLI 进程映射、状态持久化
 
-**数据结构**
+**数据结构**：
 ```rust
-// src-tauri/src/session/types.rs
+// src-tauri/src/core/session_manager.rs
 
-/// 会话状态
-pub enum SessionStatus {
-    Idle,       // 空闲，无 CLI 进程
-    Starting,   // 正在启动 CLI 进程
-    Running,    // CLI 进程运行中
-    Waiting,    // 等待用户输入
-    Error,      // 进程出错
-    Closed,     // 已关闭
-}
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum SessionStatus { Idle, Starting, Running, Waiting, Error, Closed }
 
-/// 会话信息
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Session {
-    pub id: String,              // 会话唯一 ID
-    pub project_id: String,      // 所属项目 ID
-    pub project_path: String,    // 项目路径
-    pub pane_id: String,         // 所属面板 ID
-    pub title: String,           // 会话标题
-    pub status: SessionStatus,   // 会话状态
-    pub process_id: Option<u32>, // 关联的 CLI 进程 PID
-    pub created_at: i64,         // 创建时间
-    pub updated_at: i64,         // 更新时间
-    pub message_count: i32,      // 消息数量
-}
-```
-
----
-
-### 3.3 进程池管理器（Process Pool Manager）
-
-**职责**
-- 管理所有 CLI 子进程的生命周期
-- 限制最大并发进程数
-- 监控进程状态
-- 进程崩溃时通知上层
-
-**配置**
-```rust
-// src-tauri/src/process/config.rs
-
-pub struct ProcessPoolConfig {
-    /// 全局最大并发进程数（默认 10）
-    pub max_global: usize,
-    
-    /// 每标签页最大进程数（默认 5）
-    pub max_per_tab: usize,
-    
-    /// 进程启动超时（默认 30 秒）
-    pub startup_timeout_ms: u64,
-    
-    /// 进程空闲超时（默认 10 分钟无输出则清理）
-    pub idle_timeout_ms: u64,
-    
-    /// 进程崩溃后自动重启（默认 false）
-    pub auto_restart: bool,
-    
-    /// Claude Code 可执行文件路径
-    pub claude_executable: String,
-}
-```
-
-**数据结构**
-```rust
-// src-tauri/src/process/types.rs
-
-/// 进程状态
-pub enum ProcessStatus {
-    Starting,   // 正在启动
-    Running,    // 运行中
-    Idle,       // 空闲（无输出）
-    Crashed,    // 崩溃
-    Killed,     // 被手动终止
-    Timeout,    // 超时被杀
-}
-
-/// 进程信息
-pub struct ProcessInfo {
-    pub pid: u32,
-    pub session_id: String,
-    pub pane_id: String,         // 所属面板 ID
-    pub tab_id: String,          // 所属标签页 ID
+    pub id: String,
+    pub project_id: String,
     pub project_path: String,
-    pub status: ProcessStatus,
-    pub started_at: i64,
-    pub last_output_at: i64,
-    pub exit_code: Option<i32>,
-    pub restart_count: u32,
+    pub pane_id: String,
+    pub title: String,
+    pub status: SessionStatus,
+    pub process_id: Option<u32>,
+    pub created_at: i64,
+    pub updated_at: i64,
+    pub message_count: i32,
+}
+```
+
+**核心方法**：
+```rust
+impl SessionManager {
+    pub async fn create_session(&self, project_id: String, project_path: String, title: String) -> Result<Session, AppError>;
+    pub async fn start_session(&self, session_id: &str) -> Result<u32, AppError>;  // 返回 PID
+    pub async fn send_input(&self, session_id: &str, input: &str) -> Result<(), AppError>;
+    pub async fn close_session(&self, session_id: &str) -> Result<(), AppError>;
+    pub async fn list_sessions(&self, project_id: &str) -> Result<Vec<Session>, AppError>;
+}
+```
+
+### 3.3 进程池管理器（Process Pool）
+
+**职责**：CLI 子进程生命周期管理、并发限制、崩溃监控
+
+**配置**：
+```rust
+pub struct ProcessPoolConfig {
+    pub max_global: usize,           // 全局最大并发（默认 10）
+    pub max_per_tab: usize,          // 每标签页最大（默认 5）
+    pub startup_timeout_ms: u64,     // 启动超时（默认 30s）
+    pub idle_timeout_ms: u64,        // 空闲超时（默认 10min）
+    pub claude_executable: String,   // claude CLI 路径
+}
+```
+
+**核心方法**：
+```rust
+impl ProcessPool {
+    pub async fn spawn(&self, session_id: String, project_path: String) -> Result<u32, AppError>;
+    pub async fn kill(&self, pid: u32) -> Result<(), AppError>;
+    pub async fn send_stdin(&self, pid: u32, input: &str) -> Result<(), AppError>;
+    pub async fn get_status(&self, pid: u32) -> Result<ProcessStatus, AppError>;
+    pub async fn list_active(&self) -> Vec<ProcessInfo>;
+    pub async fn cleanup_zombies(&self) -> Vec<u32>;  // 返回清理的 PID
+}
+```
+
+### 3.4 CLI Bridge（Claude CLI 通信桥）
+
+**职责**：启动 claude 进程、解析 stream-json 输出、格式化输入
+
+**调用方式**：
+```bash
+# 启动交互式会话
+claude --output-format stream-json --verbose
+# 通过 stdin 发送消息
+echo '{"type":"user_message","content":"..."}' | claude --output-format stream-json
+```
+
+**stream-json 输出协议**：
+```json
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"..."}]}}
+{"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}
+{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"流式内容..."}}
+{"type":"content_block_stop","index":0}
+{"type":"result","subtype":"success","session_id":"abc123","total_duration_ms":5000}
+```
+
+**Parser 接口**：
+```rust
+impl CliParser {
+    pub fn parse_line(&mut self, line: &str) -> Option<CliEvent>;
 }
 
-/// 进程输出
-pub struct ProcessOutput {
-    pub pid: u32,
-    pub pane_id: String,         // 面板 ID（用于路由到正确面板）
-    pub stream: OutputStream,    // Stdout 或 Stderr
-    pub content: String,
-    pub timestamp: i64,
+pub enum CliEvent {
+    Thinking { text: String },
+    OutputDelta { text: String },
+    OutputComplete,
+    ToolUse { name: String, input: serde_json::Value },
+    Error { message: String },
+    Result { session_id: String, duration_ms: u64 },
 }
 ```
 
 ---
 
-### 3.4 前端多面板管理
+## 4. 前端架构
 
-**状态管理（Zustand）**
+### 4.1 组件树
+
+```
+<App>
+  <TitleBar />                    # 自定义标题栏（macOS 需隐藏原生）
+  <TabBar tabs={...} />           # 标签栏
+  <ActiveTabContainer>
+    <PaneContainer layout={tree}>
+      <PaneHeader pane={...} />   # 面板标题栏
+      <TerminalView output={...} /> # 终端输出
+      <InputBar onSend={...} />   # 输入框
+    </PaneContainer>
+    <PaneSplitter />              # 可拖拽分割线
+  </ActiveTabContainer>
+  <StatusBar />                   # 底部状态栏（连接状态、进程数等）
+</App>
+```
+
+### 4.2 状态管理（Zustand）
+
 ```typescript
-// src/stores/useTabStore.ts
-
-interface Pane {
-  paneId: string;
-  sessionId: string;
-  size: [number, number];  // 宽高比例
-  isActive: boolean;
-}
-
-interface Tab {
-  tabId: string;
-  projectId: string;
-  projectPath: string;
-  title: string;
-  panes: Pane[];
-  activePaneId: string;
-  layoutTree: LayoutNode;
-}
-
+// stores/useTabStore.ts
 interface TabState {
   tabs: Map<string, Tab>;
   activeTabId: string | null;
-  
-  createTab: (projectId: string, projectPath: string, title: string) => Promise<Tab>;
+  createTab: (projectId: string, projectPath: string, title: string) => Promise<void>;
   closeTab: (tabId: string) => Promise<void>;
   switchTab: (tabId: string) => void;
-  splitPane: (tabId: string, paneId: string, direction: 'horizontal' | 'vertical') => Promise<Pane>;
-  closePane: (tabId: string, paneId: string) => Promise<void>;
-  focusPane: (tabId: string, paneId: string) => void;
-  focusPaneByDirection: (tabId: string, direction: 'up' | 'down' | 'left' | 'right') => Promise<void>;
+}
+
+// stores/useSessionStore.ts
+interface SessionState {
+  sessions: Map<string, Session>;
+  createSession: (projectId: string, projectPath: string) => Promise<string>;
+  sendInput: (sessionId: string, input: string) => Promise<void>;
+}
+
+// stores/useTerminalStore.ts
+interface TerminalState {
+  outputs: Map<string, OutputLine[]>;  // paneId → 输出行
+  appendOutput: (paneId: string, line: OutputLine) => void;
+  clearOutput: (paneId: string) => void;
+}
+```
+
+### 4.3 事件监听（Rust → Frontend）
+
+```typescript
+// hooks/useTauri.ts
+import { listen } from '@tauri-apps/api/event';
+
+export function useProcessEvents(paneId: string) {
+  useEffect(() => {
+    const unlisten = listen('process:output', (event) => {
+      const { pane_id, content } = event.payload;
+      if (pane_id === paneId) {
+        useTerminalStore.getState().appendOutput(paneId, content);
+      }
+    });
+    return () => { unlisten.then(fn => fn()); };
+  }, [paneId]);
 }
 ```
 
 ---
 
-### 3.5 快捷键设计
+## 5. 数据库设计
 
-**快捷键速查表**
-
-| 快捷键 | 功能 | 备注 |
-|--------|------|------|
-| `Cmd+D` | 水平分割面板 | 左右布局 |
-| `Cmd+Shift+D` | 垂直分割面板 | 上下布局 |
-| `Cmd+W` | 关闭当前面板 | 保留最后面板 |
-| `Cmd+Shift+W` | 关闭标签页 | |
-| `Cmd+←/→/↑/↓` | 焦点导航 | tmux 风格 |
-| `Cmd+{N}` | 切换到第 N 个标签页 | |
-| `Cmd+T` | 新建标签页 | |
-| `Enter` | 发送输入到当前面板 | |
-
----
-
-## 4. 数据库设计
-
-### 4.1 表结构
+### 5.1 表结构
 
 ```sql
 -- 标签页表
-CREATE TABLE tabs (
+CREATE TABLE IF NOT EXISTS tabs (
   id TEXT PRIMARY KEY,
   project_id TEXT NOT NULL,
   project_path TEXT NOT NULL,
   title TEXT NOT NULL,
   active_pane_id TEXT,
-  layout_tree JSON NOT NULL,
+  layout_tree TEXT NOT NULL,  -- JSON 字符串
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
 
--- 面板表
-CREATE TABLE panes (
-  id TEXT PRIMARY KEY,
-  tab_id TEXT NOT NULL,
-  session_id TEXT NOT NULL,
-  size_x REAL NOT NULL DEFAULT 1.0,
-  size_y REAL NOT NULL DEFAULT 1.0,
-  is_active INTEGER NOT NULL DEFAULT 0,
-  created_at INTEGER NOT NULL,
-  FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE,
-  FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
-);
-
 -- 会话表
-CREATE TABLE sessions (
+CREATE TABLE IF NOT EXISTS sessions (
   id TEXT PRIMARY KEY,
   project_id TEXT NOT NULL,
   project_path TEXT NOT NULL,
@@ -566,110 +377,179 @@ CREATE TABLE sessions (
 );
 
 -- 项目表
-CREATE TABLE projects (
+CREATE TABLE IF NOT EXISTS projects (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   path TEXT UNIQUE NOT NULL,
-  config JSON,
+  config TEXT,                 -- JSON 字符串
   last_opened_at INTEGER,
   created_at INTEGER NOT NULL
 );
+
+-- 会话消息表
+CREATE TABLE IF NOT EXISTS messages (
+  id TEXT PRIMARY KEY,
+  session_id TEXT NOT NULL,
+  role TEXT NOT NULL,           -- 'user' | 'assistant' | 'system'
+  content TEXT NOT NULL,
+  timestamp INTEGER NOT NULL,
+  FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_messages_session ON messages(session_id);
 ```
 
 ---
 
-## 5. Tauri Commands 接口
+## 6. Tauri Commands 接口（v2）
 
-### 5.1 标签页相关
-
-```rust
-#[tauri::command]
-async fn create_tab(app_handle: AppHandle, project_id: String, project_path: String, title: String) -> Result<Tab, String>;
-
-#[tauri::command]
-async fn close_tab(app_handle: AppHandle, tab_id: String) -> Result<(), String>;
-
-#[tauri::command]
-async fn list_tabs(app_handle: AppHandle) -> Result<Vec<Tab>, String>;
-```
-
-### 5.2 面板相关
+### 6.1 共享状态
 
 ```rust
-#[tauri::command]
-async fn split_pane(app_handle: AppHandle, tab_id: String, pane_id: String, direction: SplitDirection) -> Result<Pane, String>;
+// src-tauri/src/app.rs
+use std::sync::Mutex;
+use tauri::State;
 
-#[tauri::command]
-async fn close_pane(app_handle: AppHandle, tab_id: String, pane_id: String) -> Result<(), String>;
+pub struct AppState {
+    pub tab_manager: TabManager,
+    pub session_manager: SessionManager,
+    pub process_pool: ProcessPool,
+    pub db: Mutex<Connection>,
+}
 
-#[tauri::command]
-async fn focus_pane(app_handle: AppHandle, tab_id: String, pane_id: String) -> Result<(), String>;
-
-#[tauri::command]
-async fn focus_pane_by_direction(app_handle: AppHandle, tab_id: String, direction: FocusDirection) -> Result<String, String>;
+// main.rs 中注册
+tauri::Builder::default()
+    .manage(AppState { /* ... */ })
+    .invoke_handler(tauri::generate_handler![
+        commands::tab::create_tab,
+        commands::tab::close_tab,
+        commands::tab::split_pane,
+        commands::tab::close_pane,
+        commands::tab::focus_pane,
+        commands::session::create_session,
+        commands::session::start_session,
+        commands::session::send_input,
+        commands::session::close_session,
+        commands::settings::get_config,
+        commands::settings::set_config,
+    ])
+    .run(tauri::generate_context!())
+    .expect("error while running tauri application");
 ```
 
-### 5.3 会话相关
+### 6.2 标签页命令
 
 ```rust
-#[tauri::command]
-async fn create_session(app_handle: AppHandle, project_id: String, project_path: String, title: String) -> Result<Session, String>;
+// src-tauri/src/commands/tab.rs
+use tauri::State;
+use crate::app::AppState;
 
 #[tauri::command]
-async fn start_session(app_handle: AppHandle, session_id: String) -> Result<u32, String>;
+pub async fn create_tab(
+    state: State<'_, AppState>,
+    project_id: String,
+    project_path: String,
+    title: String,
+) -> Result<Tab, String> {
+    state.tab_manager.create_tab(project_id, project_path, title)
+        .await
+        .map_err(|e| e.to_string())
+}
 
 #[tauri::command]
-async fn close_session(app_handle: AppHandle, session_id: String) -> Result<(), String>;
+pub async fn split_pane(
+    state: State<'_, AppState>,
+    tab_id: String,
+    pane_id: String,
+    direction: String,
+) -> Result<LayoutNode, String> {
+    let dir = match direction.as_str() {
+        "horizontal" => SplitDirection::Horizontal,
+        "vertical" => SplitDirection::Vertical,
+        _ => return Err(format!("Invalid direction: {}", direction)),
+    };
+    state.tab_manager.split_pane(&tab_id, &pane_id, dir)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn close_pane(
+    state: State<'_, AppState>,
+    tab_id: String,
+    pane_id: String,
+) -> Result<LayoutNode, String> { /* ... */ }
+
+#[tauri::command]
+pub async fn focus_pane(
+    state: State<'_, AppState>,
+    tab_id: String,
+    pane_id: String,
+) -> Result<(), String> { /* ... */ }
 ```
 
----
+### 6.3 会话命令
 
-## 6. 事件流设计
+```rust
+// src-tauri/src/commands/session.rs
+#[tauri::command]
+pub async fn create_session(
+    state: State<'_, AppState>,
+    project_id: String,
+    project_path: String,
+) -> Result<Session, String> { /* ... */ }
 
-### 6.1 事件类型
+#[tauri::command]
+pub async fn start_session(
+    state: State<'_, AppState>,
+    session_id: String,
+) -> Result<u32, String> { /* ... */ }
 
-```typescript
-interface ProcessStartedEvent {
-  type: 'process:started';
-  payload: { pid: number; paneId: string; sessionId: string; };
-}
-
-interface ProcessOutputEvent {
-  type: 'process:output';
-  payload: { pid: number; paneId: string; sessionId: string; stream: 'stdout' | 'stderr'; content: string; };
-}
-
-interface ProcessExitedEvent {
-  type: 'process:exited';
-  payload: { pid: number; paneId: string; sessionId: string; exitCode: number; };
-}
+#[tauri::command]
+pub async fn send_input(
+    state: State<'_, AppState>,
+    session_id: String,
+    input: String,
+) -> Result<(), String> { /* ... */ }
 ```
 
 ---
 
 ## 7. 错误处理
 
-### 7.1 错误类型
-
 ```rust
-#[derive(Debug, thiserror::Error)]
-pub enum TabError {
-    #[error("Tab not found: {0}")]
+// src-tauri/src/error.rs
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum AppError {
+    #[error("Not found: {0}")]
     NotFound(String),
-    #[error("Pane not found: {0}")]
-    PaneNotFound(String),
-    #[error("Cannot close last pane")]
+    
+    #[error("Cannot close last pane in tab")]
     CannotCloseLastPane,
+    
+    #[error("Max concurrent processes reached ({max}), current: {current}")]
+    MaxProcessesReached { max: usize, current: usize },
+    
+    #[error("Process spawn failed: {0}")]
+    SpawnFailed(String),
+    
+    #[error("Process {pid} already {status}")]
+    ProcessBusy { pid: u32, status: String },
+    
+    #[error("Database error: {0}")]
+    Database(#[from] rusqlite::Error),
+    
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
 }
 
-#[derive(Debug, thiserror::Error)]
-pub enum ProcessError {
-    #[error("Max global concurrent processes reached")]
-    MaxGlobalReached,
-    #[error("Max concurrent processes per tab reached")]
-    MaxPerTabReached,
-    #[error("Failed to spawn process: {0}")]
-    SpawnFailed(String),
+// 实现 Into<InvokeError> 让 Tauri 自动转换
+impl From<AppError> for tauri::ipc::InvokeError {
+    fn from(err: AppError) -> Self {
+        tauri::ipc::InvokeError::from(err.to_string())
+    }
 }
 ```
 
@@ -677,339 +557,271 @@ pub enum ProcessError {
 
 ## 8. 性能优化
 
-### 8.1 进程输出缓冲
-
-```
-┌────────────────────────────────────────┐
-│         多面板输出缓冲策略               │
-├────────────────────────────────────────┤
-│ 1. 每面板独立 Ring Buffer (最大 10000 行)│
-│ 2. 事件节流（最多 50fps per pane）       │
-│ 3. 前端虚拟列表（Monaco 虚拟滚动）       │
-│ 4. 事件路由优化（按面板 ID 路由）         │
-└────────────────────────────────────────┘
-```
+| 策略 | 实现 | 说明 |
+|------|------|------|
+| 输出缓冲 | 每面板 Ring Buffer 10000 行 | 限制内存占用 |
+| 事件节流 | 最多 50fps per pane | 减少前端渲染压力 |
+| 虚拟滚动 | Monaco 虚拟滚动 | 大量输出时不卡顿 |
+| 事件路由 | 按 pane_id 路由 | 避免全局广播 |
+| 进程清理 | 空闲 10min 自动 kill | 防止进程泄漏 |
 
 ---
 
-## 9. 记忆管理模块（可选）
+## 9. 开发计划（详细 Phase 拆分）
 
-### 9.1 模块定位
-- **可选功能**：用户可选择启用/禁用
-- **三种模式**：基础版（无向量）/ 本地向量版 / 云端向量版
-- **插件式架构**：不依赖核心功能
+### Phase 1: 项目脚手架 + CI/CD
 
----
+**目标**：可编译的空壳 Tauri v2 项目 + GitHub Actions
 
-## 10. 安装与部署
+**任务清单**：
+1. `npm create tauri-app` 初始化项目（React + TypeScript 模板）
+2. 创建 `src-tauri/src/` Rust 目录结构（`main.rs`, `lib.rs`, `app.rs`, `commands/`, `core/`, `cli/`, `db/`, `error.rs`）
+3. 创建 `src/` 前端目录结构（`components/`, `hooks/`, `stores/`, `types/`, `utils/`, `styles/`）
+4. 配置 `tsconfig.json`（strict mode）+ ESLint + Prettier
+5. 配置 `.gitignore`（`node_modules/`, `target/`, `dist/`）
+6. 编写 `.github/workflows/build.yml`（macOS/Linux/Windows 三平台构建）
+7. 确认 `npm run tauri dev` 可启动空壳窗口
+8. Git commit + push
 
-### 10.1 安装方式
+**验收标准**：
+- `npx tsc --noEmit` 零错误
+- `npm run tauri dev` 能弹出空窗口
+- `cargo check` 零错误
+- GitHub Actions workflow 文件存在且语法正确
 
-```bash
-# macOS: 下载 .dmg，双击安装
-# Linux: 下载 .deb/.AppImage
-# Windows: 下载 .exe 安装包
-```
-
-### 10.2 配置文件
-
-```json
-// ~/.claude-desktop/config.json
-
-{
-  "maxConcurrentSessions": 10,
-  "maxPanesPerTab": 5,
-  "claudeExecutable": "/usr/local/bin/claude",
-  "theme": "dark",
-  "memory": {
-    "enabled": false,
-    "vectorSearch": false
-  }
-}
-```
+**预计耗时**：1-2 次 CC 调用
 
 ---
 
-## 11. CI/CD 构建配置
+### Phase 2: Rust 核心层
 
-### 11.1 开发环境说明
+**目标**：进程池 + CLI Bridge + 会话管理 + 标签页/面板管理 + SQLite
 
-**背景**：项目在 Linux 服务器上开发，但 macOS 应用只能在 macOS 上构建（Apple 限制）。
+**任务清单**：
+1. **error.rs** — AppError 枚举 + thiserror 实现
+2. **db/connection.rs** — SQLite 连接初始化 + migrations
+3. **db/migrations.rs** — 建表 SQL（tabs, sessions, projects, messages）
+4. **core/process_pool.rs** — 进程 spawn/kill/status/cleanup
+5. **core/session_manager.rs** — 会话 CRUD + 进程映射
+6. **core/tab_manager.rs** — 标签页 CRUD + LayoutNode 分割/合并
+7. **core/pane_manager.rs** — 面板 CRUD + 焦点管理
+8. **cli/parser.rs** — stream-json 行解析 → CliEvent
+9. **cli/bridge.rs** — Claude CLI 进程启动 + stdin/stdout 管道
+10. **commands/tab.rs** — Tauri commands（create_tab, split_pane, close_pane, focus_pane）
+11. **commands/session.rs** — Tauri commands（create_session, start_session, send_input, close_session）
+12. **commands/settings.rs** — 配置读写
+13. **app.rs** — AppState 定义 + 注册
+14. **lib.rs** + **main.rs** — 入口集成
+15. 单元测试（process_pool, parser, tab_manager）
 
-**解决方案**：使用 GitHub Actions 免费的 macOS runner 自动构建。
+**验收标准**：
+- `cargo check` + `cargo test` 零错误
+- 通过 `invoke('create_tab', ...)` 可创建标签页
+- 通过 `invoke('start_session', ...)` 可启动 claude CLI 进程
+- 通过 `invoke('send_input', ...)` 可发送消息到 CLI
+- 进程池限制生效（不超过 max_global）
+- SQLite 数据持久化（重启后数据不丢失）
 
-### 11.2 GitHub Actions 工作流
+**预计耗时**：3-5 次 CC 调用
+
+---
+
+### Phase 3: React 前端
+
+**目标**：多面板 UI + 终端组件 + 标签页 + 流式输出
+
+**任务清单**：
+1. **安装前端依赖** — `@tauri-apps/api`, `zustand`, `@monaco-editor/react`
+2. **types/** — tab.ts, pane.ts, session.ts, tauri.d.ts（invoke 类型）
+3. **stores/useTabStore.ts** — 标签页状态管理
+4. **stores/useSessionStore.ts** — 会话状态管理
+5. **stores/useTerminalStore.ts** — 终端输出状态管理
+6. **stores/useSettingsStore.ts** — 设置状态管理
+7. **hooks/useTauri.ts** — Tauri invoke 封装 + 事件监听
+8. **hooks/useKeyboard.ts** — 快捷键绑定（Cmd+D 分割, Cmd+W 关闭, 方向键导航）
+9. **components/layout/TabBar.tsx** — 标签栏组件
+10. **components/panels/PaneContainer.tsx** — 递归布局树渲染
+11. **components/panels/PaneSplit.tsx** — 可拖拽分割线
+12. **components/panels/PaneHeader.tsx** — 面板标题栏（会话名+状态指示）
+13. **components/terminal/TerminalView.tsx** — 终端输出渲染（虚拟滚动）
+14. **components/terminal/OutputStream.tsx** — 流式输出行渲染
+15. **components/layout/StatusBar.tsx** — 底部状态栏
+16. **components/common/InputBar.tsx** — 消息输入框
+17. **app/App.tsx** — 根组件组装
+18. **styles/globals.css** — 全局样式 + CSS 变量 + 明暗主题
+19. **types/tauri.d.ts** — 自动生成或手动定义 invoke 类型
+
+**验收标准**：
+- `npx tsc --noEmit` 零错误
+- `npm run build` 构建成功
+- 多标签页切换正常
+- 水平/垂直分割面板正常
+- 终端输出实时流式渲染
+- 消息输入和发送正常
+- 快捷键（Cmd+D, Cmd+W, 方向键）生效
+
+**预计耗时**：3-5 次 CC 调用
+
+---
+
+### Phase 4: 集成联调
+
+**目标**：前后端通信 + 端到端流程跑通
+
+**任务清单**：
+1. 前后端 IPC 通信测试（invoke + emit 双向）
+2. 进程输出流式渲染到面板
+3. 会话创建 → CLI 启动 → 输入 → 输出 → 关闭 完整流程
+4. 面板分割后独立会话验证
+5. 标签页切换后状态保持验证
+6. 进程崩溃后错误显示
+7. SQLite 持久化验证（重启后恢复标签页/会话）
+8. 多项目切换验证
+
+**验收标准**：
+- 完整流程：打开应用 → 创建项目 → 创建标签页 → 分割面板 → 启动会话 → 发送消息 → 接收流式输出 → 关闭
+- 进程崩溃不影响其他面板
+- 重启应用后恢复之前的标签页布局
+- `npm run tauri dev` 端到端可用
+
+**预计耗时**：2-3 次 CC 调用
+
+---
+
+### Phase 5: UI 精化
+
+**目标**：快捷键完善 + 主题 + 布局保存/恢复
+
+**任务清单**：
+1. 完整快捷键方案（参考 CLAUDE.md 快捷键速查表）
+2. 明暗主题切换（CSS variables + prefers-color-scheme）
+3. 布局保存/恢复（persist layout_tree to SQLite）
+4. 面板拖拽调整大小（mousedown/mousemove/mouseup）
+5. 文件树组件（读取项目目录结构）
+6. 设置页面（模型选择、claude 路径、并发数配置）
+7. 会话历史搜索
+8. 退出时自动保存状态
+
+**验收标准**：
+- 所有快捷键正常工作
+- 明暗主题切换无闪烁
+- 面板大小可拖拽调整
+- 应用退出后重启可恢复布局
+
+**预计耗时**：2-3 次 CC 调用
+
+---
+
+## 10. 快捷键设计
+
+| 快捷键 | 功能 | 备注 |
+|--------|------|------|
+| `Cmd/Ctrl+T` | 新建标签页 | |
+| `Cmd/Ctrl+W` | 关闭当前面板 | 保留最后面板 |
+| `Cmd/Ctrl+Shift+W` | 关闭标签页 | |
+| `Cmd/Ctrl+D` | 水平分割面板 | 左右布局 |
+| `Cmd/Ctrl+Shift+D` | 垂直分割面板 | 上下布局 |
+| `Cmd/Ctrl+←/→/↑/↓` | 焦点导航 | tmux 风格 |
+| `Cmd/Ctrl+{1-9}` | 切换到第 N 个标签页 | |
+| `Enter` | 发送输入到当前面板 | |
+| `Cmd/Ctrl+Shift+P` | 打开设置 | |
+
+---
+
+## 11. CI/CD
+
+### 11.1 构建配置
 
 ```yaml
 # .github/workflows/build.yml
-name: Build Desktop App
-
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
     tags: ['v*']
-  workflow_dispatch:  # 手动触发
+  workflow_dispatch:
 
 jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-darwin, x86_64-apple-darwin
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'Claude Code Desktop ${{ github.ref_name }}'
-          releaseBody: 'See CHANGELOG.md for details.'
-          releaseDraft: true
-          prerelease: false
-          args: --target universal-apple-darwin
-      
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-universal
-          path: |
-            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
-            src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: aarch64-apple-darwin, x86_64-apple-darwin }
+      - run: npm ci
+      - uses: tauri-apps/tauri-action@v0
+        env: { GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
 
   build-linux:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-      
-      - name: Install system dependencies
-        run: |
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - uses: dtolnay/rust-toolchain@stable
+      - run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            libgtk-3-dev \
-            libwebkit2gtk-4.1-dev \
-            libappindicator3-dev \
-            librsvg2-dev \
-            patchelf \
-            libasound2-dev
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Build Tauri app
-        run: npm run tauri build
-      
-      - name: Upload .deb
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-deb
-          path: src-tauri/target/release/bundle/deb/*.deb
-      
-      - name: Upload .AppImage
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-appimage
-          path: src-tauri/target/release/bundle/appimage/*.AppImage
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-pc-windows-msvc
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Build Tauri app
-        run: npm run tauri build
-      
-      - name: Upload .exe
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-exe
-          path: src-tauri/target/release/*.exe
-      
-      - name: Upload .msi
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-msi
-          path: src-tauri/target/release/bundle/msi/*.msi
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev \
+            libappindicator3-dev librsvg2-dev patchelf libasound2-dev
+      - run: npm ci
+      - run: npm run tauri build
 
   release:
-    needs: [build-macos, build-linux, build-windows]
-    runs-on: ubuntu-latest
+    needs: [build-macos, build-linux]
     if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-      
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: artifacts/**/*
-          generate_release_notes: true
+      - uses: softprops/action-gh-release@v1
+        with: { generate_release_notes: true }
 ```
 
-### 11.3 开发工作流
-
+### 11.2 开发流程
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    开发 → 构建 → 使用                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  1. Linux 服务器开发                                         │
-│     └─► 编写代码、运行测试                                    │
-│                                                             │
-│  2. 推送到 GitHub                                            │
-│     └─► git push origin main                                │
-│                                                             │
-│  3. GitHub Actions 自动构建                                  │
-│     ├─► macOS: macos-latest runner                          │
-│     ├─► Linux: ubuntu-22.04 runner                          │
-│     └─► Windows: windows-latest runner                      │
-│                                                             │
-│  4. 下载构建产物                                              │
-│     └─► Actions → Artifacts → Download                      │
-│                                                             │
-│  5. 本地安装使用                                              │
-│     ├─► macOS: 双击 .dmg                                     │
-│     ├─► Linux: sudo dpkg -i xxx.deb                         │
-│     └─► Windows: 双击 .exe                                   │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+Linux 服务器开发 → git push → GitHub Actions 构建 → 下载产物 → 本地安装
 ```
-
-### 11.4 手动触发构建
-
-在 GitHub 仓库页面：
-1. 点击 **Actions** 标签
-2. 选择 **Build Desktop App** 工作流
-3. 点击 **Run workflow**
-4. 选择分支后运行
-
-### 11.5 本地开发测试
-
-```bash
-# Linux 服务器上开发时，只构建 Linux 版本
-npm install
-npm run tauri dev
-
-# 仅构建前端（跳过 Rust 编译，更快）
-npm run dev
-```
-
-### 11.6 构建产物
-
-| 平台 | 文件格式 | 大小（估算） | 说明 |
-|------|---------|-------------|------|
-| macOS | .dmg | ~15 MB | Universal Binary (Intel + M1/M2) |
-| Linux | .deb | ~12 MB | Ubuntu/Debian |
-| Linux | .AppImage | ~14 MB | 通用 Linux |
-| Windows | .exe | ~10 MB | 安装包 |
-| Windows | .msi | ~11 MB | MSI 安装包 |
-
-### 11.7 成本
-
-- **GitHub Actions**：公开仓库免费，私有仓库每月 2000 分钟免费
-- **macOS runner**：消耗分钟数 × 10（但公开仓库不限）
-- **自用场景**：完全免费
 
 ---
 
-## 12. 风险点与应对
+## 12. 风险与应对
 
-| 风险 | 概率 | 影响 | 应对策略 |
-|------|------|------|---------|
-| **进程泄漏** | 中 | 高 | 进程池限制 + 定期清理僵尸进程 |
-| **内存占用过高** | 中 | 中 | 输出缓冲限制 + 虚拟列表 |
-| **CLI 进程崩溃** | 中 | 中 | 错误捕获 + 重启选项 |
-| **跨平台兼容性** | 高 | 中 | 抽象层 + 平台适配 |
-| **并发数过多** | 中 | 中 | 全局限制 10 + 每标签页限制 5 |
-| **面板布局错乱** | 低 | 低 | 布局树验证 + 回滚机制 |
-| **macOS 构建失败** | 低 | 中 | GitHub Actions 自动化 + 版本锁定 |
-
----
-
-## 13. 开发计划
-
-### Phase 1: 核心功能（6 周）
-- 标签页管理
-- 面板分割/关闭
-- 进程池管理
-- 基础 UI
-- CI/CD 配置
-
-### Phase 2: 增强功能（4 周）
-- 布局保存/恢复
-- 拖拽调整大小
-- 快捷键完善
-- 性能优化
-
-### Phase 3: 可选功能（3 周）
-- 记忆管理模块
-- 云端同步
-- 主题定制
+| 风险 | 概率 | 应对 |
+|------|------|------|
+| Rust 编译时间长 | 高 | CC timeout 设 600s+，Phase 2 可拆多次 |
+| macOS 构建依赖 | 中 | GitHub Actions macOS runner |
+| 进程泄漏 | 中 | 进程池限制 + 定期清理 |
+| CLI 版本变更 | 中 | Bridge 做版本检测 + fallback |
+| 内存占用 | 低 | 输出缓冲限制 + 虚拟滚动 |
+| Tauri v2 API 变更 | 低 | 锁定 tauri 版本 |
 
 ---
 
-## 14. 下一步行动
+## 13. 依赖版本锁定
 
-```
-□ 确认多面板分屏设计
-□ 确认进程池限制策略（全局 10 / 每标签页 5）
-□ 确认快捷键设计
-□ 确认 CI/CD 构建方案
-□ 确认不需要 Apple Developer ID（自用）
-□ 进入开发阶段
-```
+| 依赖 | 版本 | 说明 |
+|------|------|------|
+| tauri | v2.x | 最新 v2 |
+| react | ^18.3 | React 18 |
+| typescript | ^5.5 | TypeScript 5.x |
+| zustand | ^5.x | 状态管理 |
+| @monaco-editor/react | ^4.x | 代码编辑器 |
+| @tauri-apps/api | v2.x | Tauri 前端 API |
+| rusqlite | ^0.32 | SQLite 绑定 |
+| tokio | ^1.x | 异步运行时 |
+| serde | ^1.x | 序列化 |
+| thiserror | ^2.x | 错误类型 |
 
 ---
 
 **文档结束**
 
-v2.4 架构设计已完成，核心设计：
-- 每面板独立 CLI 进程
-- tmux 风格多面板分屏
-- 递归分割布局树
-- 快捷键焦点导航
-- 进程池限制（全局 10 / 每标签页 5）
-- 布局保存/恢复
-- GitHub Actions CI/CD（跨平台构建）
-- 无需 Apple Developer ID（自用场景）
+v3.0 已完成审核修订：
+- ✅ Tauri v2 API 规范（含 v1 vs v2 对比）
+- ✅ CLI 交互协议（stream-json 格式 + parser 接口）
+- ✅ 前端组件树 + 目录结构
+- ✅ Zustand Store 接口定义
+- ✅ 事件通信规范（Rust ↔ Frontend）
+- ✅ Phase 拆分到具体任务级别（5 个 Phase，每 Phase 有任务清单）
+- ✅ 每个 Phase 的验收标准
+- ✅ 编码约束（详见 CLAUDE.md）
+- ✅ 依赖版本锁定
