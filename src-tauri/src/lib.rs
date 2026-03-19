@@ -20,7 +20,7 @@ pub fn run() {
             let database = Database::new(app_data_dir)
                 .map_err(|e| format!("Failed to initialize database: {e}"))?;
 
-            app.manage(app::AppState::new(database));
+            app.manage(app::AppState::new(database, app.handle().clone()));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
