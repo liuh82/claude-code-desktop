@@ -51,6 +51,24 @@
       "accessCount": 1,
       "lastAccessed": 1773902858729,
       "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 1,
+      "lastAccessed": 1773903814801,
+      "type": "directory"
+    },
+    {
+      "path": "CLAUDE.md",
+      "accessCount": 1,
+      "lastAccessed": 1773903814853,
+      "type": "file"
+    },
+    {
+      "path": "docs/architecture.md",
+      "accessCount": 1,
+      "lastAccessed": 1773903819334,
+      "type": "file"
     }
   ],
   "userDirectives": []
