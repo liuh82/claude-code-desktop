@@ -12,15 +12,36 @@ use tauri::Manager;
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            let app_data_dir = app
-                .path()
-                .app_data_dir()
-                .map_err(|e| format!("Failed to resolve app data dir: {e}"))?;
+            let app_data_dir = match app.path().app_data_dir() {
+                Ok(dir) => dir,
+                Err(e) => {
+                    eprintln!("[CCDesk] Failed to resolve app data dir: {e}");
+                    // Fall back to a local directory
+                    std::env::current_dir()
+                        .expect("Cannot determine current directory")
+                        .join(".claude-code-desktop")
+                }
+            };
 
-            let database = Database::new(app_data_dir)
-                .map_err(|e| format!("Failed to initialize database: {e}"))?;
+            let database = match Database::new(app_data_dir) {
+                Ok(db) => db,
+                Err(e) => {
+                    eprintln!("[CCDesk] Failed to initialize database: {e}");
+                    // Create a minimal in-memory fallback so the app still works
+                    Database::new_inmemory()
+                }
+            };
 
             app.manage(app::AppState::new(database, app.handle().clone()));
+
+            // On macOS, open DevTools in debug builds for easier debugging
+            #[cfg(debug_assertions)]
+            {
+                if let Some(window) = app.get_webview_window("main") {
+                    window.open_devtools();
+                }
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

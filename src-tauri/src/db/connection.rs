@@ -23,6 +23,17 @@ impl Database {
         })
     }
 
+    /// Create an in-memory database as fallback when file-based DB fails.
+    pub fn new_inmemory() -> Self {
+        tracing::warn!("Using in-memory database as fallback");
+        let conn = Connection::open_in_memory().expect("Failed to create in-memory database");
+        migrations::run_migrations(&conn)
+            .expect("Failed to run migrations on in-memory database");
+        Self {
+            conn: std::sync::Arc::new(Mutex::new(conn)),
+        }
+    }
+
     pub fn get_connection(&self) -> Result<std::sync::MutexGuard<'_, Connection>, AppError> {
         self.conn.lock().map_err(|e| AppError::Database(format!("Lock poisoned: {e}")))
     }

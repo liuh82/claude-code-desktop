@@ -4,9 +4,70 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Claude Code Desktop</title>
+    <style>
+      /* Visible loading state — hidden once React mounts */
+      #loading-screen {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #1e1e1e;
+        color: #cccccc;
+        font-family: system-ui, -apple-system, sans-serif;
+        z-index: 100000;
+      }
+      #loading-screen .logo {
+        font-size: 24px;
+        font-weight: 700;
+        color: #007acc;
+        letter-spacing: 2px;
+        margin-bottom: 16px;
+      }
+      #loading-screen .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid #3e3e42;
+        border-top-color: #007acc;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      #loading-screen .hint {
+        margin-top: 12px;
+        font-size: 12px;
+        color: #666666;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      #loading-screen.hidden {
+        display: none;
+      }
+    </style>
   </head>
   <body>
+    <div id="loading-screen">
+      <div class="logo">CC</div>
+      <div class="spinner"></div>
+      <div class="hint">Loading Claude Code Desktop...</div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Hide loading screen once React renders
+      window.addEventListener('DOMContentLoaded', () => {
+        const check = () => {
+          const root = document.getElementById('root');
+          const loading = document.getElementById('loading-screen');
+          if (root && root.children.length > 0 && loading) {
+            loading.classList.add('hidden');
+          } else {
+            setTimeout(check, 100);
+          }
+        };
+        check();
+      });
+    </script>
   </body>
 </html>
