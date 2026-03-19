@@ -33,5 +33,15 @@ declare module '@tauri-apps/api/core' {
     delete_session: (args: { sessionId: string }) => Promise<void>;
     rename_session: (args: { sessionId: string; title: string }) => Promise<void>;
     detect_claude_cli: () => Promise<string | null>;
+    check_claude_cli: () => Promise<{
+      path: string;
+      version: string;
+      available: boolean;
+    }>;
+    get_app_info: () => Promise<{
+      version: string;
+      platform: string;
+      arch: string;
+    }>;
   }
 }

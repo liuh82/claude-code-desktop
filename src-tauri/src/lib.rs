@@ -47,6 +47,11 @@ pub fn run() {
             // Settings commands
             commands::settings::get_config,
             commands::settings::set_config,
+            // App commands
+            commands::app_commands::get_app_info,
+            commands::app_commands::get_settings,
+            commands::app_commands::save_settings,
+            commands::app_commands::check_claude_cli,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

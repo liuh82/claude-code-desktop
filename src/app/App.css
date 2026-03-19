@@ -5,7 +5,54 @@
   overflow: hidden;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', 'Consolas', system-ui, -apple-system, sans-serif;
+}
+
+/* ── Scrollbar ── */
+
+.app-layout ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.app-layout ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-layout ::-webkit-scrollbar-thumb {
+  background: var(--scrollbar);
+  border-radius: 4px;
+}
+
+.app-layout ::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
+
+/* ── No body scrollbar ── */
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Theme transition ── */
+
+html,
+html *,
+html *::before,
+html *::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+}
+
+/* Disable transition during load to avoid flash */
+html.no-transition,
+html.no-transition *,
+html.no-transition *::before,
+html.no-transition *::after {
+  transition: none !important;
 }
 
 /* ── Sidebar ── */
@@ -81,4 +128,64 @@
 .app-content {
   flex: 1;
   overflow: hidden;
+}
+
+/* ── Command palette animation (slide down) ── */
+
+.cp-overlay {
+  animation: cp-fade-in 0.15s ease-out;
+}
+
+.cp-container {
+  animation: cp-slide-down 0.2s ease-out;
+}
+
+@keyframes cp-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cp-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Settings dialog animation (slide up) ── */
+
+.sd-overlay {
+  animation: sd-fade-in 0.15s ease-out;
+}
+
+.sd-container {
+  animation: sd-slide-up 0.2s ease-out;
+}
+
+@keyframes sd-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sd-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

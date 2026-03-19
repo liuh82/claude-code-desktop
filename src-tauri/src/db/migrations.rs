@@ -44,6 +44,11 @@ pub fn run_migrations(conn: &Connection) -> Result<(), AppError> {
             role TEXT NOT NULL,
             content TEXT,
             timestamp TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS app_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
         );",
     )?;
 
