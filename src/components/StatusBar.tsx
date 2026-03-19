@@ -82,7 +82,7 @@ function StatusBar({
           title="Settings"
           aria-label="Open settings"
         >
-          \u2699\uFE0F
+          \u2699\uFE0F Settings
         </button>
       </div>
     </footer>
