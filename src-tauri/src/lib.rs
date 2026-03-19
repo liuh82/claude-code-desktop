@@ -5,10 +5,24 @@ mod core;
 mod db;
 mod error;
 
+use db::Database;
+use tauri::Manager;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .manage(app::AppState::new())
+        .setup(|app| {
+            let app_data_dir = app
+                .path()
+                .app_data_dir()
+                .map_err(|e| format!("Failed to resolve app data dir: {e}"))?;
+
+            let database = Database::new(app_data_dir)
+                .map_err(|e| format!("Failed to initialize database: {e}"))?;
+
+            app.manage(app::AppState::new(database));
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             commands::tab::create_tab,
             commands::tab::split_pane,
