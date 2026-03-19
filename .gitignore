@@ -7,3 +7,11 @@ src-tauri/target/
 .env.*
 !.env.example
 .omc/
+
+# Claude Code session data
+.claude/
+.omc/
+CLAUDE.md
+
+# Test artifacts
+nexus-verify.txt
