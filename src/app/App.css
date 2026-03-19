@@ -17,12 +17,14 @@
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .app-sidebar__logo {
   height: 48px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 12px;
   border-bottom: 1px solid var(--border);
 }
@@ -32,6 +34,38 @@
   font-size: 14px;
   color: var(--accent);
   letter-spacing: 1px;
+}
+
+.app-sidebar__close {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.app-sidebar__close:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.app-sidebar__body {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.app-sidebar__sessions {
+  flex: 0 0 auto;
+  max-height: 40%;
+  border-top: 1px solid var(--border);
+  overflow: hidden;
 }
 
 /* ── Main Area ── */

@@ -1,0 +1,122 @@
+.cp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  padding-top: 20vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.cp-container {
+  width: 520px;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.cp-search {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cp-search__input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+}
+
+.cp-search__input:focus {
+  border-color: var(--accent);
+}
+
+.cp-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.cp-section__title {
+  padding: 6px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.cp-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.cp-item:hover,
+.cp-item--selected {
+  background: var(--bg-tertiary);
+}
+
+.cp-item--selected {
+  outline: 1px solid var(--accent);
+}
+
+.cp-item__label {
+  flex: 1;
+}
+
+.cp-item__shortcut {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: inherit;
+}
+
+.cp-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.cp-footer {
+  display: flex;
+  gap: 12px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-tertiary);
+}
+
+.cp-footer__hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.cp-footer kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-family: inherit;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-secondary);
+}
