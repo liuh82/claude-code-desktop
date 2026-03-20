@@ -9,9 +9,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  base: "./",
   clearScreen: false,
   server: {
     port: 1420,
     strictPort: true,
+  },
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
   },
 });

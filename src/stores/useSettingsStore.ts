@@ -1,24 +1,29 @@
 import { create } from 'zustand';
-import { invoke } from '@tauri-apps/api/core';
+
+interface ElectronAPI {
+  getSettings: () => Promise<Record<string, unknown>>;
+  saveSettings: (settings: unknown) => Promise<void>;
+  getAppInfo: () => Promise<{ version: string; platform: string; arch: string }>;
+  checkClaudeCli: () => Promise<{ path: string; version: string; available: boolean }>;
+  openDirectoryDialog: () => Promise<string | null>;
+}
+
+function getApi(): ElectronAPI | null {
+  const api = (window as unknown as { claudeAPI?: ElectronAPI }).claudeAPI;
+  return api ?? null;
+}
 
 export interface AppSettings {
-  // General
   defaultProjectPath: string;
   autoSaveInterval: number;
   maxConcurrentSessions: number;
-
-  // Appearance
   theme: 'dark' | 'light' | 'system';
   fontSize: number;
   fontFamily: string;
-
-  // Claude Code
   claudeCliPath: string;
   defaultModel: string;
   permissionMode: 'default' | 'strict' | 'permissive';
   maxTokens: number;
-
-  // Advanced
   logLevel: 'debug' | 'info' | 'warn' | 'error';
   dataDirectory: string;
 }
@@ -52,21 +57,15 @@ interface SettingsState {
 function loadFromStorage(): AppSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
-    }
-  } catch {
-    // corrupted — fall through
-  }
+    if (raw) return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
+  } catch { /* ignore */ }
   return { ...DEFAULT_SETTINGS };
 }
 
 function persistToStorage(settings: AppSettings) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  } catch {
-    // localStorage unavailable
-  }
+  } catch { /* ignore */ }
 }
 
 export const useSettingsStore = create<SettingsState>()((set, get) => ({
@@ -75,20 +74,18 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
 
   loadSettings: async () => {
     const local = loadFromStorage();
-
-    // Try to load from Rust backend (may fail in dev/browser-only mode)
-    try {
-      const remote = await invoke<AppSettings>('get_settings');
-      if (remote) {
-        const merged = { ...local, ...remote };
-        set({ settings: merged, loaded: true });
-        persistToStorage(merged);
-        return;
-      }
-    } catch {
-      // Rust backend not available — use local
+    const api = getApi();
+    if (api) {
+      try {
+        const remote = await api.getSettings();
+        if (remote && typeof remote === 'object' && Object.keys(remote).length > 0) {
+          const merged = { ...local, ...remote } as AppSettings;
+          set({ settings: merged, loaded: true });
+          persistToStorage(merged);
+          return;
+        }
+      } catch { /* ignore */ }
     }
-
     set({ settings: local, loaded: true });
   },
 
@@ -103,10 +100,11 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   saveSettings: async () => {
     const { settings } = get();
     persistToStorage(settings);
-    try {
-      await invoke('save_settings', { settings });
-    } catch {
-      // Rust backend not available
+    const api = getApi();
+    if (api) {
+      try {
+        await api.saveSettings(settings);
+      } catch { /* ignore */ }
     }
   },
 

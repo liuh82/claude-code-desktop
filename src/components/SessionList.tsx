@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { invoke } from '@tauri-apps/api/core';
 import { useSessionStore } from '@/stores/useSessionStore';
 import type { Session } from '@/types/session';
 import './SessionList.css';
@@ -9,23 +8,18 @@ interface SessionListProps {
   onSessionClick?: (session: Session) => void;
 }
 
-const STATUS_COLORS: Record<Session['status'], string> = {
-  idle: 'sl-dot--idle',
-  starting: 'sl-dot--starting',
-  running: 'sl-dot--running',
-  waiting: 'sl-dot--waiting',
-  error: 'sl-dot--error',
-  closed: 'sl-dot--closed',
-};
+interface ElectronAPI {
+  closeSession: (args: { sessionId: string }) => Promise<void>;
+  listSessions: (args: { projectId: string }) => Promise<Array<Record<string, unknown>>>;
+}
 
-const STATUS_LABELS: Record<Session['status'], string> = {
-  idle: 'Idle',
-  starting: 'Starting...',
-  running: 'Running',
-  waiting: 'Waiting',
-  error: 'Error',
-  closed: 'Closed',
-};
+function getApi(): ElectronAPI | null {
+  const api = (window as unknown as { claudeAPI?: ElectronAPI }).claudeAPI;
+  return api ?? null;
+}
+
+const STATUS_COLORS: Record<string, string> = { idle: 'sl-dot--idle', starting: 'sl-dot--starting', running: 'sl-dot--running', waiting: 'sl-dot--waiting', error: 'sl-dot--error', closed: 'sl-dot--closed' };
+const STATUS_LABELS: Record<string, string> = { idle: 'Idle', starting: 'Starting...', running: 'Running', waiting: 'Waiting', error: 'Error', closed: 'Closed' };
 
 function formatTime(ts: number): string {
   const d = new Date(ts);
@@ -34,173 +28,66 @@ function formatTime(ts: number): string {
 
 function SessionList({ projectId, onSessionClick }: SessionListProps) {
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState('');
   const [loading, setLoading] = useState(false);
   const storeSessions = useSessionStore((s) => s.sessions);
 
-  // Sync with store when available
   useEffect(() => {
     if (storeSessions.size > 0 && projectId) {
-      const projectSessions = Array.from(storeSessions.values()).filter(
-        (s) => s.projectId === projectId,
-      );
+      const projectSessions = Array.from(storeSessions.values()).filter((s) => s.projectId === projectId);
       if (projectSessions.length > 0) {
         setSessions((prev) => {
           const merged = new Map(prev.map((s) => [s.id, s]));
-          for (const s of projectSessions) {
-            merged.set(s.id, s);
-          }
+          for (const s of projectSessions) merged.set(s.id, s);
           return Array.from(merged.values()).sort((a, b) => b.updatedAt - a.updatedAt);
         });
       }
     }
   }, [storeSessions, projectId]);
 
-  // Load sessions from backend
   const loadSessions = useCallback(async () => {
-    if (!projectId) {
-      setSessions([]);
-      return;
-    }
+    if (!projectId) { setSessions([]); return; }
     setLoading(true);
     try {
-      const result = await invoke<Session[]>('get_sessions', { projectId });
-      setSessions(result.sort((a, b) => b.updatedAt - a.updatedAt));
-    } catch {
-      // Tauri not available
-    } finally {
-      setLoading(false);
-    }
+      const api = getApi();
+      if (!api) throw new Error('no api');
+      const result = await api.listSessions({ projectId });
+      setSessions(result.map((r) => ({
+        id: String(r.id ?? ''),
+        projectId: String(r.projectId ?? projectId),
+        projectPath: String(r.projectPath ?? ''),
+        paneId: String(r.paneId ?? ''),
+        title: String(r.title ?? 'Untitled'),
+        status: (r.status as Session['status']) ?? 'idle',
+        processId: r.processId as number | undefined,
+        createdAt: r.createdAt ? new Date(String(r.createdAt)).getTime() : Date.now(),
+        updatedAt: r.updatedAt ? new Date(String(r.updatedAt)).getTime() : Date.now(),
+      })));
+    } catch { /* Tauri not available */ } finally { setLoading(false); }
   }, [projectId]);
 
-  useEffect(() => {
-    loadSessions();
-  }, [loadSessions]);
+  useEffect(() => { loadSessions(); }, [loadSessions]);
 
-  const handleDoubleClick = useCallback((session: Session) => {
-    if (session.status === 'closed') return;
-    setEditingId(session.id);
-    setEditValue(session.title);
+  const handleDelete = useCallback(async (e: React.MouseEvent, sessionId: string) => {
+    e.stopPropagation();
+    try { getApi()?.closeSession({ sessionId }); } catch { /* ignore */ }
+    setSessions((prev) => prev.filter((s) => s.id !== sessionId));
   }, []);
 
-  const handleRenameSubmit = useCallback(
-    async (sessionId: string) => {
-      const trimmed = editValue.trim();
-      if (!trimmed) {
-        setEditingId(null);
-        return;
-      }
-      setEditingId(null);
-      setSessions((prev) =>
-        prev.map((s) => (s.id === sessionId ? { ...s, title: trimmed } : s)),
-      );
-      try {
-        await invoke('rename_session', { sessionId, title: trimmed });
-      } catch {
-        // ignore
-      }
-    },
-    [editValue],
-  );
-
-  const handleDelete = useCallback(
-    async (e: React.MouseEvent, sessionId: string) => {
-      e.stopPropagation();
-      try {
-        await invoke('close_session', { sessionId });
-        await invoke('delete_session', { sessionId });
-        setSessions((prev) => prev.filter((s) => s.id !== sessionId));
-      } catch {
-        // ignore
-      }
-    },
-    [],
-  );
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>, sessionId: string) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        handleRenameSubmit(sessionId);
-      }
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        setEditingId(null);
-      }
-    },
-    [handleRenameSubmit],
-  );
-
   if (!projectId) {
-    return (
-      <div className="sl-container">
-        <div className="sl-header">
-          <h3 className="sl-title">Sessions</h3>
-        </div>
-        <div className="sl-empty">Select a project to view sessions</div>
-      </div>
-    );
+    return <div className="sl-container"><div className="sl-header"><h3 className="sl-title">Sessions</h3></div><div className="sl-empty">Select a project to view sessions</div></div>;
   }
 
   return (
     <div className="sl-container">
-      <div className="sl-header">
-        <h3 className="sl-title">Sessions</h3>
-        <button className="sl-refresh" onClick={loadSessions} title="Refresh" aria-label="Refresh sessions">
-          &#8635;
-        </button>
-      </div>
-
+      <div className="sl-header"><h3 className="sl-title">Sessions</h3><button className="sl-refresh" onClick={loadSessions} title="Refresh">&#8635;</button></div>
       <div className="sl-list">
-        {loading ? (
-          <div className="sl-empty">Loading...</div>
-        ) : sessions.length === 0 ? (
-          <div className="sl-empty">No sessions</div>
-        ) : (
-          sessions.map((session) => (
-            <div
-              key={session.id}
-              className={`sl-item ${session.status === 'closed' ? 'sl-item--closed' : ''}`}
-              onClick={() => onSessionClick?.(session)}
-              onDoubleClick={() => handleDoubleClick(session)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter') onSessionClick?.(session); }}
-            >
-              <span className={`sl-dot ${STATUS_COLORS[session.status]}`} title={STATUS_LABELS[session.status]} />
-              <div className="sl-item__body">
-                {editingId === session.id ? (
-                  <input
-                    className="sl-item__edit"
-                    type="text"
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    onBlur={() => handleRenameSubmit(session.id)}
-                    onKeyDown={(e) => handleKeyDown(e, session.id)}
-                    autoFocus
-                    spellCheck={false}
-                  />
-                ) : (
-                  <span className="sl-item__title">{session.title}</span>
-                )}
-                <span className="sl-item__meta">
-                  {formatTime(session.createdAt)}
-                </span>
-              </div>
-              {session.status !== 'closed' && (
-                <button
-                  className="sl-item__delete"
-                  onClick={(e) => handleDelete(e, session.id)}
-                  title="Delete session"
-                  aria-label="Delete session"
-                >
-                  &times;
-                </button>
-              )}
-            </div>
-          ))
-        )}
+        {loading ? <div className="sl-empty">Loading...</div> : sessions.length === 0 ? <div className="sl-empty">No sessions</div> : sessions.map((session) => (
+          <div key={session.id} className={`sl-item ${session.status === 'closed' ? 'sl-item--closed' : ''}`} onClick={() => onSessionClick?.(session)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') onSessionClick?.(session); }}>
+            <span className={`sl-dot ${STATUS_COLORS[session.status]}`} title={STATUS_LABELS[session.status]} />
+            <div className="sl-item__body"><span className="sl-item__title">{session.title}</span><span className="sl-item__meta">{formatTime(session.createdAt)}</span></div>
+            {session.status !== 'closed' && <button className="sl-item__delete" onClick={(e) => handleDelete(e, session.id)} title="Delete session">&times;</button>}
+          </div>
+        ))}
       </div>
     </div>
   );

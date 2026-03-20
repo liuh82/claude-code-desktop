@@ -1,4 +1,6 @@
-import { invoke } from '@tauri-apps/api/core';
+/**
+ * Electron IPC wrapper for Claude path detection.
+ */
 
 export interface CliInfo {
   path: string;
@@ -12,36 +14,33 @@ export interface AppInfo {
   arch: string;
 }
 
-/**
- * Attempt to locate the Claude CLI binary via the Rust backend.
- */
+async function invoke<T>(command: string, args?: Record<string, unknown>): Promise<T | null> {
+  const api = (window as unknown as { claudeAPI?: Record<string, (...args: unknown[]) => Promise<unknown>> }).claudeAPI;
+  if (!api) return null;
+  const method = api[command.replace(/_([a-z])/g, (_, c) => c.toUpperCase())];
+  if (typeof method !== 'function') return null;
+  return method(args) as Promise<T>;
+}
+
 export async function detectClaudePath(): Promise<string | null> {
   try {
     const info = await invoke<CliInfo>('check_claude_cli');
-    return info.available ? info.path : null;
+    return info?.available ? info.path : null;
   } catch {
     return null;
   }
 }
 
-/**
- * Verify that a given path points to a working Claude CLI installation.
- */
 export async function verifyClaudePath(path: string): Promise<CliInfo | null> {
   try {
     const info = await invoke<CliInfo>('check_claude_cli');
-    if (info.path === path && info.available) {
-      return info;
-    }
+    if (info?.path === path && info?.available) return info;
     return null;
   } catch {
     return null;
   }
 }
 
-/**
- * Fetch application metadata (version, platform, arch).
- */
 export async function getAppInfo(): Promise<AppInfo | null> {
   try {
     return await invoke<AppInfo>('get_app_info');

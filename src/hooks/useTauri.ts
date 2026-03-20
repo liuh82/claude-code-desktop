@@ -1,10 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
-import { invoke } from '@tauri-apps/api/core';
-import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 
 /**
- * Hook to invoke Tauri commands with loading/error state.
+ * Electron IPC invoke wrapper.
  */
+export async function invoke<T>(command: string, args?: Record<string, unknown>): Promise<T | null> {
+  const api = (window as unknown as { claudeAPI?: Record<string, (...args: unknown[]) => Promise<unknown>> }).claudeAPI;
+  if (!api) return null;
+
+  // camelCase conversion for snake_case commands
+  const method = api[command.replace(/_([a-z])/g, (_, c) => c.toUpperCase())];
+  if (typeof method !== 'function') return null;
+  return method(args) as Promise<T>;
+}
+
 export function useInvoke<T>(cmd: string, args?: Record<string, unknown>) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
@@ -32,38 +40,26 @@ export function useInvoke<T>(cmd: string, args?: Record<string, unknown>) {
   return { data, loading, error, execute };
 }
 
-/**
- * Hook to listen to Tauri events from the backend.
- */
-export function useEventListener<T = unknown>(
-  event: string,
-  handler: (payload: T) => void,
-) {
+export function useEventListener<T = unknown>(event: string, handler: (payload: T) => void) {
   useEffect(() => {
-    let unlisten: UnlistenFn | null = null;
+    const api = (window as unknown as { claudeAPI?: Record<string, (...args: unknown[]) => unknown> }).claudeAPI;
+    if (!api) return;
 
-    listen<T>(event, (e) => {
-      handler(e.payload);
-    }).then((fn) => {
-      unlisten = fn;
-    });
+    let cleanup: (() => void) | undefined;
+    if (event === 'claude-output') {
+      cleanup = (api as Record<string, (cb: (line: string) => void) => () => void>).onClaudeOutput?.(handler as (line: string) => void);
+    } else if (event === 'claude-stderr') {
+      cleanup = (api as Record<string, (cb: (data: string) => void) => () => void>).onClaudeStderr?.(handler as (data: string) => void);
+    } else if (event === 'claude-exit') {
+      cleanup = (api as Record<string, (cb: (info: { sessionId: string; exitCode: number | null }) => void) => () => void>).onClaudeExit?.(handler as (info: { sessionId: string; exitCode: number | null }) => void);
+    }
 
-    return () => {
-      unlisten?.();
-    };
+    return () => cleanup?.();
   }, [event, handler]);
 }
 
-/**
- * Hook for global Tauri app state (e.g. recent projects, active tab).
- * Currently a placeholder for future expansion.
- */
 export function useTauriState() {
   const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    setReady(true);
-  }, []);
-
+  useEffect(() => { setReady(true); }, []);
   return { ready };
 }

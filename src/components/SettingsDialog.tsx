@@ -93,8 +93,8 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
 
   const handleDetectCli = useCallback(async () => {
     try {
-      const { invoke } = await import('@tauri-apps/api/core');
-      const path = await invoke<string | null>('detect_claude_cli');
+      const api = (window as unknown as { claudeAPI?: Record<string, (...a: unknown[]) => Promise<unknown>> }).claudeAPI;
+      const info = api && typeof api.checkClaudeCli === 'function' ? await api.checkClaudeCli() as { path: string; version: string; available: boolean } | null : null; const path = info && info.available ? info.path : null;
       if (path) {
         handleChange('claudeCliPath', path);
       }

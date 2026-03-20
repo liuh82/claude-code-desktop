@@ -1,5 +1,7 @@
 node_modules/
 dist/
+dist-electron/
+release/
 src-tauri/target/
 .DS_Store
 *.local
@@ -12,6 +14,13 @@ src-tauri/target/
 .claude/
 .omc/
 CLAUDE.md
+
+# Electron builder
+*.blockmap
+*.exe
+*.dmg
+*.AppImage
+*.deb
 
 # Test artifacts
 nexus-verify.txt
