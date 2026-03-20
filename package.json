@@ -67,6 +67,9 @@
     },
     "publish": null
   },
-  "author": "liuh82",
+  "author": {
+    "name": "liuh82",
+    "email": "lkb83@163.com"
+  },
   "description": "A Claude Code desktop client with multi-panel terminal interface"
 }
