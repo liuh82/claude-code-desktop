@@ -35,13 +35,22 @@
     "productName": "Claude Code Desktop",
     "mac": {
       "category": "public.app-category.developer-tools",
-      "target": ["dmg", "zip"]
+      "target": [
+        "dmg",
+        "zip"
+      ]
     },
     "win": {
-      "target": ["nsis", "portable"]
+      "target": [
+        "nsis",
+        "portable"
+      ]
     },
     "linux": {
-      "target": ["AppImage", "deb"]
+      "target": [
+        "AppImage",
+        "deb"
+      ]
     },
     "files": [
       "dist/**/*",
@@ -55,6 +64,9 @@
     ],
     "directories": {
       "output": "release"
-    }
-  }
+    },
+    "publish": null
+  },
+  "author": "liuh82",
+  "description": "A Claude Code desktop client with multi-panel terminal interface"
 }
