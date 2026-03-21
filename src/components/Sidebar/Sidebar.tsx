@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useChatStore } from '@/stores/useChatStore';
 import styles from './Sidebar.module.css';
 
 const CLAUDE_MODELS = [
@@ -49,6 +50,7 @@ function formatModelLabel(m: string): string {
 function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleTheme, style }: SidebarProps & { style?: React.CSSProperties }) {
   const [searchQuery, setSearchQuery] = useState('');
   const { settings, updateSetting } = useSettingsStore();
+  const currentModel = useChatStore((s) => s.currentModel) || settings.defaultModel;
 
   const projectName = projectPath
     ? projectPath.split('/').pop() || projectPath
@@ -95,7 +97,7 @@ function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleThem
         <div className={styles.modelRow}>
           <select
             className={styles.modelSelect}
-            value={settings.defaultModel}
+            value={currentModel}
             onChange={(e) => updateSetting('defaultModel', e.target.value)}
             title="选择模型"
           >

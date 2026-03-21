@@ -116,6 +116,7 @@ function handleClaudeOutput(line: string) {
     const model = extractModel(parsed);
     if (model) {
       currentModel = model;
+      useChatStore.setState({ currentModel: model });
     }
     return;
   }
@@ -127,6 +128,7 @@ function handleClaudeOutput(line: string) {
     // Update model if present
     if (msg.message.model) {
       currentModel = msg.message.model;
+      useChatStore.setState({ currentModel: msg.message.model });
     }
 
     // Update token usage if available in intermediate message
@@ -264,6 +266,7 @@ interface ChatState {
   tokenUsage: TokenUsage;
   fileTree: FileNode[];
   diffFiles: DiffFile[];
+  currentModel: string;
   projectPath: string;
 
   setProjectPath: (path: string) => void;
@@ -279,8 +282,8 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   tokenUsage: { input: 0, output: 0 },
   fileTree: isElectron() ? [] : MOCK_FILE_TREE,
   diffFiles: [],
-  projectPath: '',
-
+  currentModel: "",
+  projectPath: "",
   setProjectPath: (path: string) => {
     set({ projectPath: path });
   },
@@ -357,6 +360,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       isGenerating: false,
       tokenUsage: { input: 0, output: 0 },
       diffFiles: [],
+  currentModel: "",
     });
   },
 }));
