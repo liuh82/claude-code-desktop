@@ -3,11 +3,13 @@ import { ThemeProvider, useTheme } from '@/theme/theme';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboard';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useChatStore } from '@/stores/useChatStore';
+import { useProjectStore } from '@/stores/useProjectStore';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { ChatView } from '@/components/Chat/ChatView';
 import { ToolPanel } from '@/components/ToolPanel/ToolPanel';
 import { SidebarToggle, ToolPanelToggle } from '@/components/PanelToggles';
 import { ResizeHandle } from '@/components/ResizeHandle';
+import { ProjectSelector } from '@/components/ProjectSelector';
 import { CommandPalette, type CommandItem } from '@/components/CommandPalette';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import './App.css';
@@ -48,6 +50,7 @@ function AppContent() {
   const { loadSettings } = useSettingsStore();
   const clearChat = useChatStore((s) => s.clearChat);
   const stopGeneration = useChatStore((s) => s.stopGeneration);
+  const { activeProject, loadProjects: loadRecentProjects, addProject } = useProjectStore();
 
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -55,11 +58,13 @@ function AppContent() {
   const [toolPanelOpen, setToolPanelOpen] = useState(() => readBool(TOOLPANEL_KEY, true));
   const [sidebarWidth, setSidebarWidth] = useState(() => readNum(SIDEBAR_WIDTH_KEY, 260));
   const [toolPanelWidth, setToolPanelWidth] = useState(() => readNum(TOOLPANEL_WIDTH_KEY, 300));
-  const [projectPath] = useState('/workspace/claude-code-desktop');
+
+  const projectPath = activeProject?.path ?? '';
 
   useEffect(() => {
     loadSettings();
-  }, [loadSettings]);
+    loadRecentProjects();
+  }, [loadSettings, loadRecentProjects]);
 
   const toggleSidebar = useCallback(() => {
     setSidebarOpen((prev) => {
@@ -81,6 +86,21 @@ function AppContent() {
     clearChat();
   }, [clearChat]);
 
+  const handleProjectOpen = useCallback((path: string) => {
+    addProject(path);
+  }, [addProject]);
+
+  const handleOpenProject = useCallback(async () => {
+    const api = (window as unknown as Record<string, unknown>).claudeAPI as { openDirectoryDialog?: () => Promise<string | null> } | undefined;
+    if (api?.openDirectoryDialog) {
+      const path = await api.openDirectoryDialog();
+      if (path) handleProjectOpen(path);
+    } else {
+      const path = prompt('输入项目目录路径：');
+      if (path?.trim()) handleProjectOpen(path.trim());
+    }
+  }, [handleProjectOpen]);
+
   const handleSidebarResize = useCallback((delta: number) => {
     setSidebarWidth((prev) => {
       const next = Math.max(MIN_SIDEBAR, Math.min(MAX_SIDEBAR, prev + delta));
@@ -99,14 +119,15 @@ function AppContent() {
 
   const commands: CommandItem[] = useMemo(
     () => [
-      { id: 'new-chat', label: '新建对话', shortcut: '\u2318N', category: '对话', execute: handleNewChat },
-      { id: 'toggle-sidebar', label: '切换侧栏', shortcut: '\u2318B', category: '视图', execute: toggleSidebar },
-      { id: 'toggle-panel', label: '切换工具面板', shortcut: '\u2318\u21E7F', category: '视图', execute: toggleToolPanel },
+      { id: 'new-chat', label: '新建对话', shortcut: '⌘N', category: '对话', execute: handleNewChat },
+      { id: 'toggle-sidebar', label: '切换侧栏', shortcut: '⌘B', category: '视图', execute: toggleSidebar },
+      { id: 'toggle-panel', label: '切换工具面板', shortcut: '⌘⇧F', category: '视图', execute: toggleToolPanel },
       { id: 'toggle-theme', label: '切换主题', category: '外观', execute: toggleTheme },
-      { id: 'open-settings', label: '打开设置', shortcut: '\u2318,', category: '偏好设置', execute: () => setSettingsOpen(true) },
+      { id: 'open-project', label: '打开项目', shortcut: '⌘O', category: '项目', execute: handleOpenProject },
+      { id: 'open-settings', label: '打开设置', shortcut: '⌘,', category: '偏好设置', execute: () => setSettingsOpen(true) },
       { id: 'clear-chat', label: '清空对话', category: '对话', execute: handleNewChat },
     ],
-    [handleNewChat, toggleSidebar, toggleToolPanel, toggleTheme],
+    [handleNewChat, toggleSidebar, toggleToolPanel, toggleTheme, handleOpenProject],
   );
 
   const actions = useMemo(
@@ -115,13 +136,28 @@ function AppContent() {
       onToggleSidebar: toggleSidebar,
       onToggleToolPanel: toggleToolPanel,
       onOpenSettings: () => setSettingsOpen(true),
+      onOpenProject: handleOpenProject,
       onCommandPalette: () => setCommandPaletteOpen(true),
       onStopGeneration: stopGeneration,
     }),
-    [handleNewChat, toggleSidebar, toggleToolPanel, stopGeneration],
+    [handleNewChat, toggleSidebar, toggleToolPanel, stopGeneration, handleOpenProject],
   );
 
   useKeyboardShortcuts(actions);
+
+  // Show project selector when no project is open
+  if (!activeProject) {
+    return (
+      <ThemeProvider>
+        <ProjectSelector onProjectOpen={handleProjectOpen} />
+        <CommandPalette
+          isOpen={commandPaletteOpen}
+          onClose={() => setCommandPaletteOpen(false)}
+          commands={commands}
+        />
+      </ThemeProvider>
+    );
+  }
 
   return (
     <div className="appLayout">

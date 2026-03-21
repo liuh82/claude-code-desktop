@@ -5,6 +5,7 @@ export interface KeyboardActions {
   onToggleSidebar?: () => void;
   onToggleToolPanel?: () => void;
   onOpenSettings?: () => void;
+  onOpenProject?: () => void;
   onCommandPalette?: () => void;
   onStopGeneration?: () => void;
 }
@@ -16,29 +17,37 @@ export function useKeyboardShortcuts(actions: KeyboardActions) {
       if (!mod) return;
 
       const key = e.key.toLowerCase();
+      const shift = e.shiftKey;
 
       // Cmd/Ctrl+N — new chat
-      if (key === 'n' && !e.shiftKey) {
+      if (key === 'n' && !shift) {
         e.preventDefault();
         actions.onNewChat?.();
         return;
       }
 
       // Cmd/Ctrl+B — toggle sidebar
-      if (key === 'b' && !e.shiftKey) {
+      if (key === 'b' && !shift) {
         e.preventDefault();
         actions.onToggleSidebar?.();
         return;
       }
 
       // Cmd/Ctrl+Shift+F — toggle tool panel
-      if (key === 'f' && e.shiftKey) {
+      if (key === 'f' && shift) {
         e.preventDefault();
         actions.onToggleToolPanel?.();
         return;
       }
 
-      // Cmd/Ctrl+, — open settings
+      // Cmd/Ctrl+O — open project
+      if (key === 'o' && !shift) {
+        e.preventDefault();
+        actions.onOpenProject?.();
+        return;
+      }
+
+      // Cmd/Ctrl+, — settings
       if (key === ',') {
         e.preventDefault();
         actions.onOpenSettings?.();
@@ -46,14 +55,14 @@ export function useKeyboardShortcuts(actions: KeyboardActions) {
       }
 
       // Cmd/Ctrl+K — command palette
-      if (key === 'k' && !e.shiftKey) {
+      if (key === 'k' && !shift) {
         e.preventDefault();
         actions.onCommandPalette?.();
         return;
       }
 
-      // Escape — stop generation (handled without mod)
-      if (e.key === 'Escape') {
+      // Escape — stop generation
+      if (key === 'escape') {
         actions.onStopGeneration?.();
         return;
       }
