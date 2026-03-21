@@ -110,3 +110,68 @@
 .stopBtn:hover {
   opacity: 0.9;
 }
+
+/* ═══ Dropdown (@ mentions + / commands) ═══ */
+.dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 16px;
+  right: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--bg-input);
+  border: 1px solid var(--border-ghost);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 4px;
+  z-index: 10;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.dropdownItem:hover,
+.dropdownItemActive {
+  background: var(--accent-muted);
+}
+
+.dropdownPath {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdownItemActive .dropdownPath {
+  color: var(--accent);
+}
+
+.dropdownCommand {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dropdownCmdName {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.dropdownCmdDesc {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.dropdownItemActive .dropdownCmdName {
+  color: var(--accent);
+}
