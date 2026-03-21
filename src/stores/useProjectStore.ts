@@ -44,14 +44,20 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
   },
 
   selectProject: (project: Project) => {
-    // Move to top of recent list
-    const projects = get().projects.filter((p) => p.id !== project.id);
+    // Remove duplicates by path, then move to top
+    const projects = get().projects.filter((p) => p.path !== project.path);
     const updated = [{ ...project, lastOpened: Date.now() }, ...projects].slice(0, MAX_PROJECTS);
     saveProjects(updated);
     set({ activeProject: project, projects: updated });
   },
 
   addProject: (path: string) => {
+    // Deduplicate: if same path exists, just select it
+    const existing = get().projects.find((p) => p.path === path);
+    if (existing) {
+      get().selectProject(existing);
+      return existing;
+    }
     const name = path.split('/').pop() || path;
     const project: Project = {
       id: `proj-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
