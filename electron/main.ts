@@ -263,7 +263,7 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
     sessions.delete(sessionId);
   }
 
-  const args = ['-p', message, '--output-format', 'stream-json', '--verbose', '--permission-mode', 'auto'];
+  const args = ['-p', '--output-format', 'stream-json', '--verbose', '--permission-mode', 'auto'];
   if (model) {
     args.push('--model', model);
   }
@@ -277,6 +277,12 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
   });
 
   sessions.set(sessionId, proc);
+
+  // Send message via stdin (claude -p reads from stdin)
+  if (proc.stdin) {
+    proc.stdin.write(message);
+    proc.stdin.end();
+  }
 
   // Buffer incomplete lines
   let lineBuffer = '';
