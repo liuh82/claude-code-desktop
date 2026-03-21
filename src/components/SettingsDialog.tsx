@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useSettingsStore, type AppSettings } from '@/stores/useSettingsStore';
+import { claudeApi, isElectron } from '@/lib/claude-api';
 import './SettingsDialog.css';
 
 interface SettingsDialogProps {
@@ -99,7 +100,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   const handleDetectCli = useCallback(async () => {
     setDetectStatus('检测中...');
     try {
-      const { claudeApi, isElectron } = require('@/lib/claude-api');
+      
       if (!isElectron()) {
         setDetectStatus('仅在桌面应用中可用');
         return;
