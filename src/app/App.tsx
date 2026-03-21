@@ -10,8 +10,8 @@ import { CommandPalette, type CommandItem } from '@/components/CommandPalette';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import './App.css';
 
-const SIDEBAR_KEY = 'ccdesk-sidebar-open';
-const TOOLPANEL_KEY = 'ccdesk-toolpanel-open';
+const SIDEBAR_KEY = 'ccdesk-sidebar-v2';
+const TOOLPANEL_KEY = 'ccdesk-toolpanel-v2';
 
 function readBool(key: string, fallback: boolean): boolean {
   try {
