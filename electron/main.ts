@@ -285,6 +285,22 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
 
   sessions.set(sessionId, proc);
 
+  proc.on('error', (err) => {
+    console.error('[CCDesk] spawn error:', err.message);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('claude-error', {
+        sessionId,
+        error: 'Claude CLI 启动失败: ' + err.message,
+      });
+    }
+    sessions.delete(sessionId);
+    console.log('[CCDesk] cleaned up after spawn error');
+  });
+
+  proc.on('spawn', () => {
+    console.log('[CCDesk] claude process spawned successfully');
+  });
+
   // Send message via stdin (claude -p reads from stdin)
   if (proc.stdin) {
     proc.stdin.write(message);
