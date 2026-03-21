@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemouseState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ThemeProvider, useTheme } from '@/theme/theme';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboard';
 import { useSettingsStore } from '@/stores/useSettingsStore';
