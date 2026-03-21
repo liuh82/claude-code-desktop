@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { ChatMessage, ToolCall, FileNode, DiffFile, TokenUsage } from '@/types/chat';
 import { claudeApi, isElectron } from '@/lib/claude-api';
 import { parseClaudeLine, extractTokenUsage, extractModel } from '@/lib/claude-parser';
-import type { ParsedAssistantMessage, ParsedResult, ParsedToolResult } from '@/lib/claude-parser';
+import type { ParsedAssistantMessage, ParsedResult } from '@/lib/claude-parser';
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -106,24 +106,24 @@ function stopListening() {
 }
 
 function handleClaudeOutput(line: string) {
-// Skip 'user' type messages (tool_result) — only process for diff tracking
-  if (parsed.type === 'user') {
+  const parsed = parseClaudeLine(line);
+  if (!parsed) return;
+
+  // Skip user messages (tool_result) — only track diffs
+  if (parsed.type === "user") {
     const tr = (parsed as any).tool_use_result;
-    if (tr && tr.filePath && (tr.type === 'create' || tr.type === 'edit' || tr.type === 'delete')) {
+    if (tr && tr.filePath) {
       const state = useChatStore.getState();
-      const existingIdx = state.diffFiles.findIndex(d => d.filePath === tr.filePath);
-      const diffFile = {
-        filePath: tr.filePath,
-        status: (tr.type === 'create' ? 'added' : tr.type === 'delete' ? 'deleted' : 'modified') as DiffFile["status"],
-        hunks: [],
-      };
+      const existingIdx = state.diffFiles.findIndex((d: any) => d.filePath === tr.filePath);
+      const status = tr.type === "create" ? "added" : tr.type === "delete" ? "deleted" : "modified";
+      const diffFile: any = { filePath: tr.filePath, status, hunks: [] };
       if (tr.structuredPatch && tr.structuredPatch.length > 0) {
         diffFile.hunks = tr.structuredPatch.map((hunk: any) => ({
-          header: '@@ -' + hunk.oldStart + ',' + hunk.oldLines + ' +' + hunk.newStart + ',' + hunk.newLines + ' @@',
+          header: "@@ -" + hunk.oldStart + "," + hunk.oldLines + " +" + hunk.newStart + "," + hunk.newLines + " @@",
           lines: hunk.lines.map((l: string) => {
-            if (l.startsWith('+')) return { type: 'add', content: l.slice(1) };
-            if (l.startsWith('-')) return { type: 'delete', content: l.slice(1) };
-            return { type: 'context', content: l.slice(1) };
+            if (l.startsWith("+")) return { type: "add", content: l.slice(1) };
+            if (l.startsWith("-")) return { type: "delete", content: l.slice(1) };
+            return { type: "context", content: l.slice(1) };
           }),
         }));
       }
@@ -134,10 +134,6 @@ function handleClaudeOutput(line: string) {
     }
     return;
   }
-
-  
-  const parsed = parseClaudeLine(line);
-  if (!parsed) return;
 
   
 
@@ -257,41 +253,6 @@ function handleClaudeOutput(line: string) {
 
     finalizeAssistantMessage();
     useChatStore.setState({ isGenerating: false });
-    return;
-  }
-
-  // Tool result (user message with tool_use_result) — build diff files
-  if (parsed.type === 'user' && (parsed as ParsedToolResult).tool_use_result) {
-    const tr = (parsed as ParsedToolResult).tool_use_result;
-    if (tr && tr.filePath && (tr.type === 'create' || tr.type === 'edit' || tr.type === 'delete')) {
-      const state = useChatStore.getState();
-      const existingIdx = state.diffFiles.findIndex(d => d.filePath === tr.filePath);
-      const diffFile: DiffFile = {
-        filePath: tr.filePath,
-        status: tr.type === 'create' ? 'added' : tr.type === 'delete' ? 'deleted' : 'modified',
-        hunks: [],
-      };
-
-      // Build hunks from structuredPatch if available
-      if (tr.structuredPatch && tr.structuredPatch.length > 0) {
-        diffFile.hunks = tr.structuredPatch.map((hunk: { oldStart: number; oldLines: number; newStart: number; newLines: number; lines: string[] }) => ({
-          header: `@@ -${hunk.oldStart},${hunk.oldLines} +${hunk.newStart},${hunk.newLines} @@`,
-          lines: hunk.lines.map((l: string) => {
-            if (l.startsWith('+')) return { type: 'add' as const, content: l.slice(1) }
-            if (l.startsWith('-')) return { type: 'delete' as const, content: l.slice(1) };
-            return { type: 'context' as const, content: l.slice(1) };
-          }),
-        }));
-      }
-
-      const newDiffs = [...state.diffFiles];
-      if (existingIdx >= 0) {
-        newDiffs[existingIdx] = diffFile;
-      } else {
-        newDiffs.push(diffFile);
-      }
-      useChatStore.setState({ diffFiles: newDiffs });
-    }
     return;
   }
 }
