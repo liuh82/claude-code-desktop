@@ -12,9 +12,9 @@
   --text-muted: #9ca3af;
 
   /* Accents */
-  --accent: #6366f1;
-  --accent-hover: #4f46e5;
-  --accent-muted: rgba(99, 102, 241, 0.12);
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-muted: rgba(79, 70, 229, 0.15);
 
   /* Status */
   --success: #059669;
