@@ -1,5 +1,5 @@
 .sidebar {
-  width: 240px;
+  width: 260px;
   flex-shrink: 0;
   background: var(--bg-secondary);
   border-right: 1px solid var(--border);
@@ -8,25 +8,56 @@
   overflow: hidden;
 }
 
-.sidebarHeader {
+/* Top bar with project + model */
+.sidebarTop {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.projectRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px;
-  border-bottom: 1px solid var(--border);
+  gap: 6px;
 }
 
-.sidebarTitle {
-  font-size: 12px;
+.projectIcon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.projectName {
+  flex: 1;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.sidebarClose {
-  width: 22px;
-  height: 22px;
+.newChatBtn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-muted);
+  color: var(--accent);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.newChatBtn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.closeBtn {
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -35,14 +66,39 @@
   color: var(--text-muted);
   cursor: pointer;
   border-radius: 4px;
-  font-size: 14px;
+  flex-shrink: 0;
 }
 
-.sidebarClose:hover {
+.closeBtn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
 }
 
+.modelRow {
+  margin-top: 8px;
+}
+
+.modelSelect {
+  width: 100%;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+}
+
+.modelSelect:hover {
+  border-color: var(--accent);
+}
+
+.modelSelect:focus {
+  border-color: var(--accent);
+}
+
+/* Search */
 .searchBox {
   padding: 8px 12px;
 }
@@ -66,6 +122,7 @@
   border-color: var(--accent);
 }
 
+/* Session list */
 .sessionList {
   flex: 1;
   overflow-y: auto;

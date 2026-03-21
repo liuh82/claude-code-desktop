@@ -1,4 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useChatStore } from '@/stores/useChatStore';
+import { FileTree } from './FileTree';
+import { DiffView } from './DiffView';
+import type { FileNode } from '@/types/chat';
 import styles from './ToolPanel.module.css';
 
 type TabId = 'files' | 'diff';
@@ -9,13 +13,21 @@ interface ToolPanelProps {
 
 function ToolPanel({ onClose }: ToolPanelProps) {
   const [activeTab, setActiveTab] = useState<TabId>('files');
+  const fileTree = useChatStore((s) => s.fileTree);
+  const diffFiles = useChatStore((s) => s.diffFiles);
+
+  const handleFileClick = useCallback((_node: FileNode) => {
+    // Phase 3: open file in editor
+  }, []);
 
   return (
     <aside className={styles.toolPanel}>
       <div className={styles.toolPanelHeader}>
         <span className={styles.toolPanelTitle}>Tool Panel</span>
         <button className={styles.toolPanelClose} onClick={onClose} title="Close (Cmd+Shift+F)" aria-label="Close tool panel">
-          &#9654;
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="5,3 10,8 5,13" />
+          </svg>
         </button>
       </div>
 
@@ -36,17 +48,9 @@ function ToolPanel({ onClose }: ToolPanelProps) {
 
       <div className={styles.toolPanelBody}>
         {activeTab === 'files' ? (
-          <div className={styles.placeholder}>
-            <div className={styles.placeholderIcon}>{'\uD83D\uDCC1'}</div>
-            <span>File tree will appear here</span>
-            <span style={{ fontSize: '11px' }}>Phase 5: Project file browser</span>
-          </div>
+          <FileTree nodes={fileTree} onFileClick={handleFileClick} />
         ) : (
-          <div className={styles.placeholder}>
-            <div className={styles.placeholderIcon}>{'\uD83D\uDCDD'}</div>
-            <span>Diff view will appear here</span>
-            <span style={{ fontSize: '11px' }}>Phase 5: Change preview</span>
-          </div>
+          <DiffView files={diffFiles} />
         )}
       </div>
     </aside>

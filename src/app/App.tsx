@@ -3,7 +3,6 @@ import { ThemeProvider, useTheme } from '@/theme/theme';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboard';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useChatStore } from '@/stores/useChatStore';
-import { Toolbar } from '@/components/Toolbar/Toolbar';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { ChatView } from '@/components/Chat/ChatView';
 import { ToolPanel } from '@/components/ToolPanel/ToolPanel';
@@ -35,7 +34,6 @@ function AppContent() {
   const [toolPanelOpen, setToolPanelOpen] = useState(() => readBool(TOOLPANEL_KEY, false));
   const [projectPath] = useState('/workspace/claude-code-desktop');
 
-  // Load settings on mount
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
@@ -88,19 +86,11 @@ function AppContent() {
 
   return (
     <div className="appLayout">
-      {/* Top Toolbar */}
-      <Toolbar
-        projectPath={projectPath}
-        onToggleSidebar={toggleSidebar}
-        onToggleToolPanel={toggleToolPanel}
-        onNewChat={handleNewChat}
-        onOpenSettings={() => setSettingsOpen(true)}
-      />
-
-      {/* Body: Sidebar | Chat | ToolPanel */}
+      {/* Three-column layout: Sidebar | Chat | ToolPanel */}
       <div className="appBody">
         {sidebarOpen && (
           <Sidebar
+            projectPath={projectPath}
             onNewChat={handleNewChat}
             onClose={toggleSidebar}
           />
@@ -113,14 +103,12 @@ function AppContent() {
         )}
       </div>
 
-      {/* Command Palette */}
       <CommandPalette
         isOpen={commandPaletteOpen}
         onClose={() => setCommandPaletteOpen(false)}
         commands={commands}
       />
 
-      {/* Settings Dialog */}
       <SettingsDialog
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}

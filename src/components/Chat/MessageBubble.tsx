@@ -26,14 +26,19 @@ function MessageBubble({ message }: MessageBubbleProps) {
           <div className={styles.messageContent}>{message.content}</div>
         ) : (
           <>
+            {/* Tool calls rendered inline before markdown content */}
+            {message.toolCalls && message.toolCalls.length > 0 && (
+              <div className={styles.toolCallList}>
+                {message.toolCalls.map((tc) => (
+                  <ToolCallBlock key={tc.id} toolCall={tc} />
+                ))}
+              </div>
+            )}
             {message.content && (
               <div className={`${styles.messageContent} ${message.isStreaming ? styles.streamingCursor : ''}`}>
                 <MarkdownRenderer content={message.content} />
               </div>
             )}
-            {message.toolCalls && message.toolCalls.map((tc) => (
-              <ToolCallBlock key={tc.id} toolCall={tc} />
-            ))}
           </>
         )}
       </div>

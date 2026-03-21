@@ -20,3 +20,29 @@ export interface TokenUsage {
   input: number;
   output: number;
 }
+
+export interface FileNode {
+  name: string;
+  path: string;
+  type: 'file' | 'directory';
+  children?: FileNode[];
+  status?: 'added' | 'modified' | 'deleted';
+}
+
+export interface DiffLine {
+  type: 'add' | 'delete' | 'context';
+  content: string;
+  oldLineNumber?: number;
+  newLineNumber?: number;
+}
+
+export interface DiffHunk {
+  header: string;
+  lines: DiffLine[];
+}
+
+export interface DiffFile {
+  filePath: string;
+  status: 'added' | 'modified' | 'deleted';
+  hunks: DiffHunk[];
+}

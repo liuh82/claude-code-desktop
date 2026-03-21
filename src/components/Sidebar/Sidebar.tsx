@@ -1,5 +1,22 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 import styles from './Sidebar.module.css';
+
+const CLAUDE_MODELS = [
+  'claude-sonnet-4-20250514',
+  'claude-opus-4-20250514',
+  'claude-haiku-4-5-20251001',
+];
+
+const GLM_MODELS = [
+  'glm-5-turbo',
+  'glm-4-plus',
+  'glm-4-0520',
+  'glm-4-air',
+  'glm-4-airx',
+  'glm-4-long',
+  'glm-4-flash',
+];
 
 interface Session {
   id: string;
@@ -18,12 +35,22 @@ const MOCK_SESSIONS: Session[] = [
 ];
 
 interface SidebarProps {
+  projectPath: string;
   onNewChat: () => void;
   onClose: () => void;
 }
 
-function Sidebar({ onNewChat, onClose }: SidebarProps) {
+function formatModelLabel(m: string): string {
+  return m.replace('claude-', '').replace(/-\d{8}$/, '');
+}
+
+function Sidebar({ projectPath, onNewChat, onClose }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const { settings, updateSetting } = useSettingsStore();
+
+  const projectName = projectPath
+    ? projectPath.split('/').pop() || projectPath
+    : 'No project';
 
   const filteredSessions = useMemo(() => {
     if (!searchQuery.trim()) return MOCK_SESSIONS;
@@ -49,18 +76,47 @@ function Sidebar({ onNewChat, onClose }: SidebarProps) {
 
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.sidebarHeader}>
-        <span className={styles.sidebarTitle}>Sessions</span>
-        <div style={{ display: 'flex', gap: '4px' }}>
-          <button className={styles.sidebarClose} onClick={onNewChat} title="New Session (Cmd+N)" aria-label="New session">
-            +
+      {/* Top bar: project + model + new chat */}
+      <div className={styles.sidebarTop}>
+        <div className={styles.projectRow}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className={styles.projectIcon}>
+            <path d="M2 4l3-2h6l3 2v8l-3 2H5l-3-2V4z" />
+          </svg>
+          <span className={styles.projectName} title={projectPath}>{projectName}</span>
+          <button className={styles.newChatBtn} onClick={onNewChat} title="New Chat (Cmd+N)">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="8" y1="3" x2="8" y2="13" />
+              <line x1="3" y1="8" x2="13" y2="8" />
+            </svg>
           </button>
-          <button className={styles.sidebarClose} onClick={onClose} title="Close (Cmd+B)" aria-label="Close sidebar">
-            &#9664;
+          <button className={styles.closeBtn} onClick={onClose} title="Close (Cmd+B)">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="10,3 5,8 10,13" />
+            </svg>
           </button>
+        </div>
+        <div className={styles.modelRow}>
+          <select
+            className={styles.modelSelect}
+            value={settings.defaultModel}
+            onChange={(e) => updateSetting('defaultModel', e.target.value)}
+            title="Select model"
+          >
+            <optgroup label="GLM">
+              {GLM_MODELS.map((m) => (
+                <option key={m} value={m}>{formatModelLabel(m)}</option>
+              ))}
+            </optgroup>
+            <optgroup label="Claude">
+              {CLAUDE_MODELS.map((m) => (
+                <option key={m} value={m}>{formatModelLabel(m)}</option>
+              ))}
+            </optgroup>
+          </select>
         </div>
       </div>
 
+      {/* Search */}
       <div className={styles.searchBox}>
         <input
           className={styles.searchInput}
@@ -72,6 +128,7 @@ function Sidebar({ onNewChat, onClose }: SidebarProps) {
         />
       </div>
 
+      {/* Session list */}
       <div className={styles.sessionList}>
         {Object.keys(groupedSessions).length === 0 ? (
           <div className={styles.sessionEmpty}>No sessions found</div>
