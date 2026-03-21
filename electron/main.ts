@@ -142,14 +142,16 @@ function createWindow() {
 
 function detectClaudeCli(): string {
   const home = process.env.HOME || process.env.USERPROFILE || '';
-  const candidates: string[] = [];
 
-  // Try using 'which' / 'where' first (covers npm global, brew, etc.)
+  // macOS: Dock-launched apps don't inherit shell PATH
+  // Use login shell to get the full PATH
   try {
-    const { execSync } = require('child_process');
-    const result = execSync('which claude 2>/dev/null || where claude 2>/dev/null', {
+    const { execSync } = require('child_process') as typeof import('child_process');
+    const shell = process.env.SHELL || '/bin/zsh';
+    const cmd = shell + " -l -c 'which claude' 2>/dev/null";
+    const result = execSync(cmd, {
       encoding: 'utf-8',
-      timeout: 3000,
+      timeout: 5000,
     }).trim();
     if (result && fs.existsSync(result)) {
       return result;
@@ -157,16 +159,14 @@ function detectClaudeCli(): string {
   } catch {}
 
   // Fallback: check common paths
-  const searchPaths = [
-    // macOS Homebrew
+  const searchPaths: string[] = [
     '/opt/homebrew/bin/claude',
     '/usr/local/bin/claude',
-    // Linux
     '/usr/bin/claude',
-    // nvm-managed Node
   ];
 
   if (home) {
+    // All nvm node versions
     const nvmDir = path.join(home, '.nvm', 'versions', 'node');
     if (fs.existsSync(nvmDir)) {
       try {
@@ -176,14 +176,16 @@ function detectClaudeCli(): string {
         }
       } catch {}
     }
-    // npm global bin
-    searchPaths.push(path.join(home, '.npm-global', 'bin', 'claude'));
-  }
-
-  // Split PATH and check each
-  const pathDirs = (process.env.PATH || '').split(path.delimiter);
-  for (const dir of pathDirs) {
-    searchPaths.push(path.join(dir, 'claude'));
+    // npm/pnpm global bins
+    searchPaths.push(
+      path.join(home, '.npm-global', 'bin', 'claude'),
+      path.join(home, '.local', 'bin', 'claude'),
+    );
+    // PATH dirs
+    const pathDirs = (process.env.PATH || '').split(path.delimiter);
+    for (const dir of pathDirs) {
+      searchPaths.push(path.join(dir, 'claude'));
+    }
   }
 
   for (const p of searchPaths) {
