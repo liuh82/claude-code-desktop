@@ -19,7 +19,7 @@
 }
 
 .toolPanelTitle {
-  font-size: 20px;
+  font-size: var(--font-size-md);
   font-weight: 600;
   color: var(--text-primary);
   text-transform: uppercase;
@@ -57,7 +57,7 @@
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: 20px;
+  font-size: var(--font-size-md);
   font-weight: 500;
   cursor: pointer;
   border-bottom: 2px solid transparent;

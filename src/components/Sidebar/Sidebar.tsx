@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useChatStore } from '@/stores/useChatStore';
 import { claudeApi, isElectron } from '@/lib/claude-api';
@@ -18,20 +18,6 @@ const CC_BUILTIN_MODELS = [
   { id: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5' },
 ];
 
-interface Session {
-  id: string;
-  title: string;
-  projectPath: string;
-  active: boolean;
-  lastActivity: string;
-}
-
-const MOCK_SESSIONS: Session[] = [
-  { id: '1', title: '实现用户登录功能', projectPath: '/projects/myapp', active: false, lastActivity: '2 小时前' },
-  { id: '2', title: '修复支付模块 bug', projectPath: '/projects/myapp', active: false, lastActivity: '5 小时前' },
-  { id: '3', title: '数据库迁移方案', projectPath: '/projects/api-server', active: true, lastActivity: '刚刚' },
-];
-
 interface SidebarProps {
   projectPath: string;
   onNewChat: () => void;
@@ -41,7 +27,6 @@ interface SidebarProps {
 }
 
 function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleTheme, style }: SidebarProps & { style?: React.CSSProperties }) {
-  const [searchQuery, setSearchQuery] = useState('');
   const { settings, updateSetting } = useSettingsStore();
   const currentModel = useChatStore((s) => s.currentModel) || settings.defaultModel;
   const [claudeConfig, setClaudeConfig] = useState<ClaudeConfig | null>(null);
@@ -74,28 +59,6 @@ function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleThem
     ? projectPath.split('/').pop() || projectPath
     : '无项目';
 
-  const filteredSessions = useMemo(() => {
-    if (!searchQuery.trim()) return MOCK_SESSIONS;
-    const q = searchQuery.toLowerCase();
-    return MOCK_SESSIONS.filter(
-      (s) => s.title.toLowerCase().includes(q) || s.projectPath.toLowerCase().includes(q),
-    );
-  }, [searchQuery]);
-
-  const groupedSessions = useMemo(() => {
-    const groups: Record<string, Session[]> = {};
-    for (const session of filteredSessions) {
-      const key = session.projectPath.split('/').pop() || '其他';
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(session);
-    }
-    return groups;
-  }, [filteredSessions]);
-
-  const handleSessionClick = useCallback(() => {
-    // Phase 2: switch to session
-  }, []);
-
   return (
     <aside className={styles.sidebar} style={style}>
       {/* Top bar: project + model + actions */}
@@ -126,39 +89,9 @@ function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleThem
         </div>
       </div>
 
-      {/* Search */}
-      <div className={styles.searchBox}>
-        <input
-          className={styles.searchInput}
-          type="text"
-          placeholder="搜索会话..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          spellCheck={false}
-        />
-      </div>
-
-      {/* Session list */}
+      {/* Session list (future: real sessions from DB) */}
       <div className={styles.sessionList}>
-        {Object.keys(groupedSessions).length === 0 ? (
-          <div className={styles.sessionEmpty}>暂无会话</div>
-        ) : (
-          Object.entries(groupedSessions).map(([project, sessions]) => (
-            <div key={project} className={styles.sessionGroup}>
-              <div className={styles.sessionGroupLabel}>{project}</div>
-              {sessions.map((session) => (
-                <div
-                  key={session.id}
-                  className={`${styles.sessionItem} ${session.active ? styles.sessionItemActive : ''}`}
-                  onClick={handleSessionClick}
-                >
-                  <span className={styles.sessionIcon}>{session.active ? '🔥' : '💬'}</span>
-                  <span className={styles.sessionLabel}>{session.title}</span>
-                </div>
-              ))}
-            </div>
-          ))
-        )}
+        <div className={styles.sessionEmpty}>暂无历史会话</div>
       </div>
 
       {/* Bottom actions */}

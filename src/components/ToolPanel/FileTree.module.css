@@ -1,6 +1,6 @@
 .tree {
   padding: 4px 0;
-  font-size: 15px;
+  font-size: var(--font-size-md);
 }
 
 .treeRow {
@@ -54,7 +54,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-primary);
-  font-size: 20px;
+  font-size: var(--font-size-md);
 }
 
 .statusDot {
