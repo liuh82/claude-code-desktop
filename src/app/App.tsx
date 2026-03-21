@@ -6,6 +6,7 @@ import { useChatStore } from '@/stores/useChatStore';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { ChatView } from '@/components/Chat/ChatView';
 import { ToolPanel } from '@/components/ToolPanel/ToolPanel';
+import { PanelToggles } from '@/components/PanelToggles';
 import { CommandPalette, type CommandItem } from '@/components/CommandPalette';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import './App.css';
@@ -86,8 +87,14 @@ function AppContent() {
 
   return (
     <div className="appLayout">
-      {/* Three-column layout: Sidebar | Chat | ToolPanel */}
       <div className="appBody">
+        <PanelToggles
+          sidebarOpen={sidebarOpen}
+          toolPanelOpen={toolPanelOpen}
+          onToggleSidebar={toggleSidebar}
+          onToggleToolPanel={toggleToolPanel}
+        />
+
         {sidebarOpen && (
           <Sidebar
             projectPath={projectPath}

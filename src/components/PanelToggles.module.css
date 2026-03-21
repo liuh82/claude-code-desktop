@@ -1,0 +1,23 @@
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.toggleLeft {
+  border-right: 1px solid var(--border);
+}
+.toggleRight {
+  border-left: 1px solid var(--border);
+}
+.toggleBtn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
