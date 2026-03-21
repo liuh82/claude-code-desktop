@@ -100,6 +100,8 @@ function AppContent() {
             projectPath={projectPath}
             onNewChat={handleNewChat}
             onClose={toggleSidebar}
+            onOpenSettings={() => setSettingsOpen(true)}
+            onToggleTheme={toggleTheme}
           />
         )}
 
