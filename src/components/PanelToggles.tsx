@@ -7,8 +7,8 @@ export function SidebarToggle({ sidebarOpen, onToggleSidebar }: { sidebarOpen: b
     <button
       className={`${styles.toggleBtn} ${styles.toggleLeft}`}
       onClick={onToggleSidebar}
-      title="Open Sidebar (Cmd+B)"
-      aria-label="Open sidebar"
+      title="打开侧栏 (⌘B)"
+      aria-label="打开侧栏"
     >
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="1" y="1" width="5" height="14" rx="1" opacity="0.3" />
@@ -24,8 +24,8 @@ export function ToolPanelToggle({ toolPanelOpen, onToggleToolPanel }: { toolPane
     <button
       className={`${styles.toggleBtn} ${styles.toggleRight}`}
       onClick={onToggleToolPanel}
-      title="Open Tool Panel (Cmd+Shift+F)"
-      aria-label="Open tool panel"
+      title="打开工具面板 (⌘⇧F)"
+      aria-label="打开工具面板"
     >
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="1" y="1" width="7" height="14" rx="1" opacity="0.6" />

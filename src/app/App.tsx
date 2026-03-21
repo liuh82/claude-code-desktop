@@ -99,12 +99,12 @@ function AppContent() {
 
   const commands: CommandItem[] = useMemo(
     () => [
-      { id: 'new-chat', label: 'New Chat', shortcut: '\u2318N', category: 'Chat', execute: handleNewChat },
-      { id: 'toggle-sidebar', label: 'Toggle Sidebar', shortcut: '\u2318B', category: 'View', execute: toggleSidebar },
-      { id: 'toggle-panel', label: 'Toggle Tool Panel', shortcut: '\u2318\u21E7F', category: 'View', execute: toggleToolPanel },
-      { id: 'toggle-theme', label: 'Toggle Theme', category: 'Appearance', execute: toggleTheme },
-      { id: 'open-settings', label: 'Open Settings', shortcut: '\u2318,', category: 'Preferences', execute: () => setSettingsOpen(true) },
-      { id: 'clear-chat', label: 'Clear Chat', category: 'Chat', execute: handleNewChat },
+      { id: 'new-chat', label: '新建对话', shortcut: '\u2318N', category: '对话', execute: handleNewChat },
+      { id: 'toggle-sidebar', label: '切换侧栏', shortcut: '\u2318B', category: '视图', execute: toggleSidebar },
+      { id: 'toggle-panel', label: '切换工具面板', shortcut: '\u2318\u21E7F', category: '视图', execute: toggleToolPanel },
+      { id: 'toggle-theme', label: '切换主题', category: '外观', execute: toggleTheme },
+      { id: 'open-settings', label: '打开设置', shortcut: '\u2318,', category: '偏好设置', execute: () => setSettingsOpen(true) },
+      { id: 'clear-chat', label: '清空对话', category: '对话', execute: handleNewChat },
     ],
     [handleNewChat, toggleSidebar, toggleToolPanel, toggleTheme],
   );

@@ -7,17 +7,17 @@ interface DiffViewProps {
 
 function statusLabel(status: DiffFile['status']): string {
   switch (status) {
-    case 'added': return 'Added';
-    case 'modified': return 'Modified';
-    case 'deleted': return 'Deleted';
+    case 'added': return '新增';
+    case 'modified': return '修改';
+    case 'deleted': return '删除';
   }
 }
 
 function statusClass(status: DiffFile['status']): string {
   switch (status) {
-    case 'added': return styles.statusAdded;
-    case 'modified': return styles.statusModified;
-    case 'deleted': return styles.statusDeleted;
+    case 'added': return styles.status新增;
+    case 'modified': return styles.status修改;
+    case 'deleted': return styles.status删除;
   }
 }
 

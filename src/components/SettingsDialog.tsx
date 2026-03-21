@@ -30,7 +30,7 @@ type TabId = 'general' | 'appearance' | 'claude' | 'advanced';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'general', label: 'General' },
-  { id: 'appearance', label: 'Appearance' },
+  { id: 'appearance', label: '外观' },
   { id: 'claude', label: 'Claude Code' },
   { id: 'advanced', label: 'Advanced' },
 ];

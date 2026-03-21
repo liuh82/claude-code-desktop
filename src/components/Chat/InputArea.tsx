@@ -54,7 +54,7 @@ function InputArea() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type a message or / for commands..."
+          placeholder="输入消息... / for commands..."
           spellCheck={false}
           rows={1}
         />

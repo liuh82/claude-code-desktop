@@ -85,7 +85,7 @@ function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleThem
             <path d="M2 4l3-2h6l3 2v8l-3 2H5l-3-2V4z" />
           </svg>
           <span className={styles.projectName} title={projectPath}>{projectName}</span>
-          <button className={styles.newChatBtn} onClick={onNewChat} title="New Chat (Cmd+N)">
+          <button className={styles.newChatBtn} onClick={onNewChat} title="新建对话 (⌘N)">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="8" y1="3" x2="8" y2="13" />
               <line x1="3" y1="8" x2="13" y2="8" />
@@ -97,7 +97,7 @@ function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleThem
             className={styles.modelSelect}
             value={settings.defaultModel}
             onChange={(e) => updateSetting('defaultModel', e.target.value)}
-            title="Select model"
+            title="选择模型"
           >
             <optgroup label="GLM">
               {GLM_MODELS.map((m) => (
@@ -118,7 +118,7 @@ function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleThem
         <input
           className={styles.searchInput}
           type="text"
-          placeholder="Search sessions..."
+          placeholder="搜索会话..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           spellCheck={false}
@@ -128,7 +128,7 @@ function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleThem
       {/* Session list */}
       <div className={styles.sessionList}>
         {Object.keys(groupedSessions).length === 0 ? (
-          <div className={styles.sessionEmpty}>No sessions found</div>
+          <div className={styles.sessionEmpty}>暂无会话</div>
         ) : (
           Object.entries(groupedSessions).map(([project, sessions]) => (
             <div key={project} className={styles.sessionGroup}>
@@ -150,19 +150,19 @@ function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleThem
 
       {/* Bottom actions */}
       <div className={styles.sidebarFooter}>
-        <button className={styles.footerBtn} onClick={onToggleTheme} title="Toggle Theme">
+        <button className={styles.footerBtn} onClick={onToggleTheme} title="切换主题">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
             <circle cx="8" cy="8" r="3.5" />
             <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" />
           </svg>
         </button>
-        <button className={styles.footerBtn} onClick={onOpenSettings} title="Settings (Cmd+,)">
+        <button className={styles.footerBtn} onClick={onOpenSettings} title="设置 (⌘,)">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
             <circle cx="8" cy="8" r="2" />
             <path d="M8 1.5l.7 1.5h1.6l-1.3 1 .5 1.6-1.5-1.1-1.5 1.1.5-1.6-1.3-1h1.6L8 1.5zM14 8l-1.5.7v1.6l-1-1.3-1.6.5 1.1-1.5-1.1-1.5 1.6.5 1-1.3V7.3L14 8zM8 14.5l-.7-1.5H5.7l1.3-1-.5-1.6 1.5 1.1 1.5-1.1-.5 1.6 1.3 1h-1.6l-.7 1.5zM2 8l1.5-.7V5.7l1 1.3 1.6-.5-1.1 1.5 1.1 1.5-1.6-.5-1 1.3V8.7L2 8z" />
           </svg>
         </button>
-        <button className={styles.footerBtn} onClick={onClose} title="Close Sidebar (Cmd+B)">
+        <button className={styles.footerBtn} onClick={onClose} title="关闭侧栏 (⌘B)">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
             <polyline points="9,3 4,8 9,13" />
           </svg>
