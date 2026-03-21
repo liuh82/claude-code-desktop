@@ -1,11 +1,13 @@
 import { useChatStore } from '@/stores/useChatStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { isElectron } from '@/lib/claude-api';
 import styles from './StatusBar.module.css';
 
 const CONTEXT_WINDOW = 200000;
 
 function StatusBar() {
   const tokenUsage = useChatStore((s) => s.tokenUsage);
+  const currentModel = useChatStore((s) => s.currentModel);
   const { settings } = useSettingsStore();
 
   const total = tokenUsage.input + tokenUsage.output;
@@ -20,10 +22,13 @@ function StatusBar() {
   const formatNumber = (n: number): string =>
     n.toLocaleString();
 
+  const displayModel = currentModel || settings.defaultModel || 'unknown';
+
   return (
     <div className={styles.statusBar}>
       <div className={styles.statusLeft}>
-        <span className={styles.modelName}>{settings.defaultModel}</span>
+        <span style={{ fontSize: 8 }}>{isElectron() ? '🟢' : '🟡'}</span>
+        <span className={styles.modelName}>{displayModel}</span>
         <span className={styles.separator}>{'\u00B7'}</span>
         <span className={styles.tokenText}>
           {formatNumber(tokenUsage.input)} / {formatNumber(tokenUsage.output)} tokens

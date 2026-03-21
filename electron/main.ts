@@ -155,7 +155,13 @@ function detectClaudeCli(): string {
   // 3. System
   candidates.push('/usr/bin/claude');
 
-  // 4. npm global (common locations)
+  // 4. Most common Node versions for claude
+  const commonNodeVersions = ['v24', 'v22', 'v20', 'v18'];
+  for (const ver of commonNodeVersions) {
+    candidates.push(path.join(home, '.nvm', 'versions', 'node', ver, 'bin', 'claude'));
+  }
+
+  // 5. npm global (common locations)
   const npmGlobalPaths = [
     path.join(home, '.npm-global', 'bin', 'claude'),
     path.join(home, '.npm-global', 'bin'),
