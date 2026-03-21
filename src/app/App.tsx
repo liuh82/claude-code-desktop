@@ -69,10 +69,8 @@ function AppContent() {
 
   // Init Claude session when project path changes
   useEffect(() => {
-    console.log('[CCDesk] App projectPath changed:', { projectPath, activeProject: !!activeProject, activeProjectPath: activeProject?.path });
     if (projectPath) {
       initSession(projectPath).then(() => {
-        console.log('[CCDesk] initSession completed');
       }).catch((err) => {
         console.error('[CCDesk] initSession error:', err);
       });

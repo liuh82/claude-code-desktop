@@ -281,7 +281,6 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   },
 
   initSession: async (projectPath: string, model?: string) => {
-    console.log('[CCDesk] initSession called:', { projectPath, model, isElectron: isElectron() });
     if (!isElectron()) return;
 
     try {
@@ -318,7 +317,6 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       isGenerating: true,
     }));
 
-    console.log('[CCDesk] sendMessage:', { text: text.substring(0, 50), activeSessionId, projectPath: get().projectPath });
     if (isElectron() && activeSessionId) {
       // Real mode: spawn claude -p with the message
       try {

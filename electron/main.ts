@@ -215,11 +215,9 @@ function detectClaudeCli(): string {
 
   for (const p of candidates) {
     if (fs.existsSync(p)) {
-      console.log(`[CCDesk] Found claude at: ${p}`);
       return p;
     }
   }
-  console.log("[CCDesk] Claude CLI not found. Scanned", candidates.length, "paths");
 
   return '';
 }
@@ -229,7 +227,6 @@ function detectClaudeCli(): string {
  * Each invocation is a standalone process — simpler and more reliable.
  */
 function spawnClaudeMessage(sessionId: string, projectPath: string, message: string, model?: string) {
-  console.log('[CCDesk] spawnClaudeMessage called:', { sessionId, projectPath, messageLen: message.length, model });
   // Use configured path first, fall back to auto-detection
   let cliPath = '';
   if (db) {
@@ -268,7 +265,6 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
     args.push('--model', model);
   }
 
-  console.log(`[CCDesk] Spawning claude: ${cliPath} ${args.join(' ')}`);
 
   // Ensure claude can find its own dependencies (node, npm, etc.)
   const claudeDir = path.dirname(cliPath);
@@ -298,7 +294,6 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
   });
 
   proc.on('spawn', () => {
-    console.log('[CCDesk] claude process spawned successfully');
   });
 
   // Send message via stdin (claude -p reads from stdin)
@@ -542,9 +537,7 @@ function registerIpcHandlers() {
   ipcMain.handle('send-message', (_event, { sessionId, projectPath, message, model }: {
     sessionId: string; projectPath: string; message: string; model?: string;
   }) => {
-    console.log('[CCDesk] send-message received:', { sessionId, projectPath, message: message.substring(0, 50), model });
     const effectiveModel = model || sessionModels.get(sessionId) || undefined;
-    console.log('[CCDesk] effectiveModel:', effectiveModel);
     spawnClaudeMessage(sessionId, projectPath, message, effectiveModel);
     return;
   });
