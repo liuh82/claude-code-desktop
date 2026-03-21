@@ -1,10 +1,10 @@
 :root {
   /* Backgrounds — light defaults */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9f9f9;
-  --bg-tertiary: #f0f0f0;
-  --bg-input: #ffffff;
-  --bg-hover: #f0f0f0;
+  --bg-primary: #f6f8fa;
+  --bg-secondary: #eef1f5;
+  --bg-tertiary: #e4e8ed;
+  --bg-input: #f6f8fa;
+  --bg-hover: #e4e8ed;
 
   /* Text — light defaults */
   --text-primary: #1f2937;
