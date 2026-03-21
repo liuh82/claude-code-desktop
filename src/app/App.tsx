@@ -50,7 +50,8 @@ function AppContent() {
   const { loadSettings } = useSettingsStore();
   const clearChat = useChatStore((s) => s.clearChat);
   const stopGeneration = useChatStore((s) => s.stopGeneration);
-  const { activeProject, loadProjects: loadRecentProjects, addProject } = useProjectStore();
+  const initSession = useChatStore((s) => s.initSession);
+  const { activeProject, loadProjects: loadRecentProjects, addProject, selectProject } = useProjectStore();
 
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -65,6 +66,13 @@ function AppContent() {
     loadSettings();
     loadRecentProjects();
   }, [loadSettings, loadRecentProjects]);
+
+  // Init Claude session when project path changes
+  useEffect(() => {
+    if (projectPath) {
+      initSession(projectPath);
+    }
+  }, [projectPath, initSession]);
 
   const toggleSidebar = useCallback(() => {
     setSidebarOpen((prev) => {
@@ -84,11 +92,20 @@ function AppContent() {
 
   const handleNewChat = useCallback(() => {
     clearChat();
-  }, [clearChat]);
+    // Re-init session after clearing
+    if (projectPath) {
+      initSession(projectPath);
+    }
+  }, [clearChat, initSession, projectPath]);
 
   const handleProjectOpen = useCallback((path: string) => {
-    addProject(path);
-  }, [addProject]);
+    const existing = useProjectStore.getState().projects.find((p) => p.path === path);
+    if (existing) {
+      selectProject(existing);
+    } else {
+      addProject(path);
+    }
+  }, [addProject, selectProject]);
 
   const handleOpenProject = useCallback(async () => {
     const api = (window as unknown as Record<string, unknown>).claudeAPI as { openDirectoryDialog?: () => Promise<string | null> } | undefined;

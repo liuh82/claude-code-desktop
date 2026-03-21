@@ -14,6 +14,7 @@ export interface ChatMessage {
   toolCalls?: ToolCall[];
   timestamp: number;
   isStreaming?: boolean;
+  model?: string;
 }
 
 export interface TokenUsage {
