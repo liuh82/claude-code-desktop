@@ -661,37 +661,71 @@ function fixPath() {
   if (!home) return;
 
   const extraPaths: string[] = [];
-  const shell = process.env.SHELL || '/bin/zsh';
+  const currentPaths = (process.env.PATH || '').split(':');
 
-  // Try to get PATH from login shell
+  // 1. nvm: scan ALL installed node versions and add their bin dirs
+  const nvmBase = path.join(home, '.nvm', 'versions', 'node');
+  if (fs.existsSync(nvmBase)) {
+    try {
+      const entries = fs.readdirSync(nvmBase);
+      for (const entry of entries) {
+        const binDir = path.join(nvmBase, entry, 'bin');
+        if (!currentPaths.includes(binDir)) {
+          extraPaths.push(binDir);
+        }
+      }
+    } catch {}
+  }
+
+  // 2. Homebrew
+  ['/opt/homebrew/bin', '/usr/local/bin'].forEach(p => {
+    if (!currentPaths.includes(p)) extraPaths.push(p);
+  });
+
+  // 3. volta
+  const voltaBin = path.join(home, '.volta', 'bin');
+  if (fs.existsSync(voltaBin) && !currentPaths.includes(voltaBin)) {
+    extraPaths.push(voltaBin);
+  }
+
+  // 4. fnm
+  const fnmBase = path.join(home, '.local', 'share', 'fnm', 'node-versions');
+  if (fs.existsSync(fnmBase)) {
+    try {
+      for (const entry of fs.readdirSync(fnmBase)) {
+        const binDir = path.join(fnmBase, entry, 'installation', 'bin');
+        if (!currentPaths.includes(binDir)) extraPaths.push(binDir);
+      }
+    } catch {}
+  }
+
+  // 5. Try login shell as last resort
   try {
     const { execSync } = require('child_process') as typeof import('child_process');
+    const shell = process.env.SHELL || '/bin/zsh';
     const shellPath = execSync(shell + " -l -c 'echo $PATH'", {
       encoding: 'utf-8',
       timeout: 3000,
     }).trim();
     if (shellPath) {
-      const shellPaths = shellPath.split(':');
-      const currentPaths = (process.env.PATH || '').split(':');
-      for (const p of shellPaths) {
-        if (!currentPaths.includes(p)) {
+      for (const p of shellPath.split(':')) {
+        if (!currentPaths.includes(p) && !extraPaths.includes(p)) {
           extraPaths.push(p);
         }
       }
     }
   } catch {}
 
-  // Always add known directories as fallback
-  extraPaths.push(
-    '/opt/homebrew/bin',
-    '/usr/local/bin',
-    path.join(home, '.nvm', 'versions', 'node'),
-  );
-
-  // Merge: shell paths first, then existing PATH
   if (extraPaths.length > 0) {
     process.env.PATH = [...extraPaths, process.env.PATH || ''].join(':');
-    console.log('[CCDesk] PATH fixed, length:', process.env.PATH.length);
+    console.log('[CCDesk] PATH fixed, added', extraPaths.length, 'entries');
+    // Log to file for debugging Dock launches
+    try {
+      const logDir = path.join(home, 'Library', 'Logs', 'CCDesk');
+      fs.mkdirSync(logDir, { recursive: true });
+      require('fs').appendFileSync(path.join(logDir, 'path.log'), 
+        new Date().toISOString() + ' PATH fixed: ' + extraPaths.join(', ') + '\n');
+    } catch {}
   }
 }
 
