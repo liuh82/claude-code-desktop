@@ -68,7 +68,7 @@ function InputArea() {
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
                   <rect x="3" y="3" width="10" height="10" rx="1" />
                 </svg>
-                Stop
+                停止
               </button>
             ) : (
               <button
@@ -79,7 +79,7 @@ function InputArea() {
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
                   <path d="M2 8l12-6-3 6 3 6z" />
                 </svg>
-                Send
+                发送
               </button>
             )}
           </div>
