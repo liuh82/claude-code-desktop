@@ -29,7 +29,7 @@
 .projectName {
   flex: 1;
   font-size: var(--font-size-base);
-  font-weight: 600;
+  font-weight: var(--font-weight-medium);
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -85,7 +85,7 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 4px 8px;
-  font-size: 20px;
+  font-size: var(--font-size-sm);
   cursor: pointer;
   outline: none;
 }
@@ -110,7 +110,7 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 6px 10px;
-  font-size: 20px;
+  font-size: var(--font-size-sm);
   outline: none;
 }
 
@@ -172,7 +172,7 @@
 
 .sessionIcon {
   flex-shrink: 0;
-  font-size: 20px;
+  font-size: var(--font-size-sm);
 }
 
 .sessionLabel {
@@ -186,7 +186,7 @@
   padding: 20px 16px;
   text-align: center;
   color: var(--text-secondary);
-  font-size: 20px;
+  font-size: var(--font-size-sm);
 }
 
 /* Bottom actions */
