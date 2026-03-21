@@ -29,7 +29,7 @@
 }
 
 .sd-title {
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   font-weight: 600;
   margin: 0;
   color: var(--text-primary);
@@ -44,7 +44,7 @@
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   cursor: pointer;
   border-radius: 4px;
 }
@@ -111,7 +111,7 @@
 }
 
 .sd-field__label {
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   font-weight: 500;
   color: var(--text-secondary);
 }

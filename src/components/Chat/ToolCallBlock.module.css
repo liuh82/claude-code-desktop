@@ -3,7 +3,7 @@
   border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
-  font-size: 15px;
+  font-size: var(--font-size-md);
 }
 
 .toolCallHeader {
@@ -30,13 +30,13 @@
 .toolLabel {
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   flex-shrink: 0;
 }
 
 .toolSummary {
   color: var(--text-secondary);
-  font-size: 15px;
+  font-size: var(--font-size-md);
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -55,7 +55,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   font-weight: 500;
   padding: 1px 6px;
   border-radius: 3px;
@@ -103,14 +103,14 @@
   padding: 8px 12px;
   background: var(--bg-secondary);
   border-top: 1px solid var(--border);
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   max-height: 200px;
   overflow-y: auto;
 }
 
 .toolCallLabel {
   color: var(--text-muted);
-  font-size: 15px;
+  font-size: var(--font-size-md);
   margin-bottom: 4px;
   font-weight: 500;
 }
@@ -118,7 +118,7 @@
 .toolCallContent {
   color: var(--text-secondary);
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   white-space: pre-wrap;
   word-break: break-word;
   line-height: 1.4;

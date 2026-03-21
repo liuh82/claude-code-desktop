@@ -50,7 +50,7 @@
   padding: 24px 12px;
   text-align: center;
   color: var(--text-muted);
-  font-size: 15px;
+  font-size: var(--font-size-md);
 }
 
 .sl-item {
@@ -81,7 +81,7 @@
 }
 
 .sl-item__title {
-  font-size: 15px;
+  font-size: var(--font-size-md);
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -94,14 +94,14 @@
   border: 1px solid var(--accent);
   border-radius: 3px;
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: var(--font-size-md);
   font-family: inherit;
   outline: none;
   width: 100%;
 }
 
 .sl-item__meta {
-  font-size: 15px;
+  font-size: var(--font-size-md);
   color: var(--text-muted);
 }
 

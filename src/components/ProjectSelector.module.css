@@ -9,50 +9,52 @@
 }
 
 .container {
-  width: 480px;
+  width: 460px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
 
 .header {
-  padding: 24px 24px 16px;
+  padding: 28px 28px 20px;
   text-align: center;
 }
 
 .logo {
-  font-size: 36px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--accent);
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   margin-bottom: 8px;
 }
 
 .tagline {
-  font-size: 15px;
+  font-size: var(--font-size-base);
   color: var(--text-muted);
+  line-height: var(--line-height-normal);
 }
 
 .openBtn {
-  margin: 0 24px 16px;
+  margin: 0 28px 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px;
+  padding: 10px 16px;
   background: var(--accent);
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 20px;
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: background 0.15s;
+  line-height: var(--line-height-normal);
 }
 
 .openBtn:hover {
@@ -60,12 +62,12 @@
 }
 
 .recentSection {
-  padding: 0 24px 16px;
+  padding: 0 28px 20px;
 }
 
 .recentTitle {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -84,7 +86,6 @@
   padding: 8px 10px;
   cursor: pointer;
   border-radius: 6px;
-  font-size: 15px;
   transition: background 0.15s;
 }
 
@@ -103,19 +104,22 @@
 }
 
 .recentName {
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: var(--line-height-tight);
 }
 
 .recentPath {
-  font-size: 15px;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: var(--line-height-normal);
 }
 
 .recentRemove {
@@ -125,7 +129,7 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 20px;
+  font-size: 16px;
   padding: 2px 4px;
   border-radius: 4px;
 }
@@ -140,9 +144,9 @@
 }
 
 .footer {
-  padding: 12px 24px;
+  padding: 12px 28px;
   border-top: 1px solid var(--border);
   text-align: center;
-  font-size: 15px;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
