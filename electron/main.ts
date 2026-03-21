@@ -644,6 +644,52 @@ function registerIpcHandlers() {
 
 // ── App lifecycle ──
 
+
+// ── Fix PATH for macOS Dock launches ──
+// Dock-launched apps don't inherit shell PATH, so claude and other
+// CLI tools installed via Homebrew/nvm/pnpm can't be found.
+function fixPath() {
+  if (process.platform !== 'darwin') return;
+  const home = process.env.HOME || process.env.USERPROFILE || '';
+  if (!home) return;
+
+  const extraPaths: string[] = [];
+  const shell = process.env.SHELL || '/bin/zsh';
+
+  // Try to get PATH from login shell
+  try {
+    const { execSync } = require('child_process') as typeof import('child_process');
+    const shellPath = execSync(shell + " -l -c 'echo $PATH'", {
+      encoding: 'utf-8',
+      timeout: 3000,
+    }).trim();
+    if (shellPath) {
+      const shellPaths = shellPath.split(':');
+      const currentPaths = (process.env.PATH || '').split(':');
+      for (const p of shellPaths) {
+        if (!currentPaths.includes(p)) {
+          extraPaths.push(p);
+        }
+      }
+    }
+  } catch {}
+
+  // Always add known directories as fallback
+  extraPaths.push(
+    '/opt/homebrew/bin',
+    '/usr/local/bin',
+    path.join(home, '.nvm', 'versions', 'node'),
+  );
+
+  // Merge: shell paths first, then existing PATH
+  if (extraPaths.length > 0) {
+    process.env.PATH = [...extraPaths, process.env.PATH || ''].join(':');
+    console.log('[CCDesk] PATH fixed, length:', process.env.PATH.length);
+  }
+}
+
+fixPath();
+
 app.whenReady().then(() => {
   initDatabase();
   createWindow();
