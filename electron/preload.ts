@@ -14,6 +14,10 @@ const api = {
     ipcRenderer.invoke('create-session', args),
   startSession: (args: { sessionId: string; projectPath: string; model?: string; permissionMode?: string }) =>
     ipcRenderer.invoke('start-session', args),
+  sendMessage: (args: { sessionId: string; projectPath: string; message: string; model?: string }) =>
+    ipcRenderer.invoke('send-message', args),
+  stopGeneration: (args: { sessionId: string }) =>
+    ipcRenderer.invoke('stop-generation', args),
   sendInput: (args: { sessionId: string; input: string }) =>
     ipcRenderer.invoke('send-input', args),
   sendToSession: (args: { sessionId: string; input: string }) =>
@@ -37,13 +41,13 @@ const api = {
   setConfig: (args: { key: string; value: unknown }) => ipcRenderer.invoke('set-config', args),
 
   // Events from main process (CC CLI output)
-  onClaudeOutput: (callback: (line: string) => void) => {
-    const handler = (_event: Electron.IpcRendererEvent, line: string) => callback(line);
+  onClaudeOutput: (callback: (line: string, sessionId: string) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, line: string, sessionId: string) => callback(line, sessionId);
     ipcRenderer.on('claude-output', handler);
     return () => ipcRenderer.removeListener('claude-output', handler);
   },
-  onClaudeStderr: (callback: (data: string) => void) => {
-    const handler = (_event: Electron.IpcRendererEvent, data: string) => callback(data);
+  onClaudeStderr: (callback: (data: string, sessionId: string) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, data: string, sessionId: string) => callback(data, sessionId);
     ipcRenderer.on('claude-stderr', handler);
     return () => ipcRenderer.removeListener('claude-stderr', handler);
   },

@@ -9,6 +9,8 @@ interface ElectronAPI {
   saveSettings: (settings: unknown) => Promise<void>;
   createSession: (args: { projectId: string; projectPath: string }) => Promise<{ session_id: string }>;
   startSession: (args: { sessionId: string; projectPath: string; model?: string; permissionMode?: string }) => Promise<number>;
+  sendMessage: (args: { sessionId: string; projectPath: string; message: string; model?: string }) => Promise<void>;
+  stopGeneration: (args: { sessionId: string }) => Promise<void>;
   sendInput: (args: { sessionId: string; input: string }) => Promise<void>;
   closeSession: (args: { sessionId: string }) => Promise<void>;
   listSessions: (args: { projectId: string }) => Promise<unknown[]>;
@@ -16,8 +18,8 @@ interface ElectronAPI {
   listRecentProjects: () => Promise<unknown[]>;
   openDirectoryDialog: () => Promise<string | null>;
   openInExternal: (url: string) => Promise<void>;
-  onClaudeOutput: (cb: (line: string) => void) => () => void;
-  onClaudeStderr: (cb: (data: string) => void) => () => void;
+  onClaudeOutput: (cb: (line: string, sessionId: string) => void) => () => void;
+  onClaudeStderr: (cb: (data: string, sessionId: string) => void) => () => void;
   onClaudeExit: (cb: (info: { sessionId: string; exitCode: number | null }) => void) => () => void;
   onClaudeError: (cb: (info: { sessionId: string; error: string }) => void) => () => void;
 }
@@ -38,6 +40,8 @@ export const claudeApi: ElectronAPI = {
   saveSettings: (s) => getApi()?.saveSettings(s) ?? Promise.resolve(),
   createSession: (a) => getApi()?.createSession(a) ?? Promise.resolve({ session_id: 'mock' }),
   startSession: (a) => getApi()?.startSession(a) ?? Promise.resolve(0),
+  sendMessage: (a) => getApi()?.sendMessage(a) ?? Promise.resolve(),
+  stopGeneration: (a) => getApi()?.stopGeneration(a) ?? Promise.resolve(),
   sendInput: (a) => getApi()?.sendInput(a) ?? Promise.resolve(),
   closeSession: (a) => getApi()?.closeSession(a) ?? Promise.resolve(),
   listSessions: (a) => getApi()?.listSessions(a) ?? Promise.resolve([]),

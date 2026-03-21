@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import type { ChatMessage, ToolCall, FileNode, DiffFile, TokenUsage } from '@/types/chat';
 import { claudeApi, isElectron } from '@/lib/claude-api';
-import { parseClaudeLine } from '@/lib/claude-parser';
+import { parseClaudeLine, extractTokenUsage, extractModel } from '@/lib/claude-parser';
+import type { ParsedAssistantMessage, ParsedResult } from '@/lib/claude-parser';
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -66,28 +67,35 @@ const MOCK_FILE_TREE: FileNode[] = [
 let activeSessionId: string | null = null;
 let cleanupFns: Array<() => void> = [];
 let currentAssistantId: string | null = null;
+let currentModel = '';
 
 function startListening() {
   stopListening();
-  const unsubOutput = claudeApi.onClaudeOutput((line: string) => {
+  const unsubOutput = claudeApi.onClaudeOutput((line: string, _sessionId: string) => {
     handleClaudeOutput(line);
   });
   const unsubStderr = claudeApi.onClaudeStderr((data: string) => {
     console.warn('[CCDesk stderr]', data);
   });
-  const unsubExit = claudeApi.onClaudeExit((info) => {
-    const state = useChatStore.getState();
-    if (state.isGenerating) {
-      useChatStore.setState({ isGenerating: false });
-    }
-    if (info.sessionId === activeSessionId) {
-      activeSessionId = null;
-      currentAssistantId = null;
-    }
+  const unsubExit = claudeApi.onClaudeExit((_info) => {
+    // Process exited — finalize any streaming message
+    finalizeAssistantMessage();
+    useChatStore.setState({ isGenerating: false });
   });
   const unsubError = claudeApi.onClaudeError((info) => {
     console.error('[CCDesk error]', info);
-    useChatStore.setState({ isGenerating: false });
+    finalizeAssistantMessage();
+    // Add error as a system message
+    const errorMsg: ChatMessage = {
+      id: generateId(),
+      role: 'assistant',
+      content: `⚠️ 错误：${info.error}`,
+      timestamp: Date.now(),
+    };
+    useChatStore.setState((s) => ({
+      isGenerating: false,
+      messages: [...s.messages, errorMsg],
+    }));
   });
   cleanupFns = [unsubOutput, unsubStderr, unsubExit, unsubError];
 }
@@ -101,12 +109,38 @@ function handleClaudeOutput(line: string) {
   const parsed = parseClaudeLine(line);
   if (!parsed) return;
 
-  const state = useChatStore.getState();
+  
 
-  // Handle assistant text messages
+  // System init — extract model info
+  if (parsed.type === 'system') {
+    const model = extractModel(parsed);
+    if (model) {
+      currentModel = model;
+    }
+    return;
+  }
+
+  // Assistant message — accumulate text and tool calls
   if (parsed.type === 'assistant' && parsed.message) {
-    for (const block of parsed.message.content) {
-      if (block.type === 'text') {
+    const msg = parsed as ParsedAssistantMessage;
+
+    // Update model if present
+    if (msg.message.model) {
+      currentModel = msg.message.model;
+    }
+
+    // Update token usage if available in intermediate message
+    if (msg.message.usage) {
+      useChatStore.setState({
+        tokenUsage: {
+          input: msg.message.usage.input_tokens,
+          output: msg.message.usage.output_tokens,
+        },
+      });
+    }
+
+    for (const block of msg.message.content) {
+      if (block.type === 'text' && block.text) {
         if (!currentAssistantId) {
           currentAssistantId = generateId();
           const assistantMsg: ChatMessage = {
@@ -116,14 +150,14 @@ function handleClaudeOutput(line: string) {
             toolCalls: [],
             timestamp: Date.now(),
             isStreaming: true,
-            model: parsed.message.model,
+            model: currentModel || undefined,
           };
           useChatStore.setState({
-            messages: [...state.messages, assistantMsg],
+            messages: [...useChatStore.getState().messages, assistantMsg],
           });
         } else {
           useChatStore.setState({
-            messages: state.messages.map(m =>
+            messages: useChatStore.getState().messages.map(m =>
               m.id === currentAssistantId
                 ? { ...m, content: m.content + block.text }
                 : m
@@ -147,14 +181,14 @@ function handleClaudeOutput(line: string) {
             toolCalls: [toolCall],
             timestamp: Date.now(),
             isStreaming: true,
-            model: parsed.message.model,
+            model: currentModel || undefined,
           };
           useChatStore.setState({
-            messages: [...state.messages, assistantMsg],
+            messages: [...useChatStore.getState().messages, assistantMsg],
           });
         } else {
           useChatStore.setState({
-            messages: state.messages.map(m =>
+            messages: useChatStore.getState().messages.map(m =>
               m.id === currentAssistantId
                 ? { ...m, toolCalls: [...(m.toolCalls || []), toolCall] }
                 : m
@@ -165,11 +199,41 @@ function handleClaudeOutput(line: string) {
     }
 
     // If stop_reason present, finalize
-    if (parsed.message.stop_reason) {
+    if (msg.message.stop_reason) {
       finalizeAssistantMessage();
     }
-  } else if (parsed.type === 'result') {
+    return;
+  }
+
+  // Final result — finalize and update token usage
+  if (parsed.type === 'result') {
+    const result = parsed as ParsedResult;
+    if (result.result && currentAssistantId) {
+      const state = useChatStore.getState();
+      useChatStore.setState({
+        messages: state.messages.map(m =>
+          m.id === currentAssistantId
+            ? { ...m, content: m.content + (m.content ? '\n\n' : '') + result.result }
+            : m
+        ),
+      });
+    }
+
+    // Update token usage
+    const usage = extractTokenUsage(result);
+    if (usage) {
+      const state = useChatStore.getState();
+      useChatStore.setState({
+        tokenUsage: {
+          input: state.tokenUsage.input + usage.input,
+          output: state.tokenUsage.output + usage.output,
+        },
+      });
+    }
+
     finalizeAssistantMessage();
+    useChatStore.setState({ isGenerating: false });
+    return;
   }
 }
 
@@ -188,7 +252,6 @@ function finalizeAssistantMessage() {
           }
         : m
     ),
-    isGenerating: false,
   });
   currentAssistantId = null;
 }
@@ -235,7 +298,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       await claudeApi.startSession({
         sessionId: session_id,
         projectPath,
-        model: model || undefined,
+        model,
       });
       set({ projectPath });
     } catch (err) {
@@ -257,11 +320,15 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     }));
 
     if (isElectron() && activeSessionId) {
-      // Real mode: send to Claude CLI via Electron IPC
+      // Real mode: spawn claude -p with the message
       try {
-        await claudeApi.sendInput({ sessionId: activeSessionId, input: text });
+        await claudeApi.sendMessage({
+          sessionId: activeSessionId,
+          projectPath: get().projectPath,
+          message: text,
+        });
       } catch (err) {
-        console.error('[CCDesk] sendInput failed:', err);
+        console.error('[CCDesk] sendMessage failed:', err);
         set({ isGenerating: false });
       }
     } else {
@@ -272,9 +339,8 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
   stopGeneration: () => {
     if (isElectron() && activeSessionId) {
-      claudeApi.closeSession({ sessionId: activeSessionId });
-      activeSessionId = null;
-      currentAssistantId = null;
+      claudeApi.stopGeneration({ sessionId: activeSessionId });
+      finalizeAssistantMessage();
     }
     set({ isGenerating: false });
   },
@@ -284,6 +350,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       claudeApi.closeSession({ sessionId: activeSessionId });
       activeSessionId = null;
       currentAssistantId = null;
+      stopListening();
     }
     set({
       messages: [],

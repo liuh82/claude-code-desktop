@@ -35,7 +35,12 @@ interface AppSettings {
 // ── State ──
 
 let mainWindow: BrowserWindow | null = null;
+// Map sessionId -> active Claude process (one at a time per session)
 const sessions = new Map<string, ChildProcess>();
+// Map sessionId -> accumulated session history (for context)
+const sessionHistory = new Map<string, Array<{ role: string; content: string }>>();
+// Map sessionId -> current model
+const sessionModels = new Map<string, string>();
 let db: Database.Database | null = null;
 
 // ── Database ──
@@ -136,13 +141,11 @@ function createWindow() {
 // ── Claude CLI helpers ──
 
 function detectClaudeCli(): string {
-  // Try common paths
   const candidates = [
     '/usr/local/bin/claude',
     '/usr/bin/claude',
   ];
 
-  // Try nvm-managed Node installations
   const home = process.env.HOME || process.env.USERPROFILE || '';
   if (home) {
     const nvmDir = path.join(home, '.nvm', 'versions', 'node');
@@ -159,11 +162,118 @@ function detectClaudeCli(): string {
     }
   }
 
+  // macOS Homebrew
+  const homebrewPaths = [
+    '/opt/homebrew/bin/claude',
+    '/usr/local/bin/claude',
+  ];
+  for (const p of homebrewPaths) {
+    if (fs.existsSync(p) && !candidates.includes(p)) {
+      candidates.unshift(p);
+    }
+  }
+
   for (const c of candidates) {
     if (fs.existsSync(c)) return c;
   }
 
   return '';
+}
+
+/**
+ * Send a message to Claude CLI using `claude -p` mode.
+ * Each invocation is a standalone process — simpler and more reliable.
+ */
+function spawnClaudeMessage(sessionId: string, projectPath: string, message: string, model?: string) {
+  const cliPath = detectClaudeCli();
+  if (!cliPath) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('claude-error', {
+        sessionId,
+        error: 'Claude CLI 未找到。请先安装 Claude Code CLI。',
+      });
+    }
+    return;
+  }
+
+  // Kill any running process for this session
+  const existing = sessions.get(sessionId);
+  if (existing) {
+    try { existing.kill('SIGTERM'); } catch {}
+    sessions.delete(sessionId);
+  }
+
+  const args = ['-p', message, '--output-format', 'stream-json', '--verbose', '--permission-mode', 'auto'];
+  if (model) {
+    args.push('--model', model);
+  }
+
+  console.log(`[CCDesk] Spawning claude: ${cliPath} ${args.join(' ')}`);
+
+  const proc = spawn(cliPath, args, {
+    cwd: projectPath,
+    env: { ...process.env },
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
+
+  sessions.set(sessionId, proc);
+
+  // Buffer incomplete lines
+  let lineBuffer = '';
+
+  proc.stdout?.on('data', (data: Buffer) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      lineBuffer += data.toString();
+      const lines = lineBuffer.split('\n');
+      // Keep the last incomplete line in buffer
+      lineBuffer = lines.pop() || '';
+      for (const line of lines) {
+        if (line.trim()) {
+          mainWindow.webContents.send('claude-output', line, sessionId);
+        }
+      }
+    }
+  });
+
+  proc.stderr?.on('data', (data: Buffer) => {
+    console.warn('[CCDesk stderr]', data.toString());
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('claude-stderr', data.toString(), sessionId);
+    }
+  });
+
+  proc.on('close', (code) => {
+    // Flush any remaining buffer
+    if (lineBuffer.trim()) {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('claude-output', lineBuffer, sessionId);
+      }
+      lineBuffer = '';
+    }
+
+    sessions.delete(sessionId);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('claude-exit', { sessionId, exitCode: code });
+    }
+    if (db) {
+      db.prepare("UPDATE sessions SET status = 'idle', updated_at = ? WHERE id = ?").run(
+        new Date().toISOString(), sessionId
+      );
+    }
+  });
+
+  proc.on('error', (err) => {
+    console.error('[CCDesk process error]', err);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('claude-error', { sessionId, error: err.message });
+    }
+  });
+
+  if (db) {
+    db.prepare("UPDATE sessions SET status = 'running', process_id = ?, updated_at = ? WHERE id = ?").run(
+      proc.pid, new Date().toISOString(), sessionId
+    );
+  }
 }
 
 // ── IPC Handlers ──
@@ -225,105 +335,78 @@ function registerIpcHandlers() {
   ipcMain.handle('create-session', (_event, { projectId, projectPath }: { projectId: string; projectPath: string }) => {
     const id = `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const now = new Date().toISOString();
-    const session: Session = {
-      id,
-      projectPath,
-      title: 'New Session',
-      status: 'idle',
-      createdAt: now,
-      updatedAt: now,
-      messageCount: 0,
-    };
+
     if (db) {
       db.prepare(
         'INSERT INTO sessions (id, project_path, title, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
-      ).run(id, projectPath, session.title, session.status, now, now);
+      ).run(id, projectPath, '新对话', 'idle', now, now);
     }
+
+    // Init history and model for this session
+    sessionHistory.set(id, []);
+    sessionModels.set(id, '');
+
     return { session_id: id };
   });
 
+  /**
+   * Start session — just records the session, no process spawned yet.
+   * The process is spawned when the first message is sent.
+   */
   ipcMain.handle('start-session', async (_event, { sessionId, projectPath, model, permissionMode }: {
     sessionId: string; projectPath: string; model?: string; permissionMode?: string;
   }) => {
-    const cliPath = detectClaudeCli();
-    if (!cliPath) throw new Error('Claude CLI not found');
-
-    // Kill existing process if any
-    const existing = sessions.get(sessionId);
-    if (existing) {
-      try { existing.kill('SIGTERM'); } catch {}
-      sessions.delete(sessionId);
+    if (model) {
+      sessionModels.set(sessionId, model);
     }
-
-    const args = ['--print', '--output-format', 'stream-json', '--verbose'];
-    if (model) args.push('--model', model);
-    if (permissionMode === 'auto') args.push('--permission-mode', 'auto');
-
-    const proc = spawn(cliPath, args, {
-      cwd: projectPath,
-      env: { ...process.env },
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
-
-    sessions.set(sessionId, proc);
-
-    // Stream stdout to renderer
-    proc.stdout?.on('data', (data: Buffer) => {
-      const lines = data.toString().split('\n').filter(Boolean);
-      for (const line of lines) {
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.send('claude-output', line);
-        }
-      }
-    });
-
-    proc.stderr?.on('data', (data: Buffer) => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('claude-stderr', data.toString());
-      }
-    });
-
-    proc.on('close', (code) => {
-      sessions.delete(sessionId);
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('claude-exit', { sessionId, exitCode: code });
-      }
-      // Update DB
-      if (db) {
-        db.prepare("UPDATE sessions SET status = 'closed', updated_at = ? WHERE id = ?").run(
-          new Date().toISOString(), sessionId
-        );
-      }
-    });
-
-    proc.on('error', (err) => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('claude-error', { sessionId, error: err.message });
-      }
-    });
-
-    // Update DB status
     if (db) {
-      db.prepare("UPDATE sessions SET status = 'running', process_id = ?, updated_at = ? WHERE id = ?").run(
-        proc.pid, new Date().toISOString(), sessionId
+      db.prepare("UPDATE sessions SET status = 'idle', updated_at = ? WHERE id = ?").run(
+        new Date().toISOString(), sessionId
       );
     }
-
-    return proc.pid || 0;
+    return 0;
   });
 
+  /**
+   * Send message — spawns `claude -p "message"` and streams output back.
+   * This is the primary interaction method.
+   */
+  ipcMain.handle('send-message', (_event, { sessionId, projectPath, message, model }: {
+    sessionId: string; projectPath: string; message: string; model?: string;
+  }) => {
+    const effectiveModel = model || sessionModels.get(sessionId) || undefined;
+    spawnClaudeMessage(sessionId, projectPath, message, effectiveModel);
+    return;
+  });
+
+  /**
+   * Stop generation — kills the running claude process.
+   */
+  ipcMain.handle('stop-generation', (_event, { sessionId }: { sessionId: string }) => {
+    const proc = sessions.get(sessionId);
+    if (proc) {
+      try { proc.kill('SIGTERM'); } catch {}
+      sessions.delete(sessionId);
+    }
+    return;
+  });
+
+  /**
+   * Send input to session stdin (legacy — kept for compatibility).
+   */
   ipcMain.handle('send-input', (_event, { sessionId, input }: { sessionId: string; input: string }) => {
     const proc = sessions.get(sessionId);
-    if (!proc || !proc.stdin) throw new Error(`Session ${sessionId} not running`);
-    proc.stdin.write(input + '\n');
+    if (proc && proc.stdin) {
+      proc.stdin.write(input + '\n');
+    }
     return;
   });
 
   ipcMain.handle('send-to-session', (_event, { sessionId, input }: { sessionId: string; input: string }) => {
-    // Alias for send-input
     const proc = sessions.get(sessionId);
-    if (!proc || !proc.stdin) throw new Error(`Session ${sessionId} not running`);
-    proc.stdin.write(input + '\n');
+    if (proc && proc.stdin) {
+      proc.stdin.write(input + '\n');
+    }
     return;
   });
 
@@ -333,6 +416,8 @@ function registerIpcHandlers() {
       try { proc.kill('SIGTERM'); } catch {}
       sessions.delete(sessionId);
     }
+    sessionHistory.delete(sessionId);
+    sessionModels.delete(sessionId);
     if (db) {
       db.prepare("UPDATE sessions SET status = 'closed', updated_at = ? WHERE id = ?").run(
         new Date().toISOString(), sessionId
