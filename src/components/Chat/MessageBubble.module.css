@@ -57,6 +57,10 @@
   word-break: break-word;
 }
 
+.toolCallList {
+  margin-bottom: 8px;
+}
+
 .streamingCursor::after {
   content: '\u258C';
   animation: blink 1s step-end infinite;

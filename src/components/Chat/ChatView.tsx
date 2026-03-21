@@ -2,6 +2,7 @@ import { useRef, useEffect, useCallback } from 'react';
 import { useChatStore } from '@/stores/useChatStore';
 import { MessageBubble } from './MessageBubble';
 import { InputArea } from './InputArea';
+import { StatusBar } from './StatusBar';
 import styles from './ChatView.module.css';
 
 function ChatView() {
@@ -9,7 +10,6 @@ function ChatView() {
   const listRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom on new messages or content update
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
@@ -24,11 +24,20 @@ function ChatView() {
         <div className={styles.messageListInner}>
           {messages.length === 0 ? (
             <div className={styles.emptyState}>
-              <div className={styles.emptyIcon}>{'\uD83E\uDD16'}</div>
-              <div className={styles.emptyTitle}>Claude Code Desktop</div>
-              <div className={styles.emptyHint}>
-                Start a conversation by typing a message below.
-                Use / for commands or ask me anything about your code.
+              <div className={styles.emptyLogo}>CCDesk</div>
+              <div className={styles.emptyHints}>
+                <div className={styles.emptyHint}>
+                  <kbd>@</kbd>
+                  <span>Reference files</span>
+                </div>
+                <div className={styles.emptyHint}>
+                  <kbd>/</kbd>
+                  <span>View commands</span>
+                </div>
+                <div className={styles.emptyHint}>
+                  <kbd>{'\u2318'}K</kbd>
+                  <span>Command palette</span>
+                </div>
               </div>
             </div>
           ) : (
@@ -39,6 +48,7 @@ function ChatView() {
           <div ref={bottomRef} />
         </div>
       </div>
+      <StatusBar />
       <InputArea />
     </div>
   );
