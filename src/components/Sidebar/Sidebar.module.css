@@ -1,71 +1,74 @@
+/* ═══ Sidebar — Precision Airy ═══ */
+
 .sidebar {
   width: 100%;
   flex-shrink: 0;
   background: var(--bg-secondary);
-  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-/* Top bar with project + model */
+/* Top bar — no border, tonal shift */
 .sidebarTop {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
+  padding: 12px 14px;
   flex-shrink: 0;
 }
 
 .projectRow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .projectIcon {
   flex-shrink: 0;
   color: var(--text-secondary);
+  font-size: var(--font-size-md);
 }
 
 .projectName {
   flex: 1;
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-medium);
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .newChatBtn {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--accent-muted);
   color: var(--accent);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   flex-shrink: 0;
+  transition: background 0.15s;
 }
 
 .newChatBtn:hover {
   background: var(--accent);
-  color: #fff;
+  color: var(--text-inverse);
 }
 
 .closeBtn {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -81,45 +84,23 @@
 .modelSelect {
   width: 100%;
   background: var(--bg-input);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 4px 8px;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-ghost);
+  border-radius: var(--radius-md);
+  padding: 5px 8px;
   font-size: var(--font-size-sm);
   cursor: pointer;
   outline: none;
+  font-family: var(--font-mono);
+  transition: border-color 0.15s;
 }
 
 .modelSelect:hover {
-  border-color: var(--accent);
+  border-color: var(--border);
 }
 
 .modelSelect:focus {
-  border-color: var(--accent);
-}
-
-/* Search */
-.searchBox {
-  padding: 8px 12px;
-}
-
-.searchInput {
-  width: 100%;
-  background: var(--bg-input);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 6px 10px;
-  font-size: var(--font-size-sm);
-  outline: none;
-}
-
-.searchInput::placeholder {
-  color: var(--text-secondary);
-}
-
-.searchInput:focus {
-  border-color: var(--accent);
+  border-color: var(--border-focus);
 }
 
 /* Session list */
@@ -129,74 +110,21 @@
   padding: 4px 0;
 }
 
-.sessionGroup {
-  padding: 4px 12px 2px;
-}
-
-.sessionGroupLabel {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
-  font-weight: 500;
-  padding: 4px 0;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.sessionItem {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  cursor: pointer;
-  border-radius: 4px;
-  margin: 1px 8px;
-  font-size: var(--font-size-base);
-  color: var(--text-primary);
-  transition: background 0.15s;
-}
-
-.sessionItem:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.sessionItemActive {
-  background: var(--accent-muted);
-  color: var(--accent);
-}
-
-.sessionItemActive:hover {
-  background: var(--accent-muted);
-  color: var(--accent);
-}
-
-.sessionIcon {
-  flex-shrink: 0;
-  font-size: var(--font-size-sm);
-}
-
-.sessionLabel {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .sessionEmpty {
-  padding: 20px 16px;
+  padding: 24px 16px;
   text-align: center;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: var(--font-size-sm);
 }
 
-/* Bottom actions */
+/* Bottom actions — no border, tonal shift */
 .sidebarFooter {
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 8px 12px;
-  border-top: 1px solid var(--border);
+  padding: 8px 10px;
   flex-shrink: 0;
+  background: var(--bg-tertiary);
 }
 
 .footerBtn {
@@ -207,10 +135,11 @@
   justify-content: center;
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
 }
 
 .footerBtn:hover {

@@ -1,3 +1,5 @@
+/* ═══ PanelToggles — Precision Airy ═══ */
+
 .toggleBtn {
   display: flex;
   align-items: center;
@@ -6,18 +8,20 @@
   flex-shrink: 0;
   background: transparent;
   border: none;
-  border-right: 1px solid var(--border);
   color: var(--text-muted);
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
 }
+
 .toggleLeft {
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--border-ghost);
 }
+
 .toggleRight {
-  border-left: 1px solid var(--border);
+  border-left: 1px solid var(--border-ghost);
 }
+
 .toggleBtn:hover {
   color: var(--text-primary);
-  background: var(--bg-hover);
+  background: var(--bg-hover-subtle);
 }

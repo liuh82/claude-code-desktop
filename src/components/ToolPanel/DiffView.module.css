@@ -1,3 +1,5 @@
+/* ═══ DiffView — Precision Airy ═══ */
+
 .diffView {
   display: flex;
   flex-direction: column;
@@ -10,7 +12,7 @@
   justify-content: center;
   height: 100px;
   color: var(--text-muted);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
 }
 
 .noMatch {
@@ -19,18 +21,17 @@
   justify-content: center;
   height: 80px;
   color: var(--text-muted);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
 }
 
-/* Filter bar */
+/* Filter bar — no border, tonal shift */
 .filterBar {
   padding: 6px 8px;
-  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
 }
 
 .filterBtns {
@@ -44,16 +45,17 @@
   gap: 3px;
   padding: 3px 8px;
   background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  color: var(--text-secondary);
-  font-size: var(--font-size-md);
+  border: 1px solid var(--border-ghost);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
   cursor: pointer;
   white-space: nowrap;
+  transition: all 0.15s;
 }
 
 .filterBtn:hover {
-  background: var(--bg-hover);
+  background: var(--bg-hover-subtle);
   color: var(--text-primary);
 }
 
@@ -64,7 +66,7 @@
 }
 
 .filterCount {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-xs);
   opacity: 0.7;
 }
 
@@ -77,17 +79,17 @@
 .toggleAllBtn {
   padding: 3px 8px;
   background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 3px;
+  border: 1px solid var(--border-ghost);
+  border-radius: var(--radius-sm);
   color: var(--text-muted);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-xs);
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .toggleAllBtn:hover {
-  background: var(--bg-hover);
+  background: var(--bg-hover-subtle);
   color: var(--text-primary);
 }
 
@@ -96,10 +98,10 @@
   min-width: 0;
   background: var(--bg-input);
   color: var(--text-primary);
-  border: 1px solid var(--border);
-  border-radius: 3px;
+  border: 1px solid var(--border-ghost);
+  border-radius: var(--radius-sm);
   padding: 3px 6px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-xs);
   outline: none;
 }
 
@@ -108,7 +110,7 @@
 }
 
 .searchInput:focus {
-  border-color: var(--accent);
+  border-color: var(--border-focus);
 }
 
 /* File list */
@@ -118,11 +120,11 @@
   padding: 4px 0;
 }
 
-/* File card */
+/* File card — ghost border */
 .diffFile {
   margin: 0 4px 2px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  border: 1px solid var(--border-ghost);
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
@@ -131,14 +133,14 @@
   align-items: center;
   gap: 6px;
   padding: 5px 8px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   cursor: pointer;
   user-select: none;
   transition: background 0.15s;
 }
 
 .diffFileHeader:hover {
-  background: var(--bg-hover);
+  background: var(--bg-hover-subtle);
 }
 
 .chevron {
@@ -154,8 +156,8 @@
 }
 
 .diffFilePath {
-  font-size: var(--font-size-md);
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: var(--font-size-sm);
+  font-family: var(--font-mono);
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -168,17 +170,17 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: var(--font-size-md);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
 }
 
 .statAdd {
-  color: var(--success);
+  color: #166534;
 }
 
 .statDel {
-  color: var(--error);
+  color: #991b1b;
 }
 
 .statSep {
@@ -186,47 +188,46 @@
 }
 
 .diffBadge {
-  font-size: var(--font-size-md);
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   padding: 1px 5px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
 .badgeAdded {
-  background: rgba(5, 150, 105, 0.15);
-  color: var(--success);
+  background: rgba(74, 222, 128, 0.15);
+  color: #166534;
 }
 
 .badgeModified {
   background: rgba(217, 119, 6, 0.15);
-  color: var(--warning);
+  color: #92400e;
 }
 
 .badgeDeleted {
-  background: rgba(220, 38, 38, 0.15);
-  color: var(--error);
+  background: rgba(248, 113, 113, 0.15);
+  color: #991b1b;
 }
 
 /* Diff body (expanded) */
 .diffFileBody {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-ghost);
 }
 
 .hunkHeader {
   padding: 2px 8px;
-  font-size: var(--font-size-md);
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: var(--font-size-xs);
+  font-family: var(--font-mono);
   color: var(--text-muted);
   background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
 }
 
 .diffLine {
   display: flex;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: var(--font-size-md);
-  line-height: 1.5;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
 }
 
 .lineNumbers {
@@ -234,7 +235,7 @@
   flex-shrink: 0;
   width: 70px;
   user-select: none;
-  border-right: 1px solid var(--border);
+  opacity: 0.4;
 }
 
 .lineNum {
@@ -242,7 +243,7 @@
   text-align: right;
   padding-right: 6px;
   color: var(--text-muted);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-xs);
 }
 
 .linePrefix {
@@ -250,7 +251,7 @@
   text-align: center;
   flex-shrink: 0;
   user-select: none;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .lineContent {

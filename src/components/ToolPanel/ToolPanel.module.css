@@ -1,8 +1,9 @@
+/* ═══ ToolPanel — Precision Airy ═══ */
+
 .toolPanel {
   width: 100%;
   flex-shrink: 0;
   background: var(--bg-secondary);
-  border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -14,16 +15,15 @@
   justify-content: space-between;
   padding: 0 12px;
   height: 40px;
-  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
 .toolPanelTitle {
-  font-size: var(--font-size-md);
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-label);
 }
 
 .toolPanelClose {
@@ -36,7 +36,7 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .toolPanelClose:hover {
@@ -46,8 +46,8 @@
 
 .tabBar {
   display: flex;
-  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  background: var(--bg-tertiary);
 }
 
 .tab {
@@ -57,11 +57,13 @@
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: var(--font-size-md);
-  font-weight: 500;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: color 0.15s, border-color 0.15s;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-label);
 }
 
 .tab:hover {

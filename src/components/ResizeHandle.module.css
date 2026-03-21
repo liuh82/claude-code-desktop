@@ -1,8 +1,11 @@
+/* ═══ ResizeHandle — Precision Airy ═══ */
+
 .handle {
   position: relative;
   z-index: 10;
   flex-shrink: 0;
 }
+
 .handle::before {
   content: '';
   position: absolute;
@@ -10,49 +13,57 @@
   bottom: 0;
   width: 5px;
 }
+
 .left {
   cursor: col-resize;
 }
+
 .left::before {
   right: 0;
 }
+
 .left::after {
   content: '';
   position: absolute;
   top: 50%;
   right: -2px;
   transform: translateY(-50%);
-  width: 3px;
-  height: 32px;
+  width: 2px;
+  height: 24px;
   background: var(--border);
-  border-radius: 2px;
+  border-radius: 1px;
   opacity: 0;
   transition: opacity 0.15s;
 }
+
 .left:hover::after,
 .handle:active::after {
   opacity: 1;
   background: var(--accent);
 }
+
 .right {
   cursor: col-resize;
 }
+
 .right::before {
   left: 0;
 }
+
 .right::after {
   content: '';
   position: absolute;
   top: 50%;
   left: -2px;
   transform: translateY(-50%);
-  width: 3px;
-  height: 32px;
+  width: 2px;
+  height: 24px;
   background: var(--border);
-  border-radius: 2px;
+  border-radius: 1px;
   opacity: 0;
   transition: opacity 0.15s;
 }
+
 .right:hover::after,
 .handle:active::after {
   opacity: 1;
