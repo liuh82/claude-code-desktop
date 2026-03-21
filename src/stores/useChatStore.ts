@@ -305,7 +305,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       });
 
       // Load real file tree from filesystem
-      const tree = await claudeApi.readDirectory({ dirPath: projectPath, maxDepth: 3 });
+      const tree = await claudeApi.readDirectory({ dirPath: projectPath, maxDepth: 5 });
       set({ projectPath, fileTree: tree as FileNode[] });
     } catch (err) {
       console.error('[CCDesk] Failed to init session:', err);
@@ -336,8 +336,26 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       } catch (err) {
         console.error('[CCDesk] sendMessage failed:', err);
         set({ isGenerating: false });
+        const errMsg: ChatMessage = {
+          id: generateId(),
+          role: 'assistant',
+          content: '⚠️ 消息发送失败：' + (err instanceof Error ? err.message : String(err)),
+          timestamp: Date.now(),
+        };
+        set((s) => ({ messages: [...s.messages, errMsg] }));
       }
     } else {
+      if (isElectron() && !activeSessionId) {
+          id: generateId(),
+          role: 'assistant',
+        const warnMsg: ChatMessage = {
+          id: generateId(),
+          content: 'Claude 会话未初始化，正在使用模拟模式。',
+          timestamp: Date.now(),
+        };
+        set((s) => ({ messages: [...s.messages, warnMsg], isGenerating: false }));
+        return;
+      }
       // Mock mode: simulate typing
       mockTypingResponse(get, set);
     }
