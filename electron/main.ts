@@ -270,9 +270,16 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
 
   console.log(`[CCDesk] Spawning claude: ${cliPath} ${args.join(' ')}`);
 
+  // Ensure claude can find its own dependencies (node, npm, etc.)
+  const claudeDir = path.dirname(cliPath);
+  const childEnv = {
+    ...process.env,
+    PATH: [claudeDir, process.env.PATH || ''].join(':'),
+  };
+
   const proc = spawn(cliPath, args, {
     cwd: projectPath,
-    env: { ...process.env },
+    env: childEnv,
     stdio: ['pipe', 'pipe', 'pipe'],
   });
 
