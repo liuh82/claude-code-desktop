@@ -22,6 +22,9 @@ const MODEL_OPTIONS = [
   'claude-sonnet-4-20250514',
   'claude-opus-4-20250514',
   'claude-haiku-4-5-20251001',
+  'glm-4-plus',
+  'glm-4-flash',
+  'glm-5-turbo',
 ];
 
 const LOG_LEVEL_OPTIONS = ['debug', 'info', 'warn', 'error'] as const;
@@ -32,7 +35,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'general', label: '通用' },
   { id: 'appearance', label: '外观' },
   { id: 'claude', label: 'Claude Code' },
-  { id: 'advanced', label: 'Advanced' },
+  { id: 'advanced', label: '高级' },
 ];
 
 function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
@@ -109,7 +112,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
     <div className="sd-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget && !dirty) onClose(); }}>
       <div className="sd-container" role="dialog" aria-label="Settings">
         <div className="sd-header">
-          <h2 className="sd-title">Settings</h2>
+          <h2 className="sd-title">设置</h2>
           <button className="sd-close" onClick={() => { if (dirty) { setLocalSettings(settings); setDirty(false); } onClose(); }} aria-label="Close settings">
             &times;
           </button>
@@ -209,7 +212,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                       type="text"
                       value={localSettings.claudeCliPath}
                       onChange={(e) => handleChange('claudeCliPath', e.target.value)}
-                      placeholder="Auto-detected"
+                      placeholder="自动检测"
                     />
                     <button className="sd-btn" onClick={handleDetectCli}>检测</button>
                   </div>
@@ -269,12 +272,12 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                     type="text"
                     value={localSettings.dataDirectory}
                     onChange={(e) => handleChange('dataDirectory', e.target.value)}
-                    placeholder="Auto-detected"
+                    placeholder="自动检测"
                   />
                 </SettingsField>
                 <SettingsField label="">
                   <button className="sd-btn sd-btn--danger" onClick={handleReset}>
-                    Reset to Defaults
+                    恢复默认设置
                   </button>
                 </SettingsField>
               </SettingsSection>
@@ -287,7 +290,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
             Cancel
           </button>
           <button className="sd-btn sd-btn--primary" onClick={handleSave} disabled={!dirty}>
-            Save
+            保存
           </button>
         </div>
       </div>
