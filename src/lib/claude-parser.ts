@@ -64,7 +64,21 @@ export interface ParsedResult {
   session_id: string;
 }
 
-export type ParsedLine = ParsedSystemInit | ParsedAssistantMessage | ParsedResult | null;
+export type ParsedLine = ParsedSystemInit | ParsedAssistantMessage | ParsedResult | ParsedToolResult | null;
+
+export interface ParsedToolResult {
+  type: 'user';
+  tool_use_result?: {
+    type: 'create' | 'edit' | 'delete' | 'read';
+    filePath: string;
+    content?: string;
+    structuredPatch?: Array<{ oldStart: number; oldLines: number; newStart: number; newLines: number; lines: string[] }>;
+    originalFile?: string | null;
+  };
+  error?: string;
+  session_id: string;
+}
+
 
 export function parseClaudeLine(line: string): ParsedLine {
   if (!line.trim()) return null;

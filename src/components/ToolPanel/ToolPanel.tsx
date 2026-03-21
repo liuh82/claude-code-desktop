@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useChatStore } from '@/stores/useChatStore';
 import { FileTree } from './FileTree';
 import { DiffView } from './DiffView';
@@ -16,6 +16,13 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
   const [activeTab, setActiveTab] = useState<TabId>('files');
   const fileTree = useChatStore((s) => s.fileTree);
   const diffFiles = useChatStore((s) => s.diffFiles);
+
+  // Auto-switch to diff tab when files change
+  useEffect(() => {
+    if (diffFiles.length > 0) {
+      setActiveTab('diff');
+    }
+  }, [diffFiles.length]);
 
   const handleFileClick = useCallback((_node: FileNode) => {
     // Phase 3: open file in editor

@@ -7,10 +7,10 @@ interface ToolCallBlockProps {
 }
 
 function getToolIcon(name: string): { icon: string; label: string } {
-  if (name === 'ReadFile' || name === 'Read') return { icon: 'description', label: 'Read' };
-  if (name === 'WriteFile' || name === 'Write' || name === 'Edit') return { icon: 'edit_note', label: 'Write' };
-  if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') return { icon: 'code', label: 'Execute' };
-  if (name === 'SearchFiles' || name === 'Grep' || name === 'Glob') return { icon: 'search', label: 'Search' };
+  if (name === 'ReadFile' || name === 'Read') return { icon: 'description', label: '读取' };
+  if (name === 'WriteFile' || name === 'Write' || name === 'Edit') return { icon: 'edit_note', label: '写入' };
+  if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') return { icon: 'code', label: '执行' };
+  if (name === 'SearchFiles' || name === 'Grep' || name === 'Glob') return { icon: 'search', label: '搜索' };
   return { icon: 'extension', label: name };
 }
 
