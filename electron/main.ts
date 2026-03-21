@@ -229,6 +229,7 @@ function detectClaudeCli(): string {
  * Each invocation is a standalone process — simpler and more reliable.
  */
 function spawnClaudeMessage(sessionId: string, projectPath: string, message: string, model?: string) {
+  console.log('[CCDesk] spawnClaudeMessage called:', { sessionId, projectPath, messageLen: message.length, model });
   // Use configured path first, fall back to auto-detection
   let cliPath = '';
   if (db) {
@@ -512,7 +513,9 @@ function registerIpcHandlers() {
   ipcMain.handle('send-message', (_event, { sessionId, projectPath, message, model }: {
     sessionId: string; projectPath: string; message: string; model?: string;
   }) => {
+    console.log('[CCDesk] send-message received:', { sessionId, projectPath, message: message.substring(0, 50), model });
     const effectiveModel = model || sessionModels.get(sessionId) || undefined;
+    console.log('[CCDesk] effectiveModel:', effectiveModel);
     spawnClaudeMessage(sessionId, projectPath, message, effectiveModel);
     return;
   });
