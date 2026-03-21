@@ -142,55 +142,78 @@ function createWindow() {
 
 function detectClaudeCli(): string {
   const home = process.env.HOME || process.env.USERPROFILE || '';
+  if (!home) return '';
 
-  // macOS: Dock-launched apps don't inherit shell PATH
-  // Use login shell to get the full PATH
+  // Directly scan known Claude CLI installation paths
+  // This is more reliable than shell -l which can timeout or fail silently
+  const candidates: string[] = [];
+
+  // 1. Homebrew (Apple Silicon)
+  candidates.push('/opt/homebrew/bin/claude');
+  // 2. Homebrew (Intel)
+  candidates.push('/usr/local/bin/claude');
+  // 3. System
+  candidates.push('/usr/bin/claude');
+
+  // 4. npm global (common locations)
+  const npmGlobalPaths = [
+    path.join(home, '.npm-global', 'bin', 'claude'),
+    path.join(home, '.npm-global', 'bin'),
+    path.join(home, 'Library', 'pnpm', 'claude'),
+    path.join(home, 'Library', 'pnpm'),
+  ];
+  candidates.push(...npmGlobalPaths);
+
+  // 5. nvm-managed Node versions (scan all)
+  const nvmDir = path.join(home, '.nvm', 'versions', 'node');
+  if (fs.existsSync(nvmDir)) {
+    try {
+      const entries = fs.readdirSync(nvmDir).sort().reverse();
+      for (const entry of entries) {
+        candidates.push(path.join(nvmDir, entry, 'bin', 'claude'));
+      }
+    } catch {}
+  }
+
+  // 6. volta
+  candidates.push(path.join(home, '.volta', 'bin', 'claude'));
+
+  // 7. fnm
+  const fnmDir = path.join(home, '.local', 'share', 'fnm', 'node-versions');
+  if (fs.existsSync(fnmDir)) {
+    try {
+      for (const entry of fs.readdirSync(fnmDir)) {
+        candidates.push(path.join(fnmDir, entry, 'installation', 'bin', 'claude'));
+      }
+    } catch {}
+  }
+
+  // 8. Current PATH directories
+  const pathDirs = (process.env.PATH || '').split(path.delimiter);
+  for (const dir of pathDirs) {
+    candidates.push(path.join(dir, 'claude'));
+  }
+
+  // 9. Last resort: try login shell
   try {
     const { execSync } = require('child_process') as typeof import('child_process');
     const shell = process.env.SHELL || '/bin/zsh';
-    const cmd = shell + " -l -c 'which claude' 2>/dev/null";
-    const result = execSync(cmd, {
+    const result = execSync(shell + " -l -c 'which claude' 2>/dev/null", {
       encoding: 'utf-8',
-      timeout: 5000,
+      timeout: 3000,
     }).trim();
     if (result && fs.existsSync(result)) {
-      return result;
+      candidates.unshift(result); // Put shell result first
     }
   } catch {}
 
-  // Fallback: check common paths
-  const searchPaths: string[] = [
-    '/opt/homebrew/bin/claude',
-    '/usr/local/bin/claude',
-    '/usr/bin/claude',
-  ];
-
-  if (home) {
-    // All nvm node versions
-    const nvmDir = path.join(home, '.nvm', 'versions', 'node');
-    if (fs.existsSync(nvmDir)) {
-      try {
-        const entries = fs.readdirSync(nvmDir).sort().reverse();
-        for (const entry of entries) {
-          searchPaths.push(path.join(nvmDir, entry, 'bin', 'claude'));
-        }
-      } catch {}
-    }
-    // npm/pnpm global bins
-    searchPaths.push(
-      path.join(home, '.npm-global', 'bin', 'claude'),
-      path.join(home, '.local', 'bin', 'claude'),
-    );
-    // PATH dirs
-    const pathDirs = (process.env.PATH || '').split(path.delimiter);
-    for (const dir of pathDirs) {
-      searchPaths.push(path.join(dir, 'claude'));
+  for (const p of candidates) {
+    if (fs.existsSync(p)) {
+      console.log(`[CCDesk] Found claude at: ${p}`);
+      return p;
     }
   }
-
-  for (const p of searchPaths) {
-    if (fs.existsSync(p)) return p;
-  }
+  console.log("[CCDesk] Claude CLI not found. Scanned", candidates.length, "paths");
 
   return '';
 }
