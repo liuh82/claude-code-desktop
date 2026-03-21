@@ -26,7 +26,7 @@ function StatusBar() {
         <span className={styles.modelName}>{settings.defaultModel}</span>
         <span className={styles.separator}>{'\u00B7'}</span>
         <span className={styles.tokenText}>
-          {formatNumber(tokenUsage.input)} / {formatNumber(tokenUsage.output)} tokens
+          {formatNumber(tokenUsage.input)} / {formatNumber(tokenUsage.output)} 词元
         </span>
       </div>
       <div className={styles.statusRight}>

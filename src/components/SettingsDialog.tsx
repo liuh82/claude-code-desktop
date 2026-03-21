@@ -29,7 +29,7 @@ const LOG_LEVEL_OPTIONS = ['debug', 'info', 'warn', 'error'] as const;
 type TabId = 'general' | 'appearance' | 'claude' | 'advanced';
 
 const TABS: { id: TabId; label: string }[] = [
-  { id: 'general', label: 'General' },
+  { id: 'general', label: '通用' },
   { id: 'appearance', label: '外观' },
   { id: 'claude', label: 'Claude Code' },
   { id: 'advanced', label: 'Advanced' },
@@ -131,7 +131,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
           <div className="sd-content">
             {activeTab === 'general' && (
               <SettingsSection>
-                <SettingsField label="Default Project Path">
+                <SettingsField label="默认项目路径">
                   <input
                     className="sd-input"
                     type="text"
@@ -140,7 +140,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                     placeholder="/home/user/projects"
                   />
                 </SettingsField>
-                <SettingsField label="Auto-save Interval (seconds)">
+                <SettingsField label="自动保存间隔（秒）">
                   <input
                     className="sd-input sd-input--number"
                     type="number"
@@ -150,7 +150,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                     onChange={(e) => handleChange('autoSaveInterval', parseInt(e.target.value, 10) || 30)}
                   />
                 </SettingsField>
-                <SettingsField label="Max Concurrent Sessions">
+                <SettingsField label="最大并发会话数">
                   <input
                     className="sd-input sd-input--number"
                     type="number"
@@ -165,7 +165,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
 
             {activeTab === 'appearance' && (
               <SettingsSection>
-                <SettingsField label="Theme">
+                <SettingsField label="主题">
                   <select
                     className="sd-select"
                     value={localSettings.theme}
@@ -176,7 +176,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                     <option value="system">System</option>
                   </select>
                 </SettingsField>
-                <SettingsField label="Font Size">
+                <SettingsField label="字体大小">
                   <input
                     className="sd-input sd-input--number"
                     type="number"
@@ -186,7 +186,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                     onChange={(e) => handleChange('fontSize', parseInt(e.target.value, 10) || 14)}
                   />
                 </SettingsField>
-                <SettingsField label="Font Family">
+                <SettingsField label="字体">
                   <select
                     className="sd-select"
                     value={localSettings.fontFamily}
@@ -202,7 +202,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
 
             {activeTab === 'claude' && (
               <SettingsSection>
-                <SettingsField label="Claude CLI Path">
+                <SettingsField label="Claude CLI 路径">
                   <div className="sd-row">
                     <input
                       className="sd-input"
@@ -211,10 +211,10 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                       onChange={(e) => handleChange('claudeCliPath', e.target.value)}
                       placeholder="Auto-detected"
                     />
-                    <button className="sd-btn" onClick={handleDetectCli}>Detect</button>
+                    <button className="sd-btn" onClick={handleDetectCli}>检测</button>
                   </div>
                 </SettingsField>
-                <SettingsField label="Default Model">
+                <SettingsField label="默认模型">
                   <select
                     className="sd-select"
                     value={localSettings.defaultModel}
@@ -225,7 +225,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                     ))}
                   </select>
                 </SettingsField>
-                <SettingsField label="Permission Mode">
+                <SettingsField label="权限模式">
                   <select
                     className="sd-select"
                     value={localSettings.permissionMode}
@@ -236,7 +236,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                     <option value="permissive">Permissive</option>
                   </select>
                 </SettingsField>
-                <SettingsField label="Max Tokens">
+                <SettingsField label="最大 Token 数">
                   <input
                     className="sd-input sd-input--number"
                     type="number"
@@ -252,7 +252,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
 
             {activeTab === 'advanced' && (
               <SettingsSection>
-                <SettingsField label="Log Level">
+                <SettingsField label="日志级别">
                   <select
                     className="sd-select"
                     value={localSettings.logLevel}
@@ -263,7 +263,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                     ))}
                   </select>
                 </SettingsField>
-                <SettingsField label="Data Directory">
+                <SettingsField label="数据目录">
                   <input
                     className="sd-input"
                     type="text"
