@@ -6,7 +6,7 @@ import { useChatStore } from '@/stores/useChatStore';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { ChatView } from '@/components/Chat/ChatView';
 import { ToolPanel } from '@/components/ToolPanel/ToolPanel';
-import { PanelToggles } from '@/components/PanelToggles';
+import { SidebarToggle, ToolPanelToggle } from '@/components/PanelToggles';
 import { CommandPalette, type CommandItem } from '@/components/CommandPalette';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import './App.css';
@@ -88,13 +88,7 @@ function AppContent() {
   return (
     <div className="appLayout">
       <div className="appBody">
-        <PanelToggles
-          sidebarOpen={sidebarOpen}
-          toolPanelOpen={toolPanelOpen}
-          onToggleSidebar={toggleSidebar}
-          onToggleToolPanel={toggleToolPanel}
-        />
-
+        <SidebarToggle sidebarOpen={sidebarOpen} onToggleSidebar={toggleSidebar} />
         {sidebarOpen && (
           <Sidebar
             projectPath={projectPath}
@@ -104,12 +98,11 @@ function AppContent() {
             onToggleTheme={toggleTheme}
           />
         )}
-
         <ChatView />
-
         {toolPanelOpen && (
           <ToolPanel onClose={toggleToolPanel} />
         )}
+        <ToolPanelToggle toolPanelOpen={toolPanelOpen} onToggleToolPanel={toggleToolPanel} />
       </div>
 
       <CommandPalette
