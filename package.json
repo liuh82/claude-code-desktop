@@ -12,8 +12,11 @@
     "pack": "npm run build && electron-builder --dir"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "better-sqlite3": "^11.0.0",
     "highlight.js": "^11.11.1",
+    "material-symbols": "^0.42.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
