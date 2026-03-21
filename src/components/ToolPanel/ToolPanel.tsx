@@ -37,13 +37,13 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
           className={`${styles.tab} ${activeTab === 'files' ? styles.tabActive : ''}`}
           onClick={() => setActiveTab('files')}
         >
-          Files
+          文件
         </button>
         <button
           className={`${styles.tab} ${activeTab === 'diff' ? styles.tabActive : ''}`}
           onClick={() => setActiveTab('diff')}
         >
-          Diff
+          差异
         </button>
       </div>
 
