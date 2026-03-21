@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useChatStore } from '@/stores/useChatStore';
 import { FileTree } from './FileTree';
 import { DiffView } from './DiffView';
+import { SafeRender } from './SafeRender';
 import type { FileNode } from '@/types/chat';
 import styles from './ToolPanel.module.css';
 
@@ -47,11 +48,13 @@ function ToolPanel({ onClose }: ToolPanelProps) {
       </div>
 
       <div className={styles.toolPanelBody}>
-        {activeTab === 'files' ? (
-          <FileTree nodes={fileTree} onFileClick={handleFileClick} />
-        ) : (
-          <DiffView files={diffFiles} />
-        )}
+        <SafeRender>
+          {activeTab === 'files' ? (
+            <FileTree nodes={fileTree} onFileClick={handleFileClick} />
+          ) : (
+            <DiffView files={diffFiles} />
+          )}
+        </SafeRender>
       </div>
     </aside>
   );
