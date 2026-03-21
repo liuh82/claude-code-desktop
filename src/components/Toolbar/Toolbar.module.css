@@ -1,0 +1,123 @@
+.toolbar {
+  height: 40px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.toolbarSection {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbarDivider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+.toolbarSpacer {
+  flex: 1;
+}
+
+.projectPath {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.projectPath:hover {
+  color: var(--text-primary);
+}
+
+.projectPath svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.gitBranch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.gitBranch svg {
+  flex-shrink: 0;
+}
+
+.modelSelect {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  max-width: 200px;
+}
+
+.modelSelect:hover {
+  border-color: var(--accent);
+}
+
+.modelSelect:focus {
+  border-color: var(--accent);
+}
+
+.toolbarBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toolbarBtn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.newChatBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  background: var(--accent-muted);
+  color: var(--accent);
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.newChatBtn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.newChatBtn svg {
+  flex-shrink: 0;
+}

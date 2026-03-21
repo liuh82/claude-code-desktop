@@ -1,0 +1,69 @@
+.message {
+  padding: 12px 20px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.messageUser {
+  background: var(--user-bubble-bg);
+  border-left: 2px solid var(--border);
+}
+
+.messageAssistant {
+  background: var(--ai-bubble-bg);
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  background: var(--bg-tertiary);
+}
+
+.messageBody {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.messageMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.messageRole {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.messageTime {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.messageContent {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.streamingCursor::after {
+  content: '\u258C';
+  animation: blink 1s step-end infinite;
+  color: var(--accent);
+  margin-left: 1px;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}

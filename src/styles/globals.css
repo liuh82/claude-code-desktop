@@ -1,19 +1,51 @@
 :root {
+  /* Backgrounds */
   --bg-primary: #1e1e1e;
   --bg-secondary: #252526;
-  --bg-tertiary: #2d2d2d;
+  --bg-tertiary: #2d2d30;
   --bg-input: #3c3c3c;
-  --text-primary: #cccccc;
-  --text-secondary: #999999;
-  --text-muted: #666666;
-  --accent: #007acc;
-  --accent-hover: #1a8ad4;
-  --border: #3e3e42;
+  --bg-hover: #3e3e42;
+
+  /* Text */
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --text-muted: #6a6a6a;
+
+  /* Accents */
+  --accent: #6c8cff;
+  --accent-hover: #5a7ae8;
+  --accent-muted: rgba(108, 140, 255, 0.15);
+
+  /* Status */
   --success: #4ec9b0;
-  --error: #f44747;
+  --error: #f14c4c;
   --warning: #cca700;
-  --scrollbar: #424242;
-  --scrollbar-hover: #555555;
+  --info: #3794ff;
+
+  /* Chat */
+  --user-bubble-bg: transparent;
+  --user-bubble-border: var(--border);
+  --ai-bubble-bg: transparent;
+
+  /* Diff */
+  --diff-add-bg: rgba(46, 160, 67, 0.15);
+  --diff-add-text: #4ec9b0;
+  --diff-del-bg: rgba(248, 81, 73, 0.15);
+  --diff-del-text: #f14c4c;
+  --diff-context: var(--text-muted);
+
+  /* Code */
+  --code-bg: #1a1a1a;
+  --code-border: var(--border);
+
+  /* Borders */
+  --border: #3e3e42;
+  --border-focus: var(--accent);
+
+  /* Scrollbar */
+  --scrollbar: rgba(121, 121, 121, 0.4);
+  --scrollbar-hover: rgba(121, 121, 121, 0.7);
+
   font-family: system-ui, -apple-system, sans-serif;
 }
 
@@ -32,4 +64,55 @@ html, body, #root {
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* Global scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
+
+/* highlight.js theme override for dark background */
+.hljs {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  padding: 0 !important;
+}
+
+.hljs-keyword { color: #c586c0; }
+.hljs-string { color: #ce9178; }
+.hljs-number { color: #b5cea8; }
+.hljs-comment { color: #6a9955; font-style: italic; }
+.hljs-function { color: #dcdcaa; }
+.hljs-title { color: #dcdcaa; }
+.hljs-params { color: var(--text-primary); }
+.hljs-built_in { color: #4ec9b0; }
+.hljs-type { color: #4ec9b0; }
+.hljs-attr { color: #9cdcfe; }
+.hljs-variable { color: #9cdcfe; }
+.hljs-literal { color: #569cd6; }
+.hljs-meta { color: #569cd6; }
+.hljs-selector-tag { color: #d7ba7d; }
+.hljs-selector-class { color: #d7ba7d; }
+.hljs-selector-id { color: #d7ba7d; }
+.hljs-name { color: #569cd6; }
+.hljs-tag { color: #569cd6; }
+.hljs-attribute { color: #9cdcfe; }
+.hljs-symbol { color: #b5cea8; }
+.hljs-deletion { color: #f14c4c; background: rgba(248, 81, 73, 0.15); }
+.hljs-addition { color: #4ec9b0; background: rgba(46, 160, 67, 0.15); }

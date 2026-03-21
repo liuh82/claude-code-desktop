@@ -1,191 +1,49 @@
-.app-layout {
+.appLayout {
   display: flex;
+  flex-direction: column;
   height: 100vh;
   width: 100vw;
   overflow: hidden;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', 'Consolas', system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* ── Scrollbar ── */
-
-.app-layout ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.app-layout ::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.app-layout ::-webkit-scrollbar-thumb {
-  background: var(--scrollbar);
-  border-radius: 4px;
-}
-
-.app-layout ::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-hover);
-}
-
-/* ── No body scrollbar ── */
-
-body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* ── Theme transition ── */
-
-html,
-html *,
-html *::before,
-html *::after {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
-}
-
-/* Disable transition during load to avoid flash */
-html.no-transition,
-html.no-transition *,
-html.no-transition *::before,
-html.no-transition *::after {
-  transition: none !important;
-}
-
-/* ── Sidebar ── */
-
-.app-sidebar {
-  width: 250px;
-  flex-shrink: 0;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-.app-sidebar__logo {
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.app-sidebar__icon {
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--accent);
-  letter-spacing: 1px;
-}
-
-.app-sidebar__close {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 12px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.app-sidebar__close:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.app-sidebar__body {
+.appBody {
   flex: 1;
-  overflow: hidden;
+  display: flex;
   min-height: 0;
-}
-
-.app-sidebar__sessions {
-  flex: 0 0 auto;
-  max-height: 40%;
-  border-top: 1px solid var(--border);
   overflow: hidden;
 }
 
-/* ── Main Area ── */
-
-.app-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
+/* Overlay animations */
+.cpOverlay {
+  animation: fadeIn 0.15s ease-out;
 }
 
-.app-content {
-  flex: 1;
-  overflow: hidden;
+.cpContainer {
+  animation: slideDown 0.2s ease-out;
 }
 
-/* ── Command palette animation (slide down) ── */
-
-.cp-overlay {
-  animation: cp-fade-in 0.15s ease-out;
+.sdOverlay {
+  animation: fadeIn 0.15s ease-out;
 }
 
-.cp-container {
-  animation: cp-slide-down 0.2s ease-out;
+.sdContainer {
+  animation: slideUp 0.2s ease-out;
 }
 
-@keyframes cp-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-@keyframes cp-slide-down {
-  from {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ── Settings dialog animation (slide up) ── */
-
-.sd-overlay {
-  animation: sd-fade-in 0.15s ease-out;
-}
-
-.sd-container {
-  animation: sd-slide-up 0.2s ease-out;
-}
-
-@keyframes sd-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes sd-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }

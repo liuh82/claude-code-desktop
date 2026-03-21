@@ -5,35 +5,47 @@ export interface ThemeTokens {
   'bg-secondary': string;
   'bg-tertiary': string;
   'bg-input': string;
+  'bg-hover': string;
   'text-primary': string;
   'text-secondary': string;
   'text-muted': string;
   'accent': string;
   'accent-hover': string;
+  'accent-muted': string;
   'border': string;
+  'border-focus': string;
   'success': string;
   'error': string;
   'warning': string;
+  'info': string;
   'scrollbar': string;
   'scrollbar-hover': string;
+  'code-bg': string;
+  'code-border': string;
 }
 
 const darkTokens: ThemeTokens = {
   'bg-primary': '#1e1e1e',
   'bg-secondary': '#252526',
-  'bg-tertiary': '#2d2d2d',
+  'bg-tertiary': '#2d2d30',
   'bg-input': '#3c3c3c',
-  'text-primary': '#cccccc',
-  'text-secondary': '#999999',
-  'text-muted': '#666666',
-  'accent': '#007acc',
-  'accent-hover': '#1a8ad4',
+  'bg-hover': '#3e3e42',
+  'text-primary': '#e0e0e0',
+  'text-secondary': '#a0a0a0',
+  'text-muted': '#6a6a6a',
+  'accent': '#6c8cff',
+  'accent-hover': '#5a7ae8',
+  'accent-muted': 'rgba(108, 140, 255, 0.15)',
   'border': '#3e3e42',
+  'border-focus': '#6c8cff',
   'success': '#4ec9b0',
-  'error': '#f44747',
+  'error': '#f14c4c',
   'warning': '#cca700',
-  'scrollbar': '#424242',
-  'scrollbar-hover': '#555555',
+  'info': '#3794ff',
+  'scrollbar': 'rgba(121, 121, 121, 0.4)',
+  'scrollbar-hover': 'rgba(121, 121, 121, 0.7)',
+  'code-bg': '#1a1a1a',
+  'code-border': '#3e3e42',
 };
 
 const lightTokens: ThemeTokens = {
@@ -41,17 +53,23 @@ const lightTokens: ThemeTokens = {
   'bg-secondary': '#f3f3f3',
   'bg-tertiary': '#e8e8e8',
   'bg-input': '#ffffff',
+  'bg-hover': '#e8e8e8',
   'text-primary': '#1e1e1e',
   'text-secondary': '#616161',
   'text-muted': '#999999',
-  'accent': '#0066b8',
-  'accent-hover': '#005ba4',
+  'accent': '#5a7ae8',
+  'accent-hover': '#4a6ad6',
+  'accent-muted': 'rgba(90, 122, 232, 0.12)',
   'border': '#d4d4d4',
+  'border-focus': '#5a7ae8',
   'success': '#388a34',
   'error': '#d32f2f',
   'warning': '#bf8803',
+  'info': '#007acc',
   'scrollbar': '#c1c1c1',
   'scrollbar-hover': '#a8a8a8',
+  'code-bg': '#f5f5f5',
+  'code-border': '#d4d4d4',
 };
 
 const tokenSets: Record<Theme, ThemeTokens> = { dark: darkTokens, light: lightTokens };

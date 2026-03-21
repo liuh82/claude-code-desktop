@@ -1,0 +1,109 @@
+.inputArea {
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.inputWrapper {
+  position: relative;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s;
+}
+
+.inputWrapper:focus-within {
+  border-color: var(--accent);
+}
+
+.inputTextarea {
+  width: 100%;
+  min-height: 60px;
+  max-height: 200px;
+  padding: 12px 16px;
+  background: transparent;
+  color: var(--text-primary);
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.inputTextarea::placeholder {
+  color: var(--text-muted);
+}
+
+.inputFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+}
+
+.inputFooterLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.inputHint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.inputFooterRight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sendBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.sendBtnActive {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sendBtnActive:hover {
+  background: var(--accent-hover);
+}
+
+.stopBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 14px;
+  background: var(--error);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.stopBtn:hover {
+  background: #d13434;
+}

@@ -1,12 +1,12 @@
 import { useEffect, useCallback } from 'react';
 
 export interface KeyboardActions {
-  onNewTab?: () => void;
-  onCloseTab?: () => void;
-  onSwitchTab?: (index: number) => void;
-  onSplitPane?: () => void;
-  onTogglePaneFocus?: () => void;
+  onNewChat?: () => void;
+  onToggleSidebar?: () => void;
+  onToggleToolPanel?: () => void;
+  onOpenSettings?: () => void;
   onCommandPalette?: () => void;
+  onStopGeneration?: () => void;
 }
 
 export function useKeyboardShortcuts(actions: KeyboardActions) {
@@ -17,31 +17,31 @@ export function useKeyboardShortcuts(actions: KeyboardActions) {
 
       const key = e.key.toLowerCase();
 
-      // Cmd/Ctrl+N — new tab
+      // Cmd/Ctrl+N — new chat
       if (key === 'n' && !e.shiftKey) {
         e.preventDefault();
-        actions.onNewTab?.();
+        actions.onNewChat?.();
         return;
       }
 
-      // Cmd/Ctrl+W — close tab
-      if (key === 'w') {
+      // Cmd/Ctrl+B — toggle sidebar
+      if (key === 'b' && !e.shiftKey) {
         e.preventDefault();
-        actions.onCloseTab?.();
+        actions.onToggleSidebar?.();
         return;
       }
 
-      // Cmd/Ctrl+Shift+N — new pane (split)
-      if (key === 'n' && e.shiftKey) {
+      // Cmd/Ctrl+Shift+F — toggle tool panel
+      if (key === 'f' && e.shiftKey) {
         e.preventDefault();
-        actions.onSplitPane?.();
+        actions.onToggleToolPanel?.();
         return;
       }
 
-      // Cmd/Ctrl+Shift+P — toggle pane focus
-      if (key === 'p' && e.shiftKey) {
+      // Cmd/Ctrl+, — open settings
+      if (key === ',') {
         e.preventDefault();
-        actions.onTogglePaneFocus?.();
+        actions.onOpenSettings?.();
         return;
       }
 
@@ -52,10 +52,9 @@ export function useKeyboardShortcuts(actions: KeyboardActions) {
         return;
       }
 
-      // Cmd/Ctrl+1/2/3 — switch tabs
-      if (['1', '2', '3'].includes(key) && !e.shiftKey) {
-        e.preventDefault();
-        actions.onSwitchTab?.(parseInt(key, 10) - 1);
+      // Escape — stop generation (handled without mod)
+      if (e.key === 'Escape') {
+        actions.onStopGeneration?.();
         return;
       }
     },
