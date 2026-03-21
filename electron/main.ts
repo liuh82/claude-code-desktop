@@ -223,12 +223,27 @@ function detectClaudeCli(): string {
  * Each invocation is a standalone process — simpler and more reliable.
  */
 function spawnClaudeMessage(sessionId: string, projectPath: string, message: string, model?: string) {
-  const cliPath = detectClaudeCli();
+  // Use configured path first, fall back to auto-detection
+  let cliPath = '';
+  if (db) {
+    try {
+      const row = db.prepare("SELECT value FROM app_settings WHERE key = 'settings' LIMIT 1").get() as { value?: string } | undefined;
+      if (row?.value) {
+        const settings = JSON.parse(row.value) as { claudeCliPath?: string };
+        if (settings.claudeCliPath && fs.existsSync(settings.claudeCliPath)) {
+          cliPath = settings.claudeCliPath;
+        }
+      }
+    } catch {}
+  }
+  if (!cliPath) {
+    cliPath = detectClaudeCli();
+  }
   if (!cliPath) {
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('claude-error', {
         sessionId,
-        error: 'Claude CLI 未找到。请先安装 Claude Code CLI。',
+        error: 'Claude CLI 未找到。请在设置中手动配置路径，或先安装 Claude Code CLI。',
       });
     }
     return;
@@ -356,7 +371,7 @@ function registerIpcHandlers() {
   // ── File Tree ──
 
   ipcMain.handle('read-directory', async (_event, { dirPath, maxDepth }: { dirPath: string; maxDepth?: number }) => {
-    const depth = maxDepth || 3;
+    const depth = maxDepth || 5;
     const result: Array<{ name: string; path: string; type: string; children?: unknown[] }> = [];
 
     function walk(currentPath: string, currentDepth: number, parent: Array<{ name: string; path: string; type: string; children?: unknown[] }>) {
