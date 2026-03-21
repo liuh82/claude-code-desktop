@@ -1,10 +1,20 @@
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import styles from './Toolbar.module.css';
 
-const MODEL_OPTIONS = [
+const CLAUDE_MODELS = [
   'claude-sonnet-4-20250514',
   'claude-opus-4-20250514',
   'claude-haiku-4-5-20251001',
+];
+
+const GLM_MODELS = [
+  'glm-5-turbo',
+  'glm-4-plus',
+  'glm-4-0520',
+  'glm-4-air',
+  'glm-4-airx',
+  'glm-4-long',
+  'glm-4-flash',
 ];
 
 interface ToolbarProps {
@@ -13,6 +23,10 @@ interface ToolbarProps {
   onToggleToolPanel: () => void;
   onNewChat: () => void;
   onOpenSettings: () => void;
+}
+
+function formatModelLabel(m: string): string {
+  return m.replace('claude-', '').replace(/-\d{8}$/, '');
 }
 
 function Toolbar({ projectPath, onToggleSidebar, onToggleToolPanel, onNewChat, onOpenSettings }: ToolbarProps) {
@@ -71,9 +85,16 @@ function Toolbar({ projectPath, onToggleSidebar, onToggleToolPanel, onNewChat, o
         onChange={(e) => updateSetting('defaultModel', e.target.value)}
         title="Select model"
       >
-        {MODEL_OPTIONS.map((m) => (
-          <option key={m} value={m}>{m.replace('claude-', '').replace(/-\d{8}$/, '')}</option>
-        ))}
+        <optgroup label="GLM">
+          {GLM_MODELS.map((m) => (
+            <option key={m} value={m}>{formatModelLabel(m)}</option>
+          ))}
+        </optgroup>
+        <optgroup label="Claude">
+          {CLAUDE_MODELS.map((m) => (
+            <option key={m} value={m}>{formatModelLabel(m)}</option>
+          ))}
+        </optgroup>
       </select>
 
       {/* Tool panel toggle */}
