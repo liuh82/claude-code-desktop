@@ -65,8 +65,8 @@ function InputArea() {
           <div className={styles.inputFooterRight}>
             {isGenerating ? (
               <button className={styles.stopBtn} onClick={stopGeneration}>
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                  <rect x="3" y="3" width="10" height="10" rx="1" />
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                  <rect x="3" y="3" width="20" height="20" rx="1" />
                 </svg>
                 停止
               </button>
@@ -76,7 +76,7 @@ function InputArea() {
                 onClick={handleSend}
                 disabled={!canSend}
               >
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
                   <path d="M2 8l12-6-3 6 3 6z" />
                 </svg>
                 发送

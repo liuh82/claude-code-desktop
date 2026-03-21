@@ -73,7 +73,7 @@ function Link({ href, children }: ComponentPropsWithoutRef<'a'> & { children?: R
 function Table({ children }: { children?: ReactNode }) {
   return (
     <div style={{ overflowX: 'auto', margin: '8px 0' }}>
-      <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '13px' }}>{children}</table>
+      <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '15px' }}>{children}</table>
     </div>
   );
 }

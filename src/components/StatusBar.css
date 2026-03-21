@@ -6,7 +6,7 @@
   padding: 0 10px;
   background: var(--bg-tertiary);
   border-top: 1px solid var(--border);
-  font-size: 12px;
+  font-size: 20px;
   color: var(--text-secondary);
   user-select: none;
   flex-shrink: 0;
@@ -21,7 +21,7 @@
 
 .status-bar__separator {
   width: 1px;
-  height: 14px;
+  height: 18px;
   background: var(--border);
 }
 
@@ -74,7 +74,7 @@
   color: var(--text-secondary);
   cursor: pointer;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 20px;
   line-height: 1;
   white-space: nowrap;
 }

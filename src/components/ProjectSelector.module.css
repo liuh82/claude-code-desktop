@@ -26,7 +26,7 @@
 }
 
 .logo {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 2px;
@@ -34,7 +34,7 @@
 }
 
 .tagline {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-muted);
 }
 
@@ -49,7 +49,7 @@
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s;
@@ -64,7 +64,7 @@
 }
 
 .recentTitle {
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -84,7 +84,7 @@
   padding: 8px 10px;
   cursor: pointer;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 15px;
   transition: background 0.15s;
 }
 
@@ -111,7 +111,7 @@
 }
 
 .recentPath {
-  font-size: 11px;
+  font-size: 15px;
   color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -125,7 +125,7 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 16px;
+  font-size: 20px;
   padding: 2px 4px;
   border-radius: 4px;
 }
@@ -143,6 +143,6 @@
   padding: 12px 24px;
   border-top: 1px solid var(--border);
   text-align: center;
-  font-size: 11px;
+  font-size: 15px;
   color: var(--text-muted);
 }

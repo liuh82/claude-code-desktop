@@ -77,7 +77,7 @@ function DiffFileCard({ file, defaultExpanded }: { file: DiffFile; defaultExpand
         onClick={() => setExpanded((prev) => !prev)}
       >
         <span className={`${styles.chevron} ${expanded ? styles.chevronOpen : ''}`}>
-          <svg width="10" height="10" viewBox="0 0 8 8" fill="currentColor">
+          <svg width="20" height="20" viewBox="0 0 8 8" fill="currentColor">
             <path d="M2 1l4 3-4 3z" />
           </svg>
         </span>

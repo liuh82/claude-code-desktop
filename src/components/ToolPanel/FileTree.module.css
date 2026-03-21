@@ -1,6 +1,6 @@
 .tree {
   padding: 4px 0;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .treeRow {
@@ -26,8 +26,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
   color: var(--text-muted);
   transition: transform 0.15s;
@@ -38,7 +38,7 @@
 }
 
 .chevronSpacer {
-  width: 14px;
+  width: 18px;
   flex-shrink: 0;
 }
 
@@ -54,7 +54,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: 20px;
 }
 
 .statusDot {

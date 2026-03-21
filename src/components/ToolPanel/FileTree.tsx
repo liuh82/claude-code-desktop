@@ -11,7 +11,7 @@ function FileIcon({ name }: { name: string }) {
   const ext = name.split('.').pop()?.toLowerCase();
   if (ext === 'ts' || ext === 'tsx') {
     return (
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
         <rect x="2" y="1" width="12" height="14" rx="1.5" fill="#3178c6" opacity="0.2" stroke="#3178c6" strokeWidth="1"/>
         <text x="8" y="11" textAnchor="middle" fontSize="7" fill="#3178c6" fontWeight="bold">TS</text>
       </svg>
@@ -19,7 +19,7 @@ function FileIcon({ name }: { name: string }) {
   }
   if (ext === 'css') {
     return (
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
         <rect x="2" y="1" width="12" height="14" rx="1.5" fill="#264de4" opacity="0.2" stroke="#264de4" strokeWidth="1"/>
         <text x="8" y="11" textAnchor="middle" fontSize="6" fill="#264de4" fontWeight="bold">C</text>
       </svg>
@@ -27,7 +27,7 @@ function FileIcon({ name }: { name: string }) {
   }
   if (ext === 'json') {
     return (
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
         <rect x="2" y="1" width="12" height="14" rx="1.5" fill="#d97706" opacity="0.2" stroke="#d97706" strokeWidth="1"/>
         <text x="8" y="11" textAnchor="middle" fontSize="6" fill="#d97706" fontWeight="bold">{}</text>
       </svg>
@@ -35,7 +35,7 @@ function FileIcon({ name }: { name: string }) {
   }
   if (ext === 'md') {
     return (
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
         <rect x="2" y="1" width="12" height="14" rx="1.5" fill="#083fa1" opacity="0.2" stroke="#083fa1" strokeWidth="1"/>
         <text x="8" y="11" textAnchor="middle" fontSize="6" fill="#083fa1" fontWeight="bold">M</text>
       </svg>
@@ -43,7 +43,7 @@ function FileIcon({ name }: { name: string }) {
   }
   if (ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'gif' || ext === 'svg') {
     return (
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
         <rect x="2" y="1" width="12" height="14" rx="1.5" fill="#059669" opacity="0.2" stroke="#059669" strokeWidth="1"/>
         <circle cx="6" cy="6" r="2" fill="#059669" opacity="0.5"/>
         <path d="M3 12l3-3 2 2 2-2 3 3H3z" fill="#059669" opacity="0.5"/>
@@ -51,7 +51,7 @@ function FileIcon({ name }: { name: string }) {
     );
   }
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--text-muted)" strokeWidth="1">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--text-muted)" strokeWidth="1">
       <path d="M4 2h5l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/>
       <polyline points="9,2 9,5 12,5" />
     </svg>
@@ -60,7 +60,7 @@ function FileIcon({ name }: { name: string }) {
 
 function DirIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--text-muted)" strokeWidth="1">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--text-muted)" strokeWidth="1">
       <path d="M1.5 3.5v9a1 1 0 001 1h11a1 1 0 001-1v-7a1 1 0 00-1-1H8l-1.5-2H2.5a1 1 0 00-1 1z" fill="var(--accent-muted)"/>
     </svg>
   );

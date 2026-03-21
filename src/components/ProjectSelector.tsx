@@ -67,7 +67,7 @@ export function ProjectSelector({ onProjectOpen }: ProjectSelectorProps) {
         </div>
 
         <button className={styles.openBtn} onClick={handleOpenFolder}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M2 10l3-3h6l3 3M8 2v10" />
           </svg>
           打开项目目录
@@ -80,7 +80,7 @@ export function ProjectSelector({ onProjectOpen }: ProjectSelectorProps) {
               {recentProjects.map((project) => (
                 <div key={project.id} className={styles.recentItem}>
                   <span className={styles.recentIcon}>
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
                       <path d="M1.5 3.5v9a1 1 0 001 1h11a1 1 0 001-1v-7a1 1 0 00-1-1H8l-1.5-2H2.5a1 1 0 00-1 1z" fill="var(--accent-muted)" />
                     </svg>
                   </span>

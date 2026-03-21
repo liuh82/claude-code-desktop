@@ -29,7 +29,7 @@
 }
 
 .sd-title {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 600;
   margin: 0;
   color: var(--text-primary);
@@ -44,7 +44,7 @@
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
   border-radius: 4px;
 }
@@ -74,7 +74,7 @@
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 15px;
   font-family: inherit;
   text-align: left;
   cursor: pointer;
@@ -111,7 +111,7 @@
 }
 
 .sd-field__label {
-  font-size: 12px;
+  font-size: 20px;
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -137,7 +137,7 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 15px;
   font-family: inherit;
   outline: none;
 }
@@ -156,7 +156,7 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 15px;
   font-family: inherit;
   outline: none;
   cursor: pointer;
@@ -171,7 +171,7 @@
   border: 1px solid var(--border);
   background: var(--bg-tertiary);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 15px;
   font-family: inherit;
   border-radius: 4px;
   cursor: pointer;

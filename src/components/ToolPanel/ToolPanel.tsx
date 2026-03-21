@@ -26,7 +26,7 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
       <div className={styles.toolPanelHeader}>
         <span className={styles.toolPanelTitle}>工具面板</span>
         <button className={styles.toolPanelClose} onClick={onClose} title="Close (Cmd+Shift+F)" aria-label="Close tool panel">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="5,3 10,8 5,13" />
           </svg>
         </button>
