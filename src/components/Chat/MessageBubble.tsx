@@ -15,7 +15,9 @@ function MessageBubble({ message }: MessageBubbleProps) {
 
   return (
     <div className={`${styles.message} ${isUser ? styles.messageUser : styles.messageAssistant}`}>
-      <div className={styles.avatar}>{avatar}</div>
+      <div className={styles.avatar}>
+        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{avatar}</span>
+      </div>
       <div className={styles.messageBody}>
         <div className={styles.messageMeta}>
           <span className={styles.messageRole}>{roleLabel}</span>
