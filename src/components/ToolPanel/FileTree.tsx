@@ -7,63 +7,22 @@ interface FileTreeProps {
   onFileClick?: (node: FileNode) => void;
 }
 
-function FileIcon({ name }: { name: string }) {
+function getFileIcon(name: string): string {
   const ext = name.split('.').pop()?.toLowerCase();
-  if (ext === 'ts' || ext === 'tsx') {
-    return (
-      <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-        <rect x="2" y="1" width="12" height="14" rx="1.5" fill="#3178c6" opacity="0.2" stroke="#3178c6" strokeWidth="1"/>
-        <text x="8" y="11" textAnchor="middle" fontSize="7" fill="#3178c6" fontWeight="bold">TS</text>
-      </svg>
-    );
-  }
-  if (ext === 'css') {
-    return (
-      <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-        <rect x="2" y="1" width="12" height="14" rx="1.5" fill="#264de4" opacity="0.2" stroke="#264de4" strokeWidth="1"/>
-        <text x="8" y="11" textAnchor="middle" fontSize="6" fill="#264de4" fontWeight="bold">C</text>
-      </svg>
-    );
-  }
-  if (ext === 'json') {
-    return (
-      <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-        <rect x="2" y="1" width="12" height="14" rx="1.5" fill="#d97706" opacity="0.2" stroke="#d97706" strokeWidth="1"/>
-        <text x="8" y="11" textAnchor="middle" fontSize="6" fill="#d97706" fontWeight="bold">{}</text>
-      </svg>
-    );
-  }
-  if (ext === 'md') {
-    return (
-      <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-        <rect x="2" y="1" width="12" height="14" rx="1.5" fill="#083fa1" opacity="0.2" stroke="#083fa1" strokeWidth="1"/>
-        <text x="8" y="11" textAnchor="middle" fontSize="6" fill="#083fa1" fontWeight="bold">M</text>
-      </svg>
-    );
-  }
-  if (ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'gif' || ext === 'svg') {
-    return (
-      <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-        <rect x="2" y="1" width="12" height="14" rx="1.5" fill="#059669" opacity="0.2" stroke="#059669" strokeWidth="1"/>
-        <circle cx="6" cy="6" r="2" fill="#059669" opacity="0.5"/>
-        <path d="M3 12l3-3 2 2 2-2 3 3H3z" fill="#059669" opacity="0.5"/>
-      </svg>
-    );
-  }
-  return (
-    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--text-muted)" strokeWidth="1">
-      <path d="M4 2h5l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/>
-      <polyline points="9,2 9,5 12,5" />
-    </svg>
-  );
-}
-
-function DirIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--text-muted)" strokeWidth="1">
-      <path d="M1.5 3.5v9a1 1 0 001 1h11a1 1 0 001-1v-7a1 1 0 00-1-1H8l-1.5-2H2.5a1 1 0 00-1 1z" fill="var(--accent-muted)"/>
-    </svg>
-  );
+  if (ext === 'ts' || ext === 'tsx') return 'data_object';
+  if (ext === 'js' || ext === 'jsx') return 'javascript';
+  if (ext === 'css' || ext === 'scss') return 'palette';
+  if (ext === 'json') return 'data_object';
+  if (ext === 'md') return 'article';
+  if (ext === 'html') return 'html';
+  if (ext === 'py') return 'code';
+  if (ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'gif' || ext === 'svg' || ext === 'webp') return 'image';
+  if (ext === 'sql') return 'storage';
+  if (ext === 'yaml' || ext === 'yml') return 'settings';
+  if (ext === 'lock') return 'lock';
+  if (name === 'package.json') return 'inventory_2';
+  if (name === 'tsconfig.json') return 'data_object';
+  return 'description';
 }
 
 function TreeNode({ node, depth, onFileClick, defaultExpanded }: { node: FileNode; depth: number; onFileClick?: (node: FileNode) => void; defaultExpanded: boolean }) {
@@ -90,16 +49,17 @@ function TreeNode({ node, depth, onFileClick, defaultExpanded }: { node: FileNod
         style={{ paddingLeft: `${depth * 16 + 4}px` }}
         onClick={handleClick}
       >
-        {isDir && (
+        {isDir ? (
           <span className={`${styles.chevron} ${expanded ? styles.chevronOpen : ''}`}>
-            <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor">
-              <path d="M2 1l4 3-4 3z" />
-            </svg>
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_right</span>
           </span>
+        ) : (
+          <span className={styles.chevronSpacer} />
         )}
-        {!isDir && <span className={styles.chevronSpacer} />}
         <span className={styles.nodeIcon}>
-          {isDir ? <DirIcon /> : <FileIcon name={node.name} />}
+          <span className="material-symbols-outlined" style={{ fontSize: 16, color: isDir ? 'var(--accent)' : 'var(--text-muted)' }}>
+            {isDir ? 'folder' : getFileIcon(node.name)}
+          </span>
         </span>
         <span className={styles.nodeName}>{node.name}</span>
         {statusDot}

@@ -6,7 +6,8 @@
     <title>CCDesk</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <style>
       #loading-screen {
         position: fixed;
@@ -15,30 +16,30 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: #f6f8fa;
-        color: #1f2937;
+        background: #f8f9fb;
+        color: #2a3439;
         font-family: system-ui, -apple-system, sans-serif;
         z-index: 100000;
       }
       #loading-screen .logo {
         font-size: 28px;
         font-weight: 700;
-        color: #6366f1;
-        letter-spacing: 2px;
+        color: #005bc0;
+        letter-spacing: -0.02em;
         margin-bottom: 16px;
       }
       #loading-screen .spinner {
-        width: 28px;
-        height: 28px;
-        border: 3px solid #e5e7eb;
-        border-top-color: #6366f1;
+        width: 24px;
+        height: 24px;
+        border: 2px solid #d9e4ea;
+        border-top-color: #005bc0;
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
       }
       #loading-screen .hint {
         margin-top: 12px;
         font-size: 12px;
-        color: #9ca3af;
+        color: #566166;
       }
       @keyframes spin {
         to { transform: rotate(360deg); }

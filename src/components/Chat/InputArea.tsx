@@ -11,15 +11,13 @@ function InputArea() {
 
   const canSend = text.trim().length > 0 && !isGenerating;
 
-  // Auto-resize textarea
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = `${Math.min(Math.max(el.scrollHeight, 60), 200)}px`;
+    el.style.height = `${Math.min(Math.max(el.scrollHeight, 56), 200)}px`;
   }, [text]);
 
-  // Focus on mount
   useEffect(() => {
     textareaRef.current?.focus();
   }, []);
@@ -28,15 +26,13 @@ function InputArea() {
     if (!canSend) return;
     sendMessage(text.trim());
     setText('');
-    // Reset textarea height
     if (textareaRef.current) {
-      textareaRef.current.style.height = '60px';
+      textareaRef.current.style.height = '56px';
     }
   }, [canSend, text, sendMessage]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      // Enter sends, Shift+Enter inserts newline
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         handleSend();
@@ -54,20 +50,19 @@ function InputArea() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="输入消息... / for commands..."
+          placeholder="输入消息…"
           spellCheck={false}
           rows={1}
         />
         <div className={styles.inputFooter}>
           <div className={styles.inputFooterLeft}>
-            <span className={styles.inputHint}>Shift+Enter for new line</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 16, color: 'var(--text-muted)', cursor: 'pointer' }}>attach_file</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 16, color: 'var(--text-muted)', cursor: 'pointer' }}>image</span>
           </div>
           <div className={styles.inputFooterRight}>
             {isGenerating ? (
               <button className={styles.stopBtn} onClick={stopGeneration}>
-                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
-                  <rect x="3" y="3" width="20" height="20" rx="1" />
-                </svg>
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>stop_circle</span>
                 停止
               </button>
             ) : (
@@ -76,10 +71,7 @@ function InputArea() {
                 onClick={handleSend}
                 disabled={!canSend}
               >
-                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M2 8l12-6-3 6 3 6z" />
-                </svg>
-                发送
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_upward</span>
               </button>
             )}
           </div>

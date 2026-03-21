@@ -25,10 +25,8 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
     <aside className={styles.toolPanel} style={style}>
       <div className={styles.toolPanelHeader}>
         <span className={styles.toolPanelTitle}>工具面板</span>
-        <button className={styles.toolPanelClose} onClick={onClose} title="Close (Cmd+Shift+F)" aria-label="Close tool panel">
-          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="5,3 10,8 5,13" />
-          </svg>
+        <button className={styles.toolPanelClose} onClick={onClose} title="关闭" aria-label="关闭工具面板">
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>chevron_right</span>
         </button>
       </div>
 
@@ -37,12 +35,14 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
           className={`${styles.tab} ${activeTab === 'files' ? styles.tabActive : ''}`}
           onClick={() => setActiveTab('files')}
         >
+          <span className="material-symbols-outlined" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>folder_open</span>
           文件
         </button>
         <button
           className={`${styles.tab} ${activeTab === 'diff' ? styles.tabActive : ''}`}
           onClick={() => setActiveTab('diff')}
         >
+          <span className="material-symbols-outlined" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>difference</span>
           差异
         </button>
       </div>

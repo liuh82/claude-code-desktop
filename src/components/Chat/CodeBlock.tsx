@@ -14,11 +14,8 @@ function CodeBlock({ code, language }: CodeBlockProps) {
     if (language && hljs.getLanguage(language)) {
       try {
         return hljs.highlight(code, { language }).value;
-      } catch {
-        // fallback
-      }
+      } catch {}
     }
-    // Try auto-detect
     try {
       return hljs.highlightAuto(code).value;
     } catch {
@@ -33,9 +30,7 @@ function CodeBlock({ code, language }: CodeBlockProps) {
       await navigator.clipboard.writeText(code);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // clipboard unavailable
-    }
+    } catch {}
   }, [code]);
 
   return (
@@ -45,24 +40,11 @@ function CodeBlock({ code, language }: CodeBlockProps) {
         <button
           className={`${styles.copyBtn} ${copied ? styles.copyBtnCopied : ''}`}
           onClick={handleCopy}
-          aria-label="Copy code"
+          aria-label="复制代码"
         >
-          {copied ? (
-            <>
-              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <polyline points="3,8 6.5,11.5 13,4.5" />
-              </svg>
-              Copied
-            </>
-          ) : (
-            <>
-              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <rect x="5" y="5" width="9" height="9" rx="1" />
-                <path d="M11 5V3a1 1 0 00-1-1H3a1 1 0 00-1 1v7a1 1 0 001 1h2" />
-              </svg>
-              Copy
-            </>
-          )}
+          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
+            {copied ? 'check' : 'content_copy'}
+          </span>
         </button>
       </div>
       <div className={styles.codeBody}>
