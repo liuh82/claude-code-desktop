@@ -141,40 +141,53 @@ function createWindow() {
 // ── Claude CLI helpers ──
 
 function detectClaudeCli(): string {
-  const candidates = [
+  const home = process.env.HOME || process.env.USERPROFILE || '';
+  const candidates: string[] = [];
+
+  // Try using 'which' / 'where' first (covers npm global, brew, etc.)
+  try {
+    const { execSync } = require('child_process');
+    const result = execSync('which claude 2>/dev/null || where claude 2>/dev/null', {
+      encoding: 'utf-8',
+      timeout: 3000,
+    }).trim();
+    if (result && fs.existsSync(result)) {
+      return result;
+    }
+  } catch {}
+
+  // Fallback: check common paths
+  const searchPaths = [
+    // macOS Homebrew
+    '/opt/homebrew/bin/claude',
     '/usr/local/bin/claude',
+    // Linux
     '/usr/bin/claude',
+    // nvm-managed Node
   ];
 
-  const home = process.env.HOME || process.env.USERPROFILE || '';
   if (home) {
     const nvmDir = path.join(home, '.nvm', 'versions', 'node');
     if (fs.existsSync(nvmDir)) {
       try {
         const entries = fs.readdirSync(nvmDir).sort().reverse();
         for (const entry of entries) {
-          const binPath = path.join(nvmDir, entry, 'bin', 'claude');
-          if (fs.existsSync(binPath)) {
-            candidates.unshift(binPath);
-          }
+          searchPaths.push(path.join(nvmDir, entry, 'bin', 'claude'));
         }
       } catch {}
     }
+    // npm global bin
+    searchPaths.push(path.join(home, '.npm-global', 'bin', 'claude'));
   }
 
-  // macOS Homebrew
-  const homebrewPaths = [
-    '/opt/homebrew/bin/claude',
-    '/usr/local/bin/claude',
-  ];
-  for (const p of homebrewPaths) {
-    if (fs.existsSync(p) && !candidates.includes(p)) {
-      candidates.unshift(p);
-    }
+  // Split PATH and check each
+  const pathDirs = (process.env.PATH || '').split(path.delimiter);
+  for (const dir of pathDirs) {
+    searchPaths.push(path.join(dir, 'claude'));
   }
 
-  for (const c of candidates) {
-    if (fs.existsSync(c)) return c;
+  for (const p of searchPaths) {
+    if (fs.existsSync(p)) return p;
   }
 
   return '';

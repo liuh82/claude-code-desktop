@@ -94,15 +94,25 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
     setDirty(false);
   }, [resetSettings]);
 
+  const [detectStatus, setDetectStatus] = useState('');
+
   const handleDetectCli = useCallback(async () => {
+    setDetectStatus('检测中...');
     try {
-      const api = (window as unknown as { claudeAPI?: Record<string, (...a: unknown[]) => Promise<unknown>> }).claudeAPI;
-      const info = api && typeof api.checkClaudeCli === 'function' ? await api.checkClaudeCli() as { path: string; version: string; available: boolean } | null : null; const path = info && info.available ? info.path : null;
-      if (path) {
-        handleChange('claudeCliPath', path);
+      const { claudeApi, isElectron } = require('@/lib/claude-api');
+      if (!isElectron()) {
+        setDetectStatus('仅在桌面应用中可用');
+        return;
+      }
+      const info = await claudeApi.checkClaudeCli();
+      if (info.available) {
+        handleChange('claudeCliPath', info.path);
+        setDetectStatus(`已找到 v${info.version}`);
+      } else {
+        setDetectStatus('未找到 Claude CLI');
       }
     } catch {
-      // Tauri not available
+      setDetectStatus('检测失败');
     }
   }, [handleChange]);
 
@@ -214,7 +224,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                       onChange={(e) => handleChange('claudeCliPath', e.target.value)}
                       placeholder="自动检测"
                     />
-                    <button className="sd-btn" onClick={handleDetectCli}>检测</button>
+                    <button className="sd-btn" onClick={handleDetectCli}>{detectStatus || '检测'}</button>
                   </div>
                 </SettingsField>
                 <SettingsField label="默认模型">

@@ -40,7 +40,19 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
 
   loadProjects: () => {
     const projects = loadProjects();
-    set({ projects });
+    // Deduplicate by path (keep most recent)
+    const seen = new Map<string, typeof projects[0]>();
+    for (const p of projects) {
+      const existing = seen.get(p.path);
+      if (!existing || p.lastOpened > existing.lastOpened) {
+        seen.set(p.path, p);
+      }
+    }
+    const deduped = Array.from(seen.values()).sort((a, b) => b.lastOpened - a.lastOpened);
+    if (deduped.length !== projects.length) {
+      saveProjects(deduped);
+    }
+    set({ projects: deduped });
   },
 
   selectProject: (project: Project) => {
