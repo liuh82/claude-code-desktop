@@ -26,7 +26,7 @@ export function ProjectSelector({ onProjectOpen }: ProjectSelectorProps) {
       // Mock: prompt for path in browser
       const path = prompt('输入项目目录路径：');
       if (path?.trim()) {
-        const project = useProjectStore.getState().addProject(path.trim());
+        useProjectStore.getState().addProject(path.trim());
         onProjectOpen(path.trim());
       }
     }
