@@ -210,16 +210,8 @@ function handleClaudeOutput(line: string) {
   // Final result — finalize and update token usage
   if (parsed.type === 'result') {
     const result = parsed as ParsedResult;
-    if (result.result && currentAssistantId) {
-      const state = useChatStore.getState();
-      useChatStore.setState({
-        messages: state.messages.map(m =>
-          m.id === currentAssistantId
-            ? { ...m, content: m.content + (m.content ? '\n\n' : '') + result.result }
-            : m
-        ),
-      });
-    }
+    // Note: result.result is a duplicate of the already-streamed assistant content
+    // Only use it if assistant content is empty (safety fallback)
 
     // Update token usage
     const usage = extractTokenUsage(result);
