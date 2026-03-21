@@ -35,8 +35,8 @@
     "wait-on": "^8.0.0"
   },
   "build": {
-    "appId": "com.claude.codedesktop",
-    "productName": "Claude Code Desktop",
+    "appId": "com.ccdesk.app",
+    "productName": "CCDesk",
     "mac": {
       "category": "public.app-category.developer-tools",
       "target": [
@@ -75,5 +75,5 @@
     "name": "liuh82",
     "email": "lkb83@163.com"
   },
-  "description": "A Claude Code desktop client with multi-panel terminal interface"
+  "description": "CCDesk — AI Agent chat desktop client"
 }

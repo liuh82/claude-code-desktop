@@ -104,7 +104,7 @@ function createWindow() {
     height: 720,
     minWidth: 640,
     minHeight: 480,
-    title: 'Claude Code Desktop',
+    title: 'CCDesk',
     backgroundColor: '#1e1e1e',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
