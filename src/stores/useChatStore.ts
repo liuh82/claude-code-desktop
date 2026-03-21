@@ -303,7 +303,10 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         projectPath,
         model,
       });
-      set({ projectPath });
+
+      // Load real file tree from filesystem
+      const tree = await claudeApi.readDirectory({ dirPath: projectPath, maxDepth: 3 });
+      set({ projectPath, fileTree: tree as FileNode[] });
     } catch (err) {
       console.error('[CCDesk] Failed to init session:', err);
     }

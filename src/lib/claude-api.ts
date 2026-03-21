@@ -6,6 +6,7 @@ interface ElectronAPI {
   getAppInfo: () => Promise<{ version: string; platform: string; arch: string }>;
   checkClaudeCli: () => Promise<{ path: string; version: string; available: boolean }>;
   getClaudeConfig: () => Promise<{ model: string; baseUrl: string | null; sonnetModel: string; opusModel: string; haikuModel: string } | null>;
+  readDirectory: (args: { dirPath: string; maxDepth?: number }) => Promise<unknown[]>;
   getSettings: () => Promise<Record<string, unknown>>;
   saveSettings: (settings: unknown) => Promise<void>;
   createSession: (args: { projectId: string; projectPath: string }) => Promise<{ session_id: string }>;
@@ -38,6 +39,7 @@ export const claudeApi: ElectronAPI = {
   getAppInfo: () => getApi()?.getAppInfo() ?? Promise.resolve({ version: '0.2.0', platform: 'web', arch: 'unknown' }),
   checkClaudeCli: () => getApi()?.checkClaudeCli() ?? Promise.resolve({ path: '', version: '', available: false }),
   getClaudeConfig: () => getApi()?.getClaudeConfig() ?? Promise.resolve(null),
+  readDirectory: (a) => getApi()?.readDirectory(a) ?? Promise.resolve([]),
   getSettings: () => getApi()?.getSettings() ?? Promise.resolve({}),
   saveSettings: (s) => getApi()?.saveSettings(s) ?? Promise.resolve(),
   createSession: (a) => getApi()?.createSession(a) ?? Promise.resolve({ session_id: 'mock' }),

@@ -352,6 +352,56 @@ function registerIpcHandlers() {
   });
 
 
+
+  // ── File Tree ──
+
+  ipcMain.handle('read-directory', async (_event, { dirPath, maxDepth }: { dirPath: string; maxDepth?: number }) => {
+    const depth = maxDepth || 3;
+    const result: Array<{ name: string; path: string; type: string; children?: unknown[] }> = [];
+
+    function walk(currentPath: string, currentDepth: number, parent: Array<{ name: string; path: string; type: string; children?: unknown[] }>) {
+      try {
+        const entries = fs.readdirSync(currentPath, { withFileTypes: true });
+        // Sort: directories first, then alphabetically
+        const sorted = entries.sort((a, b) => {
+          if (a.isDirectory() && !b.isDirectory()) return -1;
+          if (!a.isDirectory() && b.isDirectory()) return 1;
+          return a.name.localeCompare(b.name);
+        });
+
+        for (const entry of sorted) {
+          // Skip hidden files/dirs and common ignores
+          if (entry.name.startsWith('.')) continue;
+          if (['node_modules', '.git', 'dist', '__pycache__', '.next', 'target', 'build'].includes(entry.name) && currentDepth >= 1) continue;
+
+          const fullPath = path.join(currentPath, entry.name);
+          const relPath = fullPath; // Use absolute path for display
+
+          if (entry.isDirectory()) {
+            if (currentDepth >= depth) continue;
+            const node = {
+              name: entry.name,
+              path: relPath,
+              type: 'directory',
+              children: [],
+            };
+            parent.push(node);
+            walk(fullPath, currentDepth + 1, node.children!);
+          } else {
+            parent.push({
+              name: entry.name,
+              path: relPath,
+              type: 'file',
+            });
+          }
+        }
+      } catch {}
+    }
+
+    walk(dirPath, 0, result);
+    return result;
+  });
+
   // ── Claude Config ──
 
   ipcMain.handle('get-claude-config', () => {

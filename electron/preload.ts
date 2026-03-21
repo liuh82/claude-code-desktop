@@ -4,6 +4,7 @@ const api = {
   // App
   getAppInfo: () => ipcRenderer.invoke('get-app-info'),
   checkClaudeCli: () => ipcRenderer.invoke('check-claude-cli'),
+  readDirectory: (args: { dirPath: string; maxDepth?: number }) => ipcRenderer.invoke('read-directory', args) as Promise<Array<{ name: string; path: string; type: string; children?: unknown[] }>>,
   getClaudeConfig: () => ipcRenderer.invoke('get-claude-config'),
 
   // Settings
