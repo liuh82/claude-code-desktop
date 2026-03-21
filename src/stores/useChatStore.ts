@@ -289,6 +289,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   },
 
   initSession: async (projectPath: string, model?: string) => {
+    console.log('[CCDesk] initSession called:', { projectPath, model, isElectron: isElectron() });
     if (!isElectron()) return;
 
     try {
