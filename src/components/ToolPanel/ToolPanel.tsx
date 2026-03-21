@@ -12,7 +12,7 @@ interface ToolPanelProps {
   onClose: () => void;
 }
 
-function ToolPanel({ onClose }: ToolPanelProps) {
+function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSProperties }) {
   const [activeTab, setActiveTab] = useState<TabId>('files');
   const fileTree = useChatStore((s) => s.fileTree);
   const diffFiles = useChatStore((s) => s.diffFiles);
@@ -22,7 +22,7 @@ function ToolPanel({ onClose }: ToolPanelProps) {
   }, []);
 
   return (
-    <aside className={styles.toolPanel}>
+    <aside className={styles.toolPanel} style={style}>
       <div className={styles.toolPanelHeader}>
         <span className={styles.toolPanelTitle}>Tool Panel</span>
         <button className={styles.toolPanelClose} onClick={onClose} title="Close (Cmd+Shift+F)" aria-label="Close tool panel">

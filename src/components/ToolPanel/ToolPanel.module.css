@@ -1,5 +1,5 @@
 .toolPanel {
-  width: 300px;
+  width: 100%;
   flex-shrink: 0;
   background: var(--bg-secondary);
   border-left: 1px solid var(--border);
@@ -21,7 +21,7 @@
 .toolPanelTitle {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -65,7 +65,7 @@
 }
 
 .tab:hover {
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .tabActive {

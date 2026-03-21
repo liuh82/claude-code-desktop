@@ -46,7 +46,7 @@ function formatModelLabel(m: string): string {
   return m.replace('claude-', '').replace(/-\d{8}$/, '');
 }
 
-function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleTheme }: SidebarProps) {
+function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleTheme, style }: SidebarProps & { style?: React.CSSProperties }) {
   const [searchQuery, setSearchQuery] = useState('');
   const { settings, updateSetting } = useSettingsStore();
 
@@ -77,7 +77,7 @@ function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleThem
   }, []);
 
   return (
-    <aside className={styles.sidebar}>
+    <aside className={styles.sidebar} style={style}>
       {/* Top bar: project + model + actions */}
       <div className={styles.sidebarTop}>
         <div className={styles.projectRow}>
