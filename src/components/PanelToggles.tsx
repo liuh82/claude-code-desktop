@@ -1,11 +1,5 @@
 import styles from './PanelToggles.module.css';
 
-interface PanelTogglesProps {
-  sidebarOpen: boolean;
-  toolPanelOpen: boolean;
-  onToggleSidebar: () => void;
-  onToggleToolPanel: () => void;
-}
 
 export function SidebarToggle({ sidebarOpen, onToggleSidebar }: { sidebarOpen: boolean; onToggleSidebar: () => void }) {
   if (sidebarOpen) return null;
