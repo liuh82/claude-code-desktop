@@ -1,38 +1,35 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useChatStore } from '@/stores/useChatStore';
+import { claudeApi, isElectron } from '@/lib/claude-api';
 import styles from './Sidebar.module.css';
 
-const CLAUDE_MODELS = [
-  'claude-sonnet-4-20250514',
-  'claude-opus-4-20250514',
-  'claude-haiku-4-5-20251001',
-];
+interface ClaudeConfig {
+  model: string;
+  baseUrl: string | null;
+  sonnetModel: string;
+  opusModel: string;
+  haikuModel: string;
+}
 
-const GLM_MODELS = [
-  'glm-5-turbo',
-  'glm-4-plus',
-  'glm-4-0520',
-  'glm-4-air',
-  'glm-4-airx',
-  'glm-4-long',
-  'glm-4-flash',
+const CC_BUILTIN_MODELS = [
+  { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
+  { id: 'claude-opus-4-6', label: 'Opus 4.6' },
+  { id: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5' },
 ];
 
 interface Session {
   id: string;
   title: string;
   projectPath: string;
-  active?: boolean;
+  active: boolean;
+  lastActivity: string;
 }
 
 const MOCK_SESSIONS: Session[] = [
-  { id: '1', title: 'Refactor auth module', projectPath: '/workspace/project-a', active: true },
-  { id: '2', title: 'Add login page', projectPath: '/workspace/project-a' },
-  { id: '3', title: 'Fix CSS bug', projectPath: '/workspace/project-a' },
-  { id: '4', title: 'Setup CI pipeline', projectPath: '/workspace/project-b' },
-  { id: '5', title: 'Debug API timeout', projectPath: '/workspace/project-a' },
-  { id: '6', title: 'Write unit tests', projectPath: '/workspace/project-c' },
+  { id: '1', title: '实现用户登录功能', projectPath: '/projects/myapp', active: false, lastActivity: '2 小时前' },
+  { id: '2', title: '修复支付模块 bug', projectPath: '/projects/myapp', active: false, lastActivity: '5 小时前' },
+  { id: '3', title: '数据库迁移方案', projectPath: '/projects/api-server', active: true, lastActivity: '刚刚' },
 ];
 
 interface SidebarProps {
@@ -43,18 +40,39 @@ interface SidebarProps {
   onToggleTheme: () => void;
 }
 
-function formatModelLabel(m: string): string {
-  return m.replace('claude-', '').replace(/-\d{8}$/, '');
-}
-
 function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleTheme, style }: SidebarProps & { style?: React.CSSProperties }) {
   const [searchQuery, setSearchQuery] = useState('');
   const { settings, updateSetting } = useSettingsStore();
   const currentModel = useChatStore((s) => s.currentModel) || settings.defaultModel;
+  const [claudeConfig, setClaudeConfig] = useState<ClaudeConfig | null>(null);
+
+  // Load CC config on mount
+  useEffect(() => {
+    if (isElectron()) {
+      claudeApi.getClaudeConfig().then(setClaudeConfig).catch(() => {});
+    }
+  }, []);
+
+  // Build model list dynamically from CC config
+  const modelOptions = useMemo(() => {
+    const list = [...CC_BUILTIN_MODELS];
+    if (claudeConfig) {
+      const known = new Set(list.map(m => m.id));
+      for (const key of ['model', 'sonnetModel', 'opusModel', 'haikuModel'] as const) {
+        const m = claudeConfig[key];
+        if (m && !known.has(m)) {
+          const label = m.replace('claude-', '').replace(/-\d{8}$/, '').replace(/^glm-/, 'GLM ');
+          list.unshift({ id: m, label });
+          known.add(m);
+        }
+      }
+    }
+    return list;
+  }, [claudeConfig]);
 
   const projectName = projectPath
     ? projectPath.split('/').pop() || projectPath
-    : 'No project';
+    : '无项目';
 
   const filteredSessions = useMemo(() => {
     if (!searchQuery.trim()) return MOCK_SESSIONS;
@@ -67,7 +85,7 @@ function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleThem
   const groupedSessions = useMemo(() => {
     const groups: Record<string, Session[]> = {};
     for (const session of filteredSessions) {
-      const key = session.projectPath.split('/').pop() || 'Other';
+      const key = session.projectPath.split('/').pop() || '其他';
       if (!groups[key]) groups[key] = [];
       groups[key].push(session);
     }
@@ -101,16 +119,9 @@ function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleThem
             onChange={(e) => updateSetting('defaultModel', e.target.value)}
             title="选择模型"
           >
-            <optgroup label="GLM">
-              {GLM_MODELS.map((m) => (
-                <option key={m} value={m}>{formatModelLabel(m)}</option>
-              ))}
-            </optgroup>
-            <optgroup label="Claude">
-              {CLAUDE_MODELS.map((m) => (
-                <option key={m} value={m}>{formatModelLabel(m)}</option>
-              ))}
-            </optgroup>
+            {modelOptions.map((m) => (
+              <option key={m.id} value={m.id}>{m.label}</option>
+            ))}
           </select>
         </div>
       </div>

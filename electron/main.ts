@@ -313,6 +313,35 @@ function registerIpcHandlers() {
     }
   });
 
+
+  // ── Claude Config ──
+
+  ipcMain.handle('get-claude-config', () => {
+    const home = process.env.HOME || process.env.USERPROFILE || '';
+    if (!home) return null;
+    const configPaths = [
+      path.join(home, '.claude', 'settings.json'),
+      path.join(home, '.claude.json'),
+    ];
+    const merged: Record<string, unknown> = {};
+    for (const cp of configPaths) {
+      if (fs.existsSync(cp)) {
+        try {
+          const data = JSON.parse(fs.readFileSync(cp, 'utf-8'));
+          Object.assign(merged, data);
+        } catch {}
+      }
+    }
+    const env = (merged.env || {}) as Record<string, string>;
+    return {
+      model: env.ANTHROPIC_MODEL || '',
+      baseUrl: env.ANTHROPIC_BASE_URL || null,
+      sonnetModel: env.ANTHROPIC_DEFAULT_SONNET_MODEL || 'claude-sonnet-4-6',
+      opusModel: env.ANTHROPIC_DEFAULT_OPUS_MODEL || 'claude-opus-4-6',
+      haikuModel: env.ANTHROPIC_DEFAULT_HAIKU_MODEL || 'claude-haiku-4-5-20251001',
+    };
+  });
+
   // ── Settings ──
 
   ipcMain.handle('get-settings', () => {

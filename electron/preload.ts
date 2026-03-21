@@ -4,6 +4,7 @@ const api = {
   // App
   getAppInfo: () => ipcRenderer.invoke('get-app-info'),
   checkClaudeCli: () => ipcRenderer.invoke('check-claude-cli'),
+  getClaudeConfig: () => ipcRenderer.invoke('get-claude-config'),
 
   // Settings
   getSettings: () => ipcRenderer.invoke('get-settings'),
