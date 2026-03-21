@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { CodeBlock } from './CodeBlock';
+import { ChartBlock } from './ChartBlock';
 
 interface MarkdownRendererProps {
   content: string;
@@ -50,7 +51,14 @@ function CodeElement({ children, className }: ComponentPropsWithoutRef<'code'> &
   }
 
   const codeString = String(children).replace(/\n$/, '');
-  return <CodeBlock code={codeString} language={match ? match[1] : undefined} />;
+  const lang = match ? match[1] : '';
+
+  // Render chart code blocks as interactive ECharts
+  if (lang === 'chart' || lang === 'echarts') {
+    return <ChartBlock code={codeString} />;
+  }
+
+  return <CodeBlock code={codeString} language={lang || undefined} />;
 }
 
 function Paragraph({ children }: { children?: ReactNode }) {
