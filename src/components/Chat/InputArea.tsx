@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useChatStore } from '@/stores/useChatStore';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 import type { FileNode } from '@/types/chat';
 import styles from './InputArea.module.css';
 
@@ -39,6 +40,7 @@ function InputArea() {
   const stopGeneration = useChatStore((s) => s.stopGeneration);
   const clearChat = useChatStore((s) => s.clearChat);
   const fileTree = useChatStore((s) => s.fileTree);
+  const { settings } = useSettingsStore();
 
   const flatFiles = useMemo(() => flattenTree(fileTree), [fileTree]);
 
@@ -63,7 +65,7 @@ function InputArea() {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = `${Math.min(Math.max(el.scrollHeight, 56), 200)}px`;
+    el.style.height = `${Math.min(Math.max(el.scrollHeight, 64), 200)}px`;
   }, [text]);
 
   useEffect(() => {
@@ -88,7 +90,7 @@ function InputArea() {
     sendMessage(text.trim());
     setText('');
     if (textareaRef.current) {
-      textareaRef.current.style.height = '56px';
+      textareaRef.current.style.height = '64px';
     }
   }, [canSend, text, sendMessage]);
 
@@ -97,7 +99,6 @@ function InputArea() {
       clearChat();
       setText('');
     } else {
-      // Send as a regular message
       sendMessage(cmd);
       setText('');
     }
@@ -111,7 +112,6 @@ function InputArea() {
     const cursorPos = e.target.selectionStart;
     const textBeforeCursor = val.slice(0, cursorPos);
 
-    // Detect @ mention trigger
     const atMatch = textBeforeCursor.match(/@(\S*)$/);
     if (atMatch) {
       setShowMention(true);
@@ -121,7 +121,6 @@ function InputArea() {
       return;
     }
 
-    // Detect / slash command trigger (only at start of line or after space)
     const slashMatch = textBeforeCursor.match(/\/(\S*)$/);
     if (slashMatch && (slashMatch.index === 0 || textBeforeCursor[(slashMatch.index ?? 0) - 1] === ' ' || textBeforeCursor[(slashMatch.index ?? 0) - 1] === '\n')) {
       setShowSlash(true);
@@ -159,53 +158,20 @@ function InputArea() {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      // Handle @ mention dropdown
       if (showMention && filteredFiles.length > 0) {
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          setMentionIndex((i) => (i + 1) % filteredFiles.length);
-          return;
-        }
-        if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          setMentionIndex((i) => (i - 1 + filteredFiles.length) % filteredFiles.length);
-          return;
-        }
-        if (e.key === 'Enter' || e.key === 'Tab') {
-          e.preventDefault();
-          handleMentionSelect(filteredFiles[mentionIndex]);
-          return;
-        }
-        if (e.key === 'Escape') {
-          setShowMention(false);
-          return;
-        }
+        if (e.key === 'ArrowDown') { e.preventDefault(); setMentionIndex((i) => (i + 1) % filteredFiles.length); return; }
+        if (e.key === 'ArrowUp') { e.preventDefault(); setMentionIndex((i) => (i - 1 + filteredFiles.length) % filteredFiles.length); return; }
+        if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); handleMentionSelect(filteredFiles[mentionIndex]); return; }
+        if (e.key === 'Escape') { setShowMention(false); return; }
       }
 
-      // Handle / slash command dropdown
       if (showSlash && filteredCommands.length > 0) {
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          setSlashIndex((i) => (i + 1) % filteredCommands.length);
-          return;
-        }
-        if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          setSlashIndex((i) => (i - 1 + filteredCommands.length) % filteredCommands.length);
-          return;
-        }
-        if (e.key === 'Enter' || e.key === 'Tab') {
-          e.preventDefault();
-          executeCommand(filteredCommands[slashIndex].name);
-          return;
-        }
-        if (e.key === 'Escape') {
-          setShowSlash(false);
-          return;
-        }
+        if (e.key === 'ArrowDown') { e.preventDefault(); setSlashIndex((i) => (i + 1) % filteredCommands.length); return; }
+        if (e.key === 'ArrowUp') { e.preventDefault(); setSlashIndex((i) => (i - 1 + filteredCommands.length) % filteredCommands.length); return; }
+        if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); executeCommand(filteredCommands[slashIndex].name); return; }
+        if (e.key === 'Escape') { setShowSlash(false); return; }
       }
 
-      // Enter sends, Shift+Enter inserts newline
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         handleSend();
@@ -217,23 +183,26 @@ function InputArea() {
   const showDropdown = showMention && filteredFiles.length > 0;
   const showSlashDropdown = showSlash && filteredCommands.length > 0;
 
+  const displayModel = useChatStore((s) => s.currentModel) || settings.defaultModel || 'claude-sonnet-4-6';
+  const modelLabel = displayModel.replace('claude-', '').replace(/-\d{8}$/, '');
+
   return (
     <div className={styles.inputArea}>
-      <div className={styles.inputWrapper}>
+      <div className={styles.inputWrapper} ref={dropdownRef}>
         <textarea
           ref={textareaRef}
           className={styles.inputTextarea}
           value={text}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder="输入消息… @ 引用文件 / 斜杠命令"
+          placeholder="输入指令，例如 '/patch fix-issue'..."
           spellCheck={false}
           rows={1}
         />
 
-        {/* Dropdown: @ mentions or / commands */}
+        {/* Dropdowns */}
         {showDropdown && (
-          <div className={styles.dropdown} ref={dropdownRef}>
+          <div className={styles.dropdown}>
             {filteredFiles.map((file, i) => (
               <div
                 key={file.path}
@@ -241,9 +210,7 @@ function InputArea() {
                 onClick={() => handleMentionSelect(file)}
                 onMouseEnter={() => setMentionIndex(i)}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--text-muted)' }}>
-                  description
-                </span>
+                <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--text-muted)' }}>description</span>
                 <span className={styles.dropdownPath}>{file.path}</span>
               </div>
             ))}
@@ -251,7 +218,7 @@ function InputArea() {
         )}
 
         {showSlashDropdown && (
-          <div className={styles.dropdown} ref={dropdownRef}>
+          <div className={styles.dropdown}>
             {filteredCommands.map((cmd, i) => (
               <div
                 key={cmd.name}
@@ -259,9 +226,7 @@ function InputArea() {
                 onClick={() => executeCommand(cmd.name)}
                 onMouseEnter={() => setSlashIndex(i)}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--text-muted)' }}>
-                  {cmd.icon}
-                </span>
+                <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--text-muted)' }}>{cmd.icon}</span>
                 <div className={styles.dropdownCommand}>
                   <span className={styles.dropdownCmdName}>{cmd.name}</span>
                   <span className={styles.dropdownCmdDesc}>{cmd.description}</span>
@@ -271,28 +236,38 @@ function InputArea() {
           </div>
         )}
 
-        <div className={styles.inputFooter}>
-          <div className={styles.inputFooterLeft}>
-            <span className="material-symbols-outlined" style={{ fontSize: 16, color: 'var(--text-muted)', cursor: 'pointer' }}>attach_file</span>
-            <span className="material-symbols-outlined" style={{ fontSize: 16, color: 'var(--text-muted)', cursor: 'pointer' }}>image</span>
-          </div>
-          <div className={styles.inputFooterRight}>
-            {isGenerating ? (
-              <button className={styles.stopBtn} onClick={stopGeneration}>
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>stop_circle</span>
-                停止
-              </button>
-            ) : (
-              <button
-                className={`${styles.sendBtn} ${canSend ? styles.sendBtnActive : ''}`}
-                onClick={handleSend}
-                disabled={!canSend}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_upward</span>
-              </button>
-            )}
-          </div>
+        {/* Action buttons inside textarea */}
+        <div className={styles.inputActions}>
+          <button className={styles.attachBtn} title="附件">
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>attach_file</span>
+          </button>
+          {isGenerating ? (
+            <button className={styles.stopBtn} onClick={stopGeneration} title="停止生成">
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>stop_circle</span>
+            </button>
+          ) : (
+            <button
+              className={`${styles.sendBtn} ${canSend ? styles.sendBtnActive : ''}`}
+              onClick={handleSend}
+              disabled={!canSend}
+              title="发送 (⌘+Enter)"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_upward</span>
+            </button>
+          )}
         </div>
+      </div>
+
+      {/* Footer hints */}
+      <div className={styles.inputFooter}>
+        <div className={styles.inputFooterLeft}>
+          <span className={styles.modelIndicator}>
+            <span className={styles.modelDot} />
+            {modelLabel}
+          </span>
+          <span className={styles.encoding}>UTF-8</span>
+        </div>
+        <span className={styles.shortcutHint}>{'\u2318'}+Enter 发送</span>
       </div>
     </div>
   );

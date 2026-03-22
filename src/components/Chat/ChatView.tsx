@@ -24,19 +24,27 @@ function ChatView() {
         <div className={styles.messageListInner}>
           {messages.length === 0 ? (
             <div className={styles.emptyState}>
-              <div className={styles.emptyLogo}>CCDesk</div>
+              <div className={styles.emptyLogo}>
+                <span className="material-symbols-outlined">smart_toy</span>
+              </div>
+              <div>
+                <div className={styles.emptyTitle}>Claude Code</div>
+                <div className={styles.emptySubtitle}>
+                  AI 驱动的终端工作空间，开始对话探索你的项目
+                </div>
+              </div>
               <div className={styles.emptyHints}>
                 <div className={styles.emptyHint}>
                   <kbd>@</kbd>
-                  <span>Reference files</span>
+                  <span>引用文件</span>
                 </div>
                 <div className={styles.emptyHint}>
                   <kbd>/</kbd>
-                  <span>View commands</span>
+                  <span>查看命令</span>
                 </div>
                 <div className={styles.emptyHint}>
                   <kbd>{'\u2318'}K</kbd>
-                  <span>Command palette</span>
+                  <span>命令面板</span>
                 </div>
               </div>
             </div>

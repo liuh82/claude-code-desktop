@@ -1,47 +1,54 @@
 import { useChatStore } from '@/stores/useChatStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
-import { isElectron } from '@/lib/claude-api';
 import styles from './StatusBar.module.css';
 
-const CONTEXT_WINDOW = 200000;
 
 function StatusBar() {
   const tokenUsage = useChatStore((s) => s.tokenUsage);
-  const currentModel = useChatStore((s) => s.currentModel);
   const { settings } = useSettingsStore();
-
   const total = tokenUsage.input + tokenUsage.output;
-  const percent = Math.min((total / CONTEXT_WINDOW) * 100, 100);
-
-  const progressColor = percent < 60
-    ? styles.progressGreen
-    : percent < 80
-      ? styles.progressYellow
-      : styles.progressRed;
-
-  const formatNumber = (n: number): string =>
-    n.toLocaleString();
-
-  const displayModel = currentModel || settings.defaultModel || 'unknown';
+  const modelLabel = (useChatStore((s) => s.currentModel) || settings.defaultModel || '').replace('claude-', '').replace(/-\d{8}$/, '');
+  const formatNumber = (n: number): string => n.toLocaleString();
 
   return (
     <div className={styles.statusBar}>
       <div className={styles.statusLeft}>
-        <span style={{ fontSize: 8 }}>{isElectron() ? '🟢' : '🟡'}</span>
-        <span className={styles.modelName}>{displayModel}</span>
-        <span className={styles.separator}>{'\u00B7'}</span>
-        <span className={styles.tokenText}>
-          {formatNumber(tokenUsage.input)} / {formatNumber(tokenUsage.output)} tokens
-        </span>
-      </div>
-      <div className={styles.statusRight}>
-        <div className={styles.progressTrack}>
-          <div
-            className={`${styles.progressFill} ${progressColor}`}
-            style={{ width: `${percent}%` }}
-          />
+        <div className={`${styles.statusGroup} ${styles.statusGroupBorder}`} title="Git branch">
+          <span className={styles.statusGroupIcon} style={{ color: '#6366f1' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>account_tree</span>
+          </span>
+          <span className={styles.branchName}>main*</span>
         </div>
-        <span className={styles.progressText}>{percent.toFixed(1)}%</span>
+
+        <div className={`${styles.statusGroup} ${styles.statusGroupBorder}`} title="Problems">
+          <span className={styles.statusGroupIcon} style={{ color: 'var(--error)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>sync_problem</span>
+          </span>
+          <span className={styles.errorCount}>0</span>
+        </div>
+
+        <div className={styles.statusGroup} title="Connection status">
+          <span className={styles.statusDot} />
+          <span className={styles.statusLabel}>Ready</span>
+        </div>
+      </div>
+
+      <div className={styles.statusRight}>
+        <div className={styles.tokenGroup} title="Token usage">
+          <span className={styles.tokenLabel}>Token: </span>
+          <span className={styles.tokenValue}>{formatNumber(total)}</span>
+          <span className={styles.tokenLabel}> / 128k</span>
+        </div>
+
+        <div className={`${styles.statusMeta} ${styles.encodingMeta}`} title="Encoding">UTF-8</div>
+
+        <div className={`${styles.statusMeta} ${styles.langMeta}`} title="Language">
+          {modelLabel || 'TypeScript'}
+        </div>
+
+        <button className={styles.notificationBtn} title="Notifications">
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>notifications</span>
+        </button>
       </div>
     </div>
   );

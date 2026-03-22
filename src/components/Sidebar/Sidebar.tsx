@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useChatStore } from '@/stores/useChatStore';
 import { claudeApi, isElectron } from '@/lib/claude-api';
@@ -18,6 +18,14 @@ const CC_BUILTIN_MODELS = [
   { id: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5' },
 ];
 
+const NAV_ITEMS = [
+  { id: 'terminal', icon: 'terminal', label: 'Terminal', color: 'var(--accent)' },
+  { id: 'projects', icon: 'folder_open', label: 'Projects', color: '#6366f1' },
+  { id: 'history', icon: 'history', label: 'History', color: '#f59e0b' },
+  { id: 'settings', icon: 'settings', label: 'Settings', color: '#3b82f6' },
+  { id: 'help', icon: 'help', label: 'Help', color: '#10b981' },
+] as const;
+
 interface SidebarProps {
   projectPath: string;
   onNewChat: () => void;
@@ -26,9 +34,10 @@ interface SidebarProps {
   onToggleTheme: () => void;
 }
 
-function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleTheme, style }: SidebarProps & { style?: React.CSSProperties }) {
+function Sidebar({ projectPath: _projectPath, onNewChat, onClose, onOpenSettings, onToggleTheme, style }: SidebarProps & { style?: React.CSSProperties }) {
   const { settings, updateSetting } = useSettingsStore();
   const currentModel = useChatStore((s) => s.currentModel) || settings.defaultModel;
+  const [activeNav, setActiveNav] = useState<string>('terminal');
   const [claudeConfig, setClaudeConfig] = useState<ClaudeConfig | null>(null);
 
   useEffect(() => {
@@ -53,50 +62,73 @@ function Sidebar({ projectPath, onNewChat, onClose, onOpenSettings, onToggleThem
     return list;
   }, [claudeConfig]);
 
-  const projectName = projectPath
-    ? projectPath.split('/').pop() || projectPath
-    : '无项目';
+  const handleNavClick = useCallback((id: string) => {
+    setActiveNav(id);
+    if (id === 'terminal') onNewChat();
+    if (id === 'settings') onOpenSettings();
+  }, [onNewChat, onOpenSettings]);
 
   return (
     <aside className={styles.sidebar} style={style}>
-      <div className={styles.sidebarTop}>
-        <div className={styles.projectRow}>
-          <span className={styles.projectIcon}>
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>account_tree</span>
-          </span>
-          <span className={styles.projectName} title={projectPath}>{projectName}</span>
-          <button className={styles.newChatBtn} onClick={onNewChat} title="新建对话 (⌘N)">
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
-          </button>
+      <div className={styles.sidebarLogo}>
+        <div className={styles.sidebarLogoIcon}>
+          <span className="material-symbols-outlined">terminal</span>
         </div>
-        <div className={styles.modelRow}>
-          <select
-            className={styles.modelSelect}
-            value={currentModel}
-            onChange={(e) => updateSetting('defaultModel', e.target.value)}
-            title="选择模型"
-          >
-            {modelOptions.map((m) => (
-              <option key={m.id} value={m.id}>{m.label}</option>
-            ))}
-          </select>
+        <div className={styles.sidebarLogoText}>
+          <span className={styles.sidebarLogoTitle}>Claude Code</span>
+          <span className={styles.sidebarLogoSubtitle}>CLI Workspace</span>
         </div>
       </div>
 
-      <div className={styles.sessionList}>
-        <div className={styles.sessionEmpty}>暂无历史会话</div>
+      <div className={styles.modelRow}>
+        <select
+          className={styles.modelSelect}
+          value={currentModel}
+          onChange={(e) => updateSetting('defaultModel', e.target.value)}
+          title="选择模型"
+        >
+          {modelOptions.map((m) => (
+            <option key={m.id} value={m.id}>{m.label}</option>
+          ))}
+        </select>
       </div>
+
+      <nav className={styles.sidebarNav}>
+        {NAV_ITEMS.map((item) => (
+          <button
+            key={item.id}
+            className={`${styles.navItem} ${activeNav === item.id ? styles.navItemActive : ''}`}
+            onClick={() => handleNavClick(item.id)}
+          >
+            <span className={styles.navIcon} style={{ color: activeNav === item.id ? item.color : undefined }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{item.icon}</span>
+            </span>
+            <span className={styles.navLabel}>{item.label}</span>
+          </button>
+        ))}
+      </nav>
 
       <div className={styles.sidebarFooter}>
-        <button className={styles.footerBtn} onClick={onToggleTheme} title="切换主题">
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>dark_mode</span>
-        </button>
-        <button className={styles.footerBtn} onClick={onOpenSettings} title="设置 (⌘,)">
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>settings</span>
-        </button>
-        <button className={styles.footerBtn} onClick={onClose} title="关闭侧栏 (⌘B)">
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>chevron_left</span>
-        </button>
+        <div className={styles.userCard}>
+          <div className={styles.userAvatar}>
+            <span className="material-symbols-outlined">person</span>
+          </div>
+          <div className={styles.userInfo}>
+            <div className={styles.userName}>Developer</div>
+            <div className={styles.userPlan}>Pro Plan</div>
+          </div>
+        </div>
+        <div className={styles.sidebarActions}>
+          <button className={styles.footerBtn} onClick={onToggleTheme} title="切换主题">
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>dark_mode</span>
+          </button>
+          <button className={styles.footerBtn} onClick={onOpenSettings} title="设置">
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>settings</span>
+          </button>
+          <button className={styles.footerBtn} onClick={onClose} title="关闭侧栏 (⌘B)">
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_left</span>
+          </button>
+        </div>
       </div>
     </aside>
   );

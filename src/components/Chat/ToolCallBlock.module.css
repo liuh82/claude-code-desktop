@@ -1,44 +1,56 @@
-/* ═══ ToolCallBlock — Precision Airy ═══ */
+/* ═══ ToolCallBlock — Precision Workspace ═══ */
 
 .toolCall {
-  margin: 8px 0;
-  border: 1px solid var(--border-ghost);
-  border-radius: var(--radius-md);
+  margin: var(--space-2) 0;
+  border: 1px solid rgba(0, 91, 192, 0.20);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
+  background: var(--bg-input);
+  box-shadow: var(--shadow-sm);
 }
 
 .toolCallHeader {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  background: var(--bg-elevated);
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(0, 91, 192, 0.03);
   cursor: pointer;
   user-select: none;
   transition: background 0.15s;
 }
 
 .toolCallHeader:hover {
-  background: var(--bg-hover);
+  background: rgba(0, 91, 192, 0.06);
 }
 
 .toolIcon {
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--accent-muted);
   flex-shrink: 0;
 }
 
+.toolIcon .material-symbols-outlined {
+  font-size: 16px;
+  color: var(--accent);
+}
+
 .toolLabel {
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--accent);
+  font-size: var(--font-size-sm);
   flex-shrink: 0;
 }
 
 .toolSummary {
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -57,9 +69,9 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
-  padding: 1px 6px;
+  padding: 1px var(--space-2);
   border-radius: var(--radius-sm);
 }
 
@@ -70,12 +82,12 @@
 
 .badgeCompleted {
   color: var(--success);
-  background: rgba(55, 100, 124, 0.08);
+  background: var(--success-bg);
 }
 
 .badgeError {
   color: var(--error);
-  background: rgba(159, 64, 61, 0.08);
+  background: var(--error-bg);
 }
 
 .spinner {
@@ -89,12 +101,12 @@
 }
 
 .chevron {
-  color: var(--text-muted);
+  color: var(--accent);
   display: flex;
   align-items: center;
   flex-shrink: 0;
   transition: transform 0.2s;
-  margin-left: 2px;
+  margin-left: var(--space-1);
 }
 
 .chevronOpen {
@@ -102,32 +114,28 @@
 }
 
 .toolCallBody {
-  padding: 8px 12px;
+  padding: var(--space-4);
   background: var(--bg-secondary);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   max-height: 200px;
   overflow-y: auto;
+  border-top: 1px solid var(--border-divider);
 }
 
 .toolCallLabel {
   color: var(--text-muted);
-  font-size: var(--font-size-xs);
-  margin-bottom: 4px;
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-2xs);
+  margin-bottom: var(--space-1);
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-label);
+  letter-spacing: var(--letter-spacing-widest);
 }
 
 .toolCallContent {
   color: var(--text-secondary);
   font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   white-space: pre-wrap;
   word-break: break-word;
   line-height: var(--line-height-normal);
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }

@@ -12,15 +12,9 @@ function CodeBlock({ code, language }: CodeBlockProps) {
 
   const highlighted = useMemo(() => {
     if (language && hljs.getLanguage(language)) {
-      try {
-        return hljs.highlight(code, { language }).value;
-      } catch {}
+      try { return hljs.highlight(code, { language }).value; } catch {}
     }
-    try {
-      return hljs.highlightAuto(code).value;
-    } catch {
-      return code;
-    }
+    try { return hljs.highlightAuto(code).value; } catch { return code; }
   }, [code, language]);
 
   const lines = useMemo(() => highlighted.split('\n'), [highlighted]);
@@ -36,16 +30,26 @@ function CodeBlock({ code, language }: CodeBlockProps) {
   return (
     <div className={styles.codeBlock}>
       <div className={styles.codeHeader}>
-        <span className={styles.codeLang}>{language || 'text'}</span>
-        <button
-          className={`${styles.copyBtn} ${copied ? styles.copyBtnCopied : ''}`}
-          onClick={handleCopy}
-          aria-label="复制代码"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-            {copied ? 'check' : 'content_copy'}
-          </span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div className={styles.codeTrafficLights}>
+            <span className={`${styles.trafficDot} ${styles.trafficRed}`} />
+            <span className={`${styles.trafficDot} ${styles.trafficYellow}`} />
+            <span className={`${styles.trafficDot} ${styles.trafficGreen}`} />
+          </div>
+          <span className={styles.codeLang}>{language || 'text'}</span>
+        </div>
+        <div className={styles.codeHeaderRight}>
+          <button
+            className={`${styles.copyBtn} ${copied ? styles.copyBtnCopied : ''}`}
+            onClick={handleCopy}
+            aria-label="复制代码"
+            title="复制"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
+              {copied ? 'check' : 'content_copy'}
+            </span>
+          </button>
+        </div>
       </div>
       <div className={styles.codeBody}>
         <div className={styles.lineNumbers}>

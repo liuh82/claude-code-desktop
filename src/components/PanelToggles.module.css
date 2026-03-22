@@ -1,4 +1,4 @@
-/* ═══ PanelToggles — Precision Airy ═══ */
+/* ═══ PanelToggles — Precision Workspace ═══ */
 
 .toggleBtn {
   display: flex;
@@ -14,14 +14,14 @@
 }
 
 .toggleLeft {
-  border-right: 1px solid var(--border-ghost);
+  border-right: 1px solid var(--border-divider);
 }
 
 .toggleRight {
-  border-left: 1px solid var(--border-ghost);
+  border-left: 1px solid var(--border-divider);
 }
 
 .toggleBtn:hover {
-  color: var(--text-primary);
-  background: var(--bg-hover-subtle);
+  color: var(--accent);
+  background: var(--accent-muted);
 }

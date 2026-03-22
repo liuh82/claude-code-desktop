@@ -1,5 +1,8 @@
+/* ═══ App Layout — Precision Workspace ═══ */
+
 .appLayout {
   display: flex;
+  flex-direction: column;
   height: 100vh;
   width: 100vw;
   overflow: hidden;
@@ -13,36 +16,4 @@
   display: flex;
   min-height: 0;
   overflow: hidden;
-}
-
-/* Overlay animations */
-.cpOverlay {
-  animation: fadeIn 0.15s ease-out;
-}
-
-.cpContainer {
-  animation: slideDown 0.2s ease-out;
-}
-
-.sdOverlay {
-  animation: fadeIn 0.15s ease-out;
-}
-
-.sdContainer {
-  animation: slideUp 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-20px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
 }

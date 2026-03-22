@@ -1,76 +1,154 @@
-/* ═══ StatusBar — Precision Airy ═══ */
+/* ═══ StatusBar — Precision Workspace (bottom bar) ═══ */
 
 .statusBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 16px;
-  background: var(--bg-secondary);
-  font-size: var(--font-size-sm);
+  padding: 0 var(--space-3);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: var(--font-size-2xs);
   flex-shrink: 0;
   height: 28px;
+  border-top: 1px solid var(--border-divider);
 }
 
 .statusLeft {
   display: flex;
   align-items: center;
-  gap: 6px;
+  height: 100%;
+  gap: 0;
 }
 
-.modelName {
+.statusGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-3);
+  height: 100%;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.statusGroup:hover {
+  background: rgba(0, 91, 192, 0.05);
+}
+
+.statusGroup:hover .statusGroupIcon {
+  transform: scale(1.1);
+}
+
+.statusGroupBorder {
+  border-right: 1px solid var(--border-divider);
+}
+
+.statusGroupIcon {
+  display: flex;
+  align-items: center;
+  transition: transform 0.15s;
+}
+
+.statusText {
+  font-weight: var(--font-weight-bold);
   color: var(--text-secondary);
-  font-weight: var(--font-weight-medium);
-  font-size: var(--font-size-sm);
+}
+
+.branchName {
+  color: var(--accent);
+  font-weight: var(--font-weight-bold);
+}
+
+.errorCount {
+  color: var(--error);
+  font-weight: var(--font-weight-bold);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.statusLabel {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-muted);
+  text-transform: uppercase;
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.separator {
-  color: var(--text-muted);
-  opacity: 0.5;
-}
-
-.tokenText {
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
-}
-
+/* Right section */
 .statusRight {
   display: flex;
   align-items: center;
-  gap: 6px;
-}
-
-.progressTrack {
-  width: 72px;
-  height: 3px;
-  background: var(--bg-hover);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progressFill {
   height: 100%;
-  border-radius: 2px;
-  transition: width 0.3s, background 0.3s;
+  gap: 0;
 }
 
-.progressGreen {
-  background: var(--accent);
+.tokenGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-4);
+  height: 100%;
+  background: var(--accent-muted);
 }
 
-.progressYellow {
-  background: var(--warning);
+.tokenLabel {
+  font-weight: var(--font-weight-normal);
+  color: rgba(0, 91, 192, 0.7);
 }
 
-.progressRed {
-  background: var(--error);
-}
-
-.progressText {
-  color: var(--text-muted);
+.tokenValue {
+  font-weight: var(--font-weight-black);
+  color: var(--accent);
   font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
-  min-width: 32px;
-  text-align: right;
+}
+
+.statusMeta {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+  height: 100%;
+  font-weight: var(--font-weight-black);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-widest);
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.statusMeta:hover {
+  background: var(--bg-hover);
+}
+
+.encodingMeta {
+  color: #3b82f6;
+}
+
+.langMeta {
+  color: #f59e0b;
+}
+
+.notificationBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 100%;
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+  transition: filter 0.15s;
+  border-radius: 0;
+}
+
+.notificationBtn:hover {
+  filter: brightness(1.1);
+}
+
+.notificationBtn .material-symbols-outlined {
+  color: white;
+  font-size: 14px;
 }

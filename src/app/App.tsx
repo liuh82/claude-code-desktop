@@ -4,6 +4,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboard';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useChatStore } from '@/stores/useChatStore';
 import { useProjectStore } from '@/stores/useProjectStore';
+import { TopNav } from '@/components/TopNav';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { ChatView } from '@/components/Chat/ChatView';
 import { ToolPanel } from '@/components/ToolPanel/ToolPanel';
@@ -58,7 +59,7 @@ function AppContent() {
   const [sidebarOpen, setSidebarOpen] = useState(() => readBool(SIDEBAR_KEY, true));
   const [toolPanelOpen, setToolPanelOpen] = useState(() => readBool(TOOLPANEL_KEY, true));
   const [sidebarWidth, setSidebarWidth] = useState(() => readNum(SIDEBAR_WIDTH_KEY, 260));
-  const [toolPanelWidth, setToolPanelWidth] = useState(() => readNum(TOOLPANEL_WIDTH_KEY, 300));
+  const [toolPanelWidth, setToolPanelWidth] = useState(() => readNum(TOOLPANEL_WIDTH_KEY, 340));
 
   const projectPath = activeProject?.path ?? '';
 
@@ -67,11 +68,9 @@ function AppContent() {
     loadRecentProjects();
   }, [loadSettings, loadRecentProjects]);
 
-  // Init Claude session when project path changes
   useEffect(() => {
     if (projectPath) {
-      initSession(projectPath).then(() => {
-      }).catch((err) => {
+      initSession(projectPath).catch((err) => {
         console.error('[CCDesk] initSession error:', err);
       });
     }
@@ -95,19 +94,13 @@ function AppContent() {
 
   const handleNewChat = useCallback(() => {
     clearChat();
-    // Re-init session after clearing
-    if (projectPath) {
-      initSession(projectPath);
-    }
+    if (projectPath) initSession(projectPath);
   }, [clearChat, initSession, projectPath]);
 
   const handleProjectOpen = useCallback((path: string) => {
     const existing = useProjectStore.getState().projects.find((p) => p.path === path);
-    if (existing) {
-      selectProject(existing);
-    } else {
-      addProject(path);
-    }
+    if (existing) selectProject(existing);
+    else addProject(path);
   }, [addProject, selectProject]);
 
   const handleOpenProject = useCallback(async () => {
@@ -165,7 +158,8 @@ function AppContent() {
 
   useKeyboardShortcuts(actions);
 
-  // Show project selector when no project is open
+  const projectName = activeProject?.name || projectPath.split('/').pop() || '';
+
   if (!activeProject) {
     return (
       <ThemeProvider>
@@ -181,6 +175,8 @@ function AppContent() {
 
   return (
     <div className="appLayout">
+      <TopNav projectName={projectName} />
+
       <div className="appBody">
         <SidebarToggle sidebarOpen={sidebarOpen} onToggleSidebar={toggleSidebar} />
         {sidebarOpen && (

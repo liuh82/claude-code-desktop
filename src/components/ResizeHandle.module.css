@@ -1,4 +1,4 @@
-/* ═══ ResizeHandle — Precision Airy ═══ */
+/* ═══ ResizeHandle — Precision Workspace ═══ */
 
 .handle {
   position: relative;
@@ -33,7 +33,7 @@
   background: var(--border);
   border-radius: 1px;
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s, background 0.15s;
 }
 
 .left:hover::after,
@@ -61,7 +61,7 @@
   background: var(--border);
   border-radius: 1px;
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s, background 0.15s;
 }
 
 .right:hover::after,

@@ -14,7 +14,6 @@ export function ProjectSelector({ onProjectOpen }: ProjectSelectorProps) {
   }, [loadProjects]);
 
   const handleOpenFolder = async () => {
-    // Try Electron API first, fallback to mock
     const api = (window as unknown as Record<string, unknown>).claudeAPI as { openDirectoryDialog?: () => Promise<string | null> } | undefined;
     if (api?.openDirectoryDialog) {
       const path = await api.openDirectoryDialog();
@@ -23,7 +22,6 @@ export function ProjectSelector({ onProjectOpen }: ProjectSelectorProps) {
         onProjectOpen(path);
       }
     } else {
-      // Mock: prompt for path in browser
       const path = prompt('输入项目目录路径：');
       if (path?.trim()) {
         useProjectStore.getState().addProject(path.trim());
@@ -62,14 +60,15 @@ export function ProjectSelector({ onProjectOpen }: ProjectSelectorProps) {
     <div className={styles.overlay}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <div className={styles.logo}>CCDesk</div>
-          <div className={styles.tagline}>选择一个项目开始工作</div>
+          <div className={styles.logoArea}>
+            <span className="material-symbols-outlined">terminal</span>
+          </div>
+          <div className={styles.logo}>Claude Code</div>
+          <div className={styles.tagline}>AI 驱动的终端工作空间</div>
         </div>
 
         <button className={styles.openBtn} onClick={handleOpenFolder}>
-          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M2 10l3-3h6l3 3M8 2v10" />
-          </svg>
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>folder_open</span>
           打开项目目录
         </button>
 
@@ -80,23 +79,15 @@ export function ProjectSelector({ onProjectOpen }: ProjectSelectorProps) {
               {recentProjects.map((project) => (
                 <div key={project.id} className={styles.recentItem}>
                   <span className={styles.recentIcon}>
-                    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M1.5 3.5v9a1 1 0 001 1h11a1 1 0 001-1v-7a1 1 0 00-1-1H8l-1.5-2H2.5a1 1 0 00-1 1z" fill="var(--accent-muted)" />
-                    </svg>
+                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>folder</span>
                   </span>
-                  <div
-                    className={styles.recentInfo}
-                    onClick={() => handleSelectProject(project.path)}
-                  >
+                  <div className={styles.recentInfo} onClick={() => handleSelectProject(project.path)}>
                     <div className={styles.recentName}>{project.name}</div>
                     <div className={styles.recentPath}>{project.path} · {formatTime(project.lastOpened)}</div>
                   </div>
                   <button
                     className={styles.recentRemove}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeProject(project.id);
-                    }}
+                    onClick={(e) => { e.stopPropagation(); removeProject(project.id); }}
                     title="移除"
                   >
                     ×
@@ -107,9 +98,7 @@ export function ProjectSelector({ onProjectOpen }: ProjectSelectorProps) {
           </div>
         )}
 
-        <div className={styles.footer}>
-          选择包含代码项目的目录
-        </div>
+        <div className={styles.footer}>选择包含代码项目的目录开始工作</div>
       </div>
     </div>
   );

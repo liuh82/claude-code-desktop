@@ -1,84 +1,123 @@
-/* ═══ Sidebar — Precision Airy ═══ */
+/* ═══ Sidebar — Precision Workspace ═══ */
 
 .sidebar {
   width: 100%;
   flex-shrink: 0;
-  background: var(--bg-secondary);
+  background: var(--bg-elevated);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-/* Top bar — no border, tonal shift */
-.sidebarTop {
-  padding: 12px 14px;
-  flex-shrink: 0;
-}
-
-.projectRow {
+/* Logo area */
+.sidebarLogo {
+  padding: var(--space-6) var(--space-5);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-3);
 }
 
-.projectIcon {
+.sidebarLogoIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--accent-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px -2px rgba(0, 91, 192, 0.30);
   flex-shrink: 0;
-  color: var(--text-secondary);
-  font-size: var(--font-size-md);
 }
 
-.projectName {
-  flex: 1;
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.sidebarLogoIcon .material-symbols-outlined {
+  color: white;
+  font-size: 20px;
+}
+
+.sidebarLogoText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sidebarLogoTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-tight);
 }
 
-.newChatBtn {
-  width: 26px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--accent-muted);
+.sidebarLogoSubtitle {
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-bold);
   color: var(--accent);
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.15s;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-widest);
 }
 
-.newChatBtn:hover {
-  background: var(--accent);
-  color: var(--text-inverse);
+/* Navigation */
+.sidebarNav {
+  flex: 1;
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.closeBtn {
-  width: 26px;
-  height: 26px;
+.navItem {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
+  gap: var(--space-3);
+  padding: 10px var(--space-4);
   color: var(--text-muted);
   cursor: pointer;
-  border-radius: var(--radius-sm);
+  transition: all 0.15s ease-out;
+  border-left: 3px solid transparent;
+  background: transparent;
+  border-right: none;
+  border-top: none;
+  border-bottom: none;
+  border-radius: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  width: 100%;
+}
+
+.navItem:hover {
+  background: var(--bg-secondary);
+}
+
+.navItemActive {
+  background: var(--accent-muted);
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+.navItemActive .navIcon {
+  color: var(--accent);
+}
+
+.navIcon {
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
+  transition: color 0.15s;
 }
 
-.closeBtn:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
+.navLabel {
+  font-weight: var(--font-weight-medium);
 }
 
+/* Model selector */
 .modelRow {
-  margin-top: 8px;
+  padding: 0 var(--space-5);
+  margin-top: var(--space-3);
 }
 
 .modelSelect {
@@ -88,7 +127,7 @@
   border: 1px solid var(--border-ghost);
   border-radius: var(--radius-md);
   padding: 5px 8px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   cursor: pointer;
   outline: none;
   font-family: var(--font-mono);
@@ -103,28 +142,91 @@
   border-color: var(--border-focus);
 }
 
-/* Session list */
+/* Session list area */
 .sessionList {
   flex: 1;
   overflow-y: auto;
-  padding: 4px 0;
+  padding: var(--space-2) 0;
 }
 
 .sessionEmpty {
-  padding: 24px 16px;
+  padding: var(--space-6) var(--space-4);
   text-align: center;
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
 }
 
-/* Bottom actions — no border, tonal shift */
+/* Bottom: user profile card */
 .sidebarFooter {
+  padding: var(--space-4);
+  flex-shrink: 0;
+}
+
+.userCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: rgba(217, 228, 234, 0.15);
+  border: 1px solid var(--border-divider);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.userCard:hover {
+  border-color: rgba(0, 91, 192, 0.15);
+}
+
+.userAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(0, 91, 192, 0.15);
+  box-shadow: 0 0 0 2px rgba(0, 91, 192, 0.05);
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.userAvatar .material-symbols-outlined {
+  font-size: 20px;
+  color: var(--text-muted);
+}
+
+.userInfo {
+  flex: 1;
+  overflow: hidden;
+}
+
+.userName {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userPlan {
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+/* Footer action buttons */
+.sidebarActions {
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 8px 10px;
-  flex-shrink: 0;
-  background: var(--bg-tertiary);
+  padding: var(--space-2) 0 0;
+  border-top: 1px solid var(--border-divider);
+  margin-top: var(--space-2);
 }
 
 .footerBtn {
@@ -139,7 +241,7 @@
   cursor: pointer;
   border-radius: var(--radius-sm);
   flex-shrink: 0;
-  transition: background 0.15s, color 0.15s;
+  transition: all 0.15s;
 }
 
 .footerBtn:hover {

@@ -1,4 +1,4 @@
-/* ═══ DiffView — Precision Airy ═══ */
+/* ═══ DiffView — Precision Workspace (colored left-border lines) ═══ */
 
 .diffView {
   display: flex;
@@ -12,7 +12,7 @@
   justify-content: center;
   height: 100px;
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
 }
 
 .noMatch {
@@ -21,16 +21,16 @@
   justify-content: center;
   height: 80px;
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
 }
 
-/* Filter bar — no border, tonal shift */
+/* Filter bar */
 .filterBar {
-  padding: 6px 8px;
+  padding: var(--space-2) var(--space-3);
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2);
   background: var(--bg-tertiary);
 }
 
@@ -43,12 +43,12 @@
   display: flex;
   align-items: center;
   gap: 3px;
-  padding: 3px 8px;
+  padding: 3px var(--space-2);
   background: transparent;
   border: 1px solid var(--border-ghost);
   border-radius: var(--radius-sm);
   color: var(--text-muted);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-2xs);
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
@@ -66,23 +66,23 @@
 }
 
 .filterCount {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-2xs);
   opacity: 0.7;
 }
 
 .filterActions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .toggleAllBtn {
-  padding: 3px 8px;
+  padding: 3px var(--space-2);
   background: transparent;
   border: 1px solid var(--border-ghost);
   border-radius: var(--radius-sm);
   color: var(--text-muted);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-2xs);
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
@@ -100,29 +100,23 @@
   color: var(--text-primary);
   border: 1px solid var(--border-ghost);
   border-radius: var(--radius-sm);
-  padding: 3px 6px;
-  font-size: var(--font-size-xs);
+  padding: 3px var(--space-2);
+  font-size: var(--font-size-2xs);
   outline: none;
 }
 
-.searchInput::placeholder {
-  color: var(--text-muted);
-}
-
-.searchInput:focus {
-  border-color: var(--border-focus);
-}
+.searchInput::placeholder { color: var(--text-muted); }
+.searchInput:focus { border-color: var(--border-focus); }
 
 /* File list */
 .fileList {
   flex: 1;
   overflow-y: auto;
-  padding: 4px 0;
+  padding: var(--space-1) 0;
 }
 
-/* File card — ghost border */
 .diffFile {
-  margin: 0 4px 2px;
+  margin: 0 var(--space-1) 2px;
   border: 1px solid var(--border-ghost);
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -131,9 +125,9 @@
 .diffFileHeader {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 8px;
-  background: var(--bg-elevated);
+  gap: var(--space-2);
+  padding: 4px var(--space-3);
+  background: var(--bg-input);
   cursor: pointer;
   user-select: none;
   transition: background 0.15s;
@@ -156,7 +150,7 @@
 }
 
 .diffFilePath {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono);
   color: var(--text-primary);
   overflow: hidden;
@@ -171,79 +165,83 @@
   align-items: center;
   flex-shrink: 0;
   font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-2xs);
   font-weight: var(--font-weight-semibold);
 }
 
-.statAdd {
-  color: #166534;
-}
-
-.statDel {
-  color: #991b1b;
-}
-
-.statSep {
-  width: 4px;
-}
+.statAdd { color: var(--diff-add-text); }
+.statDel { color: var(--diff-del-text); }
+.statSep { width: 4px; }
 
 .diffBadge {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-2xs);
   font-weight: var(--font-weight-medium);
   padding: 1px 5px;
   border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
-.badgeAdded {
-  background: rgba(74, 222, 128, 0.15);
-  color: #166534;
-}
+.badgeAdded { background: var(--success-bg); color: var(--success-text); }
+.badgeModified { background: var(--warning-bg); color: var(--warning-text); }
+.badgeDeleted { background: var(--error-bg); color: var(--error-text); }
 
-.badgeModified {
-  background: rgba(217, 119, 6, 0.15);
-  color: #92400e;
-}
-
-.badgeDeleted {
-  background: rgba(248, 113, 113, 0.15);
-  color: #991b1b;
-}
-
-/* Diff body (expanded) */
+/* Diff body */
 .diffFileBody {
-  border-top: 1px solid var(--border-ghost);
+  border-top: 1px solid var(--border-divider);
 }
 
 .hunkHeader {
-  padding: 2px 8px;
-  font-size: var(--font-size-xs);
+  padding: 2px var(--space-3);
+  font-size: var(--font-size-2xs);
   font-family: var(--font-mono);
   color: var(--text-muted);
   background: var(--bg-secondary);
 }
 
+/* Diff lines — colored left border (like the design) */
 .diffLine {
   display: flex;
   font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   line-height: var(--line-height-normal);
+  border-left: 4px solid transparent;
 }
+
+.lineAdd {
+  background: var(--diff-add-line-bg);
+  border-left-color: var(--diff-add-border);
+}
+
+.lineAdd .linePrefix { color: var(--diff-add-text); }
+
+.lineDel {
+  background: var(--diff-del-line-bg);
+  border-left-color: var(--diff-del-border);
+}
+
+.lineDel .linePrefix { color: var(--diff-del-text); }
+
+.lineContext {
+  background: transparent;
+  border-left-color: transparent;
+}
+
+.lineContext .linePrefix { color: transparent; }
 
 .lineNumbers {
   display: flex;
   flex-shrink: 0;
-  width: 70px;
+  width: 60px;
   user-select: none;
   opacity: 0.4;
 }
 
 .lineNum {
-  width: 35px;
+  width: 30px;
   text-align: right;
-  padding-right: 6px;
+  padding-right: var(--space-2);
   color: var(--text-muted);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-2xs);
 }
 
 .linePrefix {
@@ -256,31 +254,14 @@
 
 .lineContent {
   flex: 1;
-  padding-right: 8px;
+  padding-right: var(--space-3);
   white-space: pre;
   overflow-x: auto;
 }
 
-.lineAdd {
-  background: var(--diff-add-bg);
-}
-
-.lineAdd .linePrefix {
-  color: var(--diff-add-text);
-}
-
-.lineDel {
-  background: var(--diff-del-bg);
-}
-
-.lineDel .linePrefix {
-  color: var(--diff-del-text);
-}
-
-.lineContext {
-  background: transparent;
-}
-
-.lineContext .linePrefix {
-  color: transparent;
+/* Active file highlight (in file tree context) */
+.fileActive {
+  background: var(--accent-muted);
+  border: 1px solid rgba(0, 91, 192, 0.15);
+  box-shadow: var(--shadow-sm);
 }

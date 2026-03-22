@@ -4,72 +4,87 @@ export interface ThemeTokens {
   'bg-primary': string;
   'bg-secondary': string;
   'bg-tertiary': string;
+  'bg-elevated': string;
   'bg-input': string;
   'bg-hover': string;
   'text-primary': string;
   'text-secondary': string;
   'text-muted': string;
+  'text-inverse': string;
   'accent': string;
   'accent-hover': string;
   'accent-muted': string;
   'border': string;
+  'border-ghost': string;
   'border-focus': string;
   'success': string;
   'error': string;
   'warning': string;
   'info': string;
+  'cta': string;
   'scrollbar': string;
   'scrollbar-hover': string;
   'code-bg': string;
   'code-border': string;
+  'glass-bg': string;
 }
 
 const darkTokens: ThemeTokens = {
-  'bg-primary': '#1e1e1e',
-  'bg-secondary': '#252526',
-  'bg-tertiary': '#2d2d30',
-  'bg-input': '#3c3c3c',
-  'bg-hover': '#3e3e42',
-  'text-primary': '#e0e0e0',
-  'text-secondary': '#a0a0a0',
-  'text-muted': '#6a6a6a',
-  'accent': '#6c8cff',
-  'accent-hover': '#5a7ae8',
-  'accent-muted': 'rgba(108, 140, 255, 0.15)',
-  'border': '#3e3e42',
-  'border-focus': '#6c8cff',
+  'bg-primary': '#0b0f10',
+  'bg-secondary': '#1a1e20',
+  'bg-tertiary': '#252a2d',
+  'bg-elevated': '#1e2224',
+  'bg-input': '#2a2f32',
+  'bg-hover': '#3a3f42',
+  'text-primary': '#e0e4e8',
+  'text-secondary': '#b8bcc0',
+  'text-muted': '#8a8f92',
+  'text-inverse': '#f7f7ff',
+  'accent': '#4a8eff',
+  'accent-hover': '#6c9fff',
+  'accent-muted': 'rgba(74, 142, 255, 0.15)',
+  'border': '#3a3f42',
+  'border-ghost': 'rgba(58, 63, 66, 0.40)',
+  'border-focus': 'rgba(74, 142, 255, 0.50)',
   'success': '#4ec9b0',
   'error': '#f14c4c',
   'warning': '#cca700',
   'info': '#3794ff',
+  'cta': '#fb923c',
   'scrollbar': 'rgba(121, 121, 121, 0.4)',
   'scrollbar-hover': 'rgba(121, 121, 121, 0.7)',
-  'code-bg': '#1a1a1a',
-  'code-border': '#3e3e42',
+  'code-bg': '#1a1e20',
+  'code-border': '#3a3f42',
+  'glass-bg': 'rgba(26, 30, 32, 0.85)',
 };
 
 const lightTokens: ThemeTokens = {
-  'bg-primary': '#ffffff',
-  'bg-secondary': '#f9f9f9',
-  'bg-tertiary': '#f0f0f0',
+  'bg-primary': '#f8f9fb',
+  'bg-secondary': '#e8eff3',
+  'bg-tertiary': '#e1e9ee',
+  'bg-elevated': '#f0f4f7',
   'bg-input': '#ffffff',
-  'bg-hover': '#f0f0f0',
-  'text-primary': '#1f2937',
-  'text-secondary': '#6b7280',
-  'text-muted': '#9ca3af',
-  'accent': '#6366f1',
-  'accent-hover': '#4f46e5',
-  'accent-muted': 'rgba(99, 102, 241, 0.12)',
-  'border': '#e5e7eb',
-  'border-focus': '#6366f1',
-  'success': '#059669',
-  'error': '#dc2626',
-  'warning': '#d97706',
-  'info': '#2563eb',
-  'scrollbar': '#d1d5db',
-  'scrollbar-hover': '#9ca3af',
-  'code-bg': '#f3f4f6',
-  'code-border': '#e5e7eb',
+  'bg-hover': '#d9e4ea',
+  'text-primary': '#2a3439',
+  'text-secondary': '#57606a',
+  'text-muted': '#566166',
+  'text-inverse': '#f7f7ff',
+  'accent': '#005bc0',
+  'accent-hover': '#004fa9',
+  'accent-muted': 'rgba(0, 91, 192, 0.10)',
+  'border': '#a9b4b9',
+  'border-ghost': 'rgba(169, 180, 185, 0.20)',
+  'border-focus': 'rgba(0, 91, 192, 0.50)',
+  'success': '#22c55e',
+  'error': '#ef4444',
+  'warning': '#f59e0b',
+  'info': '#005bc0',
+  'cta': '#f97316',
+  'scrollbar': '#d9e4ea',
+  'scrollbar-hover': '#a9b4b9',
+  'code-bg': '#f8f9fb',
+  'code-border': 'transparent',
+  'glass-bg': 'rgba(248, 249, 251, 0.85)',
 };
 
 const tokenSets: Record<ResolvedTheme, ThemeTokens> = { dark: darkTokens, light: lightTokens };
@@ -113,6 +128,8 @@ function resolveTheme(theme: Theme): ResolvedTheme {
 function applyTheme(t: ResolvedTheme) {
   const root = document.documentElement;
   root.setAttribute('data-theme', t);
+  // CSS custom properties in globals.css already define all tokens.
+  // JS tokens are used only for programmatic access (e.g. inline styles).
   const tokens = tokenSets[t];
   for (const [key, value] of Object.entries(tokens)) {
     root.style.setProperty(`--${key}`, value);
@@ -131,12 +148,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Apply theme on mount and when theme changes
   useEffect(() => {
     applyAndStore(theme);
   }, [theme, applyAndStore]);
 
-  // Listen for system theme changes when in 'system' mode
   useEffect(() => {
     if (theme !== 'system') return;
 

@@ -1,9 +1,9 @@
-/* ═══ ToolPanel — Precision Airy ═══ */
+/* ═══ ToolPanel — Precision Workspace (split file tree + diff) ═══ */
 
 .toolPanel {
   width: 100%;
   flex-shrink: 0;
-  background: var(--bg-secondary);
+  background: var(--bg-elevated);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -13,17 +13,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
+  padding: 0 var(--space-4);
   height: 40px;
   flex-shrink: 0;
+  background: var(--bg-input);
+  border-bottom: 1px solid var(--border-divider);
 }
 
 .toolPanelTitle {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-black);
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-label);
+  letter-spacing: var(--letter-spacing-widest);
 }
 
 .toolPanelClose {
@@ -37,6 +39,7 @@
   color: var(--text-muted);
   cursor: pointer;
   border-radius: var(--radius-sm);
+  transition: background 0.15s, color 0.15s;
 }
 
 .toolPanelClose:hover {
@@ -44,40 +47,169 @@
   color: var(--text-primary);
 }
 
-.tabBar {
+/* Split layout: file tree on top, diff on bottom */
+.toolPanelSplit {
+  flex: 1;
   display: flex;
-  flex-shrink: 0;
-  background: var(--bg-tertiary);
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.tab {
-  flex: 1;
-  min-height: 0;
-  padding: 8px;
-  background: transparent;
+/* File tree section */
+.fileTreeSection {
+  height: 33.33%;
+  min-height: 120px;
+  border-bottom: 1px solid var(--border-divider);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.fileTreeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-input);
+  border-bottom: 1px solid var(--border-divider);
+  flex-shrink: 0;
+}
+
+.fileTreeTitle {
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-black);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-widest);
+}
+
+.fileTreeActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.fileTreeAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
   border: none;
   color: var(--text-muted);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s, border-color 0.15s;
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-label);
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s;
 }
 
-.tab:hover {
-  color: var(--text-primary);
-}
-
-.tabActive {
+.fileTreeAction:hover {
   color: var(--accent);
-  border-bottom-color: var(--accent);
 }
 
-.toolPanelBody {
+.fileTreeBody {
   flex: 1;
-  min-height: 0;
   overflow-y: auto;
+  padding: var(--space-1) 0;
+  background: rgba(240, 244, 247, 0.30);
+}
+
+/* Diff section */
+.diffSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-input);
+}
+
+.diffHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: rgba(232, 239, 243, 0.30);
+  border-bottom: 1px solid var(--border-divider);
+  flex-shrink: 0;
+}
+
+.diffTitle {
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-black);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-widest);
+}
+
+.diffActions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.diffAction {
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-black);
+  text-transform: uppercase;
+  background: none;
+  border: none;
+  cursor: pointer;
+  letter-spacing: var(--letter-spacing-widest);
+  transition: text-decoration 0.15s;
   padding: 0;
+}
+
+.diffAction:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.diffActionReject { color: var(--error); }
+.diffActionAccept { color: var(--success); }
+
+.diffBody {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Diff footer actions */
+.diffFooter {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--bg-input);
+  border-top: 1px solid var(--border-divider);
+  flex-shrink: 0;
+}
+
+.diffFooterBtn {
+  flex: 1;
+  padding: 10px 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-black);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-widest);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.diffFooterReject {
+  background: rgba(217, 228, 234, 0.25);
+  color: var(--text-muted);
+  border: none;
+}
+
+.diffFooterReject:hover {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.diffFooterAccept {
+  background: var(--cta-gradient);
+  color: white;
+  border: none;
+  box-shadow: var(--cta-shadow);
+}
+
+.diffFooterAccept:hover {
+  filter: brightness(1.1);
 }

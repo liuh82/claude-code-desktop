@@ -9,15 +9,22 @@ interface MessageBubbleProps {
 
 function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
-  const avatar = isUser ? '\uD83D\uDC64' : '\uD83E\uDD16';
   const roleLabel = isUser ? 'You' : 'Assistant';
   const timeStr = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+  const avatar = isUser ? (
+    <div className={styles.userAvatar}>
+      <span className="material-symbols-outlined">person</span>
+    </div>
+  ) : (
+    <div className={styles.aiAvatar}>
+      <span className="material-symbols-outlined">smart_toy</span>
+    </div>
+  );
+
   return (
     <div className={`${styles.message} ${isUser ? styles.messageUser : styles.messageAssistant}`}>
-      <div className={styles.avatar}>
-        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{avatar}</span>
-      </div>
+      {avatar}
       <div className={styles.messageBody}>
         <div className={styles.messageMeta}>
           <span className={styles.messageRole}>{roleLabel}</span>
@@ -25,10 +32,11 @@ function MessageBubble({ message }: MessageBubbleProps) {
         </div>
 
         {isUser ? (
-          <div className={styles.messageContent}>{message.content}</div>
+          <div className={styles.userBubble}>
+            <div className={styles.messageContent}>{message.content}</div>
+          </div>
         ) : (
           <>
-            {/* Tool calls rendered inline before markdown content */}
             {message.toolCalls && message.toolCalls.length > 0 && (
               <div className={styles.toolCallList}>
                 {message.toolCalls.map((tc) => (
