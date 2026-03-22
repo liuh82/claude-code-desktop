@@ -19,11 +19,9 @@ const CC_BUILTIN_MODELS = [
 ];
 
 const NAV_ITEMS = [
-  { id: 'terminal', icon: 'terminal', label: 'Terminal' },
-  { id: 'projects', icon: 'folder_open', label: 'Projects' },
-  { id: 'history', icon: 'history', label: 'History' },
-  { id: 'settings', icon: 'settings', label: 'Settings' },
-  { id: 'help', icon: 'help', label: 'Help' },
+  { id: 'newChat', icon: 'edit_note', label: '新对话' },
+  { id: 'history', icon: 'history', label: '历史记录' },
+  { id: 'settings', icon: 'settings', label: '设置' },
 ] as const;
 
 interface SidebarProps {
@@ -64,7 +62,7 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }
 
   const handleNavClick = useCallback((id: string) => {
     setActiveNav(id);
-    if (id === 'terminal') onNewChat();
+    if (id === 'newChat') onNewChat();
     if (id === 'settings') onOpenSettings();
   }, [onNewChat, onOpenSettings]);
 
