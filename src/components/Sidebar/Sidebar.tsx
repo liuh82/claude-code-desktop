@@ -21,6 +21,10 @@ const CC_BUILTIN_MODELS = [
 const NAV_ITEMS = [
   { id: 'newChat', icon: 'edit_note', label: '新对话' },
   { id: 'history', icon: 'history', label: '历史记录' },
+] as const;
+
+const BOTTOM_ITEMS = [
+  { id: 'themeToggle', icon: 'dark_mode', label: '切换主题' },
   { id: 'settings', icon: 'settings', label: '设置' },
 ] as const;
 
@@ -35,7 +39,7 @@ interface SidebarProps {
 function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }: SidebarProps & { style?: React.CSSProperties }) {
   const { settings, updateSetting } = useSettingsStore();
   const currentModel = useChatStore((s) => s.currentModel) || settings.defaultModel;
-  const [activeNav, setActiveNav] = useState<string>('terminal');
+  const [activeNav] = useState<string>('terminal');
   const [claudeConfig, setClaudeConfig] = useState<ClaudeConfig | null>(null);
 
   useEffect(() => {
@@ -61,17 +65,17 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }
   }, [claudeConfig]);
 
   const handleNavClick = useCallback((id: string) => {
-    setActiveNav(id);
-    if (id === 'newChat') onNewChat();
-    if (id === 'settings') onOpenSettings();
-  }, [onNewChat, onOpenSettings]);
+    if (id === 'newChat') { onNewChat(); return; }
+    if (id === 'settings') { onOpenSettings(); return; }
+    if (id === 'themeToggle') { updateSetting('theme', settings.theme === 'dark' ? 'light' : 'dark'); return; }
+  }, [onNewChat, onOpenSettings, updateSetting, settings.theme]);
 
   return (
     <aside className={styles.sidebar} style={style}>
       {/* Claude Logo */}
       <div className={styles.sidebarLogo} style={{ justifyContent: "center" }}>
         <div className={styles.sidebarLogoImg}>
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>terminal</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>terminal</span>
         </div>
         
       </div>
@@ -100,11 +104,26 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }
             title={item.label}
           >
             <span className={styles.navIcon}>
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{item.icon}</span>
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{item.icon}</span>
             </span>
           </button>
         ))}
       </nav>
+
+        <div className={styles.sidebarBottom}>
+          {BOTTOM_ITEMS.map((item) => (
+            <button
+              key={item.id}
+              className={`${styles.navItem} ${activeNav === item.id ? styles.navItemActive : ''}`}
+              onClick={() => handleNavClick(item.id)}
+              title={item.label}
+            >
+              <span className={styles.navIcon}>
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{item.icon}</span>
+              </span>
+            </button>
+          ))}
+        </div>
     </aside>
   );
 }
