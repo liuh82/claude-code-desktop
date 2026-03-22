@@ -41,7 +41,7 @@
   font-weight: var(--font-weight-bold);
   font-family: var(--font-mono);
   color: var(--accent);
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
 }
 
 [data-theme="dark"] .pathPill {

@@ -1,7 +1,7 @@
 /* ═══ InputArea — Stitch design, 768px centered ═══ */
 
 .inputArea {
-  padding: 24px 32px 24px;
+  padding: 24px;
   background: rgba(255, 255, 255, 0.60);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -70,7 +70,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: 12px;
   background: transparent;
   border: none;
   color: var(--text-muted);
@@ -81,7 +81,7 @@
 .attachBtn .material-symbols-outlined,
 .sendBtn .material-symbols-outlined,
 .stopBtn .material-symbols-outlined {
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .attachBtn:hover {
@@ -156,14 +156,14 @@
   align-items: center;
   justify-content: space-between;
   max-width: 768px;
-  margin: 12px auto 0;
+  margin: 16px auto 0;
   padding: 0 8px;
 }
 
 .inputFooterLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
 }
 
 .modelIndicator {
@@ -174,7 +174,7 @@
   font-weight: var(--font-weight-bold);
   color: var(--success);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
 }
 
 .modelDot {

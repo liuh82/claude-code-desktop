@@ -38,7 +38,7 @@
 .codeTrafficLights {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .trafficDot {
@@ -60,7 +60,7 @@
   font-weight: var(--font-weight-bold);
   color: var(--accent);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   margin-left: 12px;
 }
 
@@ -131,22 +131,22 @@
 
 .codeContent {
   flex: 1;
-  padding: 16px 20px;
+  padding: 20px;
   overflow-x: auto;
   font-family: var(--font-mono);
   font-size: 13px;
-  line-height: normal;
+  line-height: var(--line-height-relaxed);
   white-space: pre;
 }
 
 /* Inline code */
 .codeInline {
   background: rgba(0, 91, 192, 0.05);
-  border: 1px solid rgba(0, 91, 192, 0.12);
+  border: 1px solid rgba(0, 91, 192, 0.20);
   border-radius: 4px;
   padding: 1px 6px;
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
   color: var(--accent);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-semibold);
 }

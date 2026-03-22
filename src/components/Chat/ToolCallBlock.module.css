@@ -18,8 +18,8 @@
 .toolCallHeader {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
+  gap: 12px;
+  padding: 14px;
   background: rgba(0, 91, 192, 0.03);
   cursor: pointer;
   user-select: none;

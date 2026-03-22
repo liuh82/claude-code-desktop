@@ -13,7 +13,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 32px 0 24px;
+  padding: 32px 0 32px;
 }
 
 .messageListInner {
