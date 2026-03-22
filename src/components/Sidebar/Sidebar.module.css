@@ -39,28 +39,7 @@
   color: white;
 }
 
-.sidebarLogoText {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
 
-.sidebarLogoTitle {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-black);
-  color: var(--brand-orange);
-  letter-spacing: var(--letter-spacing-tight);
-  line-height: var(--line-height-tight);
-}
-
-.sidebarLogoSubtitle {
-  font-size: var(--font-size-2xs);
-  font-weight: var(--font-weight-bold);
-  color: var(--cta);
-  opacity: 0.6;
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-widest);
-}
 
 /* Navigation */
 .sidebarNav {

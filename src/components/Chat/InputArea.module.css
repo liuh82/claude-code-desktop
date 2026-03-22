@@ -14,9 +14,9 @@
 
 .inputTextarea {
   width: 100%;
-  min-height: 100px;
+  min-height: 100px !important;
   max-height: 200px;
-  padding: var(--space-5) var(--space-10);
+  padding: 20px 24px 20px 24px;
   background: var(--bg-input);
   border: 2px solid var(--border-ghost);
   border-radius: 16px;
