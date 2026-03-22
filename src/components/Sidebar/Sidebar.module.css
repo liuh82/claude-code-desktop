@@ -1,7 +1,7 @@
 /* ═══ Sidebar — Precision Workspace ═══ */
 
 .sidebar {
-  width: 56px;
+  width: 60px;
   flex-shrink: 0;
   background: #f0f4f7;
   display: flex;
@@ -23,8 +23,9 @@
 
 /* Claude official logo */
 .sidebarLogoImg {
-  width: 42px;
-  height: 42px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-lg);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -73,7 +74,7 @@
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: 12px 0;
+  padding: 10px 0;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s ease-out;
@@ -96,14 +97,16 @@
 }
 
 .navItemActive {
-  background: rgba(217, 119, 6, 0.12);
+  background: rgba(217, 119, 6, 0.10);
   color: var(--brand-orange);
+  border-left: 3px solid var(--brand-orange);
   font-weight: var(--font-weight-semibold);
 }
 
 [data-theme="dark"] .navItemActive {
-  background: rgba(255, 185, 95, 0.12);
+  background: rgba(255, 185, 95, 0.10);
   color: #ffb95f;
+  border-left: 3px solid #ffb95f;
 }
 
 .navItemActive .navIcon {

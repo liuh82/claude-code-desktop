@@ -61,7 +61,7 @@ export function ProjectSelector({ onProjectOpen }: ProjectSelectorProps) {
       <div className={styles.container}>
         <div className={styles.header}>
           <div className={styles.logoArea}>
-            <span className="material-symbols-outlined">terminal</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 40, color: "white" }}>terminal</span>
           </div>
           <div className={styles.logo}>Claude Code</div>
           <div className={styles.tagline}>AI 驱动的终端工作空间</div>

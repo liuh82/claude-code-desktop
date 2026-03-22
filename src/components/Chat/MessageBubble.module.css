@@ -2,26 +2,26 @@
 /* All messages LEFT-aligned. AI left, User left. Avatar on left. */
 
 .message {
-  padding: var(--space-6) var(--space-8);
+  padding: 20px 32px;
   display: flex;
-  gap: var(--space-6);
+  gap: 24px;
   align-items: flex-start;
   width: 100%;
 }
 
 .messageUser {
-  flex-direction: row;
+  flex-direction: row-reverse;
 }
 
 .messageAssistant {
-  flex-direction: row-reverse;
+  flex-direction: row;
 }
 
 /* AI Avatar — Light: brand-orange bg, Dark: primary-container bg */
 .aiAvatar {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   flex-shrink: 0;
   margin-top: 2px;
@@ -52,7 +52,7 @@
 .userAvatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: var(--radius-lg);
   background: rgba(217, 119, 6, 0.10);
   border: 1.5px solid var(--brand-orange);
   display: flex;
@@ -65,7 +65,7 @@
 [data-theme="dark"] .userAvatar {
   background: #ffb95f;
   border-color: #ffb95f;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
 }
 
 [data-theme="dark"] .userAvatar .material-symbols-outlined {
@@ -85,11 +85,11 @@
   overflow: hidden;
 }
 
-/* AI messages: right-align text */
+/* AI messages: left-aligned text (Stitch spec) */
 .messageAssistant .messageBody {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
 }
 
 .messageMeta {
@@ -121,14 +121,14 @@
 
 /* AI message content */
 .messageContent {
-  font-size: var(--font-size-xl);
+  font-size: 15px;
   line-height: var(--line-height-relaxed);
   color: var(--text-primary);
   word-break: break-word;
 }
 
 [data-theme="dark"] .messageContent {
-  font-size: 16px;
+  font-size: 15px;
   opacity: 0.90;
 }
 
@@ -237,36 +237,37 @@
 .userBubble {
   max-width: 80%;
   background: rgba(217, 119, 6, 0.06);
-  border: 1px solid rgba(217, 119, 6, 0.15);
-  padding: var(--space-4) var(--space-6);
-  border-radius: var(--radius-2xl) var(--radius-2xl) var(--radius-2xl) var(--radius-xs);
+  border: 1px solid rgba(217, 119, 6, 0.12);
+  padding: 16px 24px;
+  border-radius: 24px 24px 24px 4px;
   box-shadow: var(--shadow-sm);
 }
 
 [data-theme="dark"] .userBubble {
   background: rgba(255, 185, 95, 0.08);
-  border-color: rgba(255, 185, 95, 0.20);
+  border-color: rgba(255, 185, 95, 0.15);
+  border-radius: 24px 24px 24px 4px;
 }
 
 .userBubble .messageContent {
-  font-size: var(--font-size-lg);
+  font-size: 14px;
   color: var(--text-primary);
   font-weight: var(--font-weight-medium);
   line-height: var(--line-height-normal);
 }
 
 [data-theme="dark"] .userBubble .messageContent {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: var(--font-weight-normal);
 }
 
-/* Tool call list — AI side, right-aligned */
+/* Tool call list — AI side, left-aligned */
 .toolCallList {
   margin-bottom: var(--space-3);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  align-items: flex-end;
+  align-items: flex-start;
 }
 
 /* Streaming cursor */
