@@ -6,14 +6,15 @@
   display: flex;
   gap: var(--space-6);
   align-items: flex-start;
-  max-width: 768px;
   width: 100%;
-  margin: 0 auto;
 }
 
-.messageUser,
-.messageAssistant {
+.messageUser {
   flex-direction: row;
+}
+
+.messageAssistant {
+  flex-direction: row-reverse;
 }
 
 /* AI Avatar — Light: brand-orange bg, Dark: primary-container bg */
@@ -84,6 +85,13 @@
   overflow: hidden;
 }
 
+/* AI messages: right-align text */
+.messageAssistant .messageBody {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 .messageMeta {
   display: flex;
   align-items: center;
@@ -92,7 +100,7 @@
 }
 
 .messageRole {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--text-muted);
   text-transform: uppercase;
@@ -106,21 +114,21 @@
 }
 
 .messageTime {
-  font-size: var(--font-size-2xs);
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   opacity: 0.7;
 }
 
 /* AI message content */
 .messageContent {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   line-height: var(--line-height-relaxed);
   color: var(--text-primary);
   word-break: break-word;
 }
 
 [data-theme="dark"] .messageContent {
-  font-size: 15px;
+  font-size: 16px;
   opacity: 0.90;
 }
 
@@ -153,7 +161,7 @@
   border-radius: var(--radius-sm);
   padding: 1px 6px;
   font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   color: var(--accent);
   font-weight: var(--font-weight-medium);
 }
@@ -193,8 +201,8 @@
 }
 
 .messageContent h1 { font-size: var(--font-size-xl); }
-.messageContent h2 { font-size: var(--font-size-lg); }
-.messageContent h3 { font-size: var(--font-size-md); }
+.messageContent h2 { font-size: var(--font-size-xl); }
+.messageContent h3 { font-size: var(--font-size-lg); }
 
 .messageContent a {
   color: var(--brand-orange);
@@ -216,7 +224,7 @@
   padding: 6px var(--space-3);
   text-align: left;
   border-bottom: 1px solid var(--border-divider);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
 }
 
 .messageContent th {
@@ -231,7 +239,7 @@
   background: rgba(217, 119, 6, 0.06);
   border: 1px solid rgba(217, 119, 6, 0.15);
   padding: var(--space-4) var(--space-6);
-  border-radius: var(--radius-2xl) var(--radius-2xl) var(--radius-xs) var(--radius-2xl);
+  border-radius: var(--radius-2xl) var(--radius-2xl) var(--radius-2xl) var(--radius-xs);
   box-shadow: var(--shadow-sm);
 }
 
@@ -241,23 +249,24 @@
 }
 
 .userBubble .messageContent {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-lg);
   color: var(--text-primary);
   font-weight: var(--font-weight-medium);
   line-height: var(--line-height-normal);
 }
 
 [data-theme="dark"] .userBubble .messageContent {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: var(--font-weight-normal);
 }
 
-/* Tool call list */
+/* Tool call list — AI side, right-aligned */
 .toolCallList {
   margin-bottom: var(--space-3);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  align-items: flex-end;
 }
 
 /* Streaming cursor */

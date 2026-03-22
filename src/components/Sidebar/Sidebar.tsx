@@ -34,7 +34,7 @@ interface SidebarProps {
   onToggleTheme: () => void;
 }
 
-function Sidebar({ projectPath: _projectPath, onNewChat, onClose, onOpenSettings, onToggleTheme, style }: SidebarProps & { style?: React.CSSProperties }) {
+function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }: SidebarProps & { style?: React.CSSProperties }) {
   const { settings, updateSetting } = useSettingsStore();
   const currentModel = useChatStore((s) => s.currentModel) || settings.defaultModel;
   const [activeNav, setActiveNav] = useState<string>('terminal');
@@ -73,7 +73,7 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onClose, onOpenSettings
       {/* Claude Logo */}
       <div className={styles.sidebarLogo}>
         <div className={styles.sidebarLogoImg}>
-          <img src="/claude-icon-64.png" alt="Claude Code" />
+          <span className="material-symbols-outlined">terminal</span>
         </div>
         <div className={styles.sidebarLogoText}>
           <span className={styles.sidebarLogoTitle}>Claude Code</span>
@@ -110,30 +110,6 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onClose, onOpenSettings
           </button>
         ))}
       </nav>
-
-      {/* Bottom: User Profile */}
-      <div className={styles.sidebarFooter}>
-        <div className={styles.userCard}>
-          <div className={styles.userAvatar}>
-            <span className="material-symbols-outlined">person</span>
-          </div>
-          <div className={styles.userInfo}>
-            <div className={styles.userName}>Developer</div>
-            <div className={styles.userPlan}>Pro Plan</div>
-          </div>
-        </div>
-        <div className={styles.sidebarActions}>
-          <button className={styles.footerBtn} onClick={onToggleTheme} title="切换主题">
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>dark_mode</span>
-          </button>
-          <button className={styles.footerBtn} onClick={onOpenSettings} title="设置">
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>settings</span>
-          </button>
-          <button className={styles.footerBtn} onClick={onClose} title="关闭侧栏 (⌘B)">
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_left</span>
-          </button>
-        </div>
-      </div>
     </aside>
   );
 }
