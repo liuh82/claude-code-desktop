@@ -1,5 +1,7 @@
 # CCDesk — Claude Code Desktop
 
+
+> ⚠️ 启动时先读 `AGENTS.md` — 这是项目文档索引，包含所有相关文档的导航。
 > Agent-First 项目。所有规则在下面，遵守即可。
 
 ---
