@@ -1,4 +1,4 @@
-/* ═══ ToolPanel — v4 ═══ */
+/* ═══ ToolPanel — Precision Workspace (split file tree + diff) ═══ */
 
 .toolPanel {
   width: 100%;
@@ -7,13 +7,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-left: 1px solid rgba(169, 180, 185, 0.20);
-}
-
-[data-theme="dark"] .toolPanel {
-  background: #1a1c1e;
-  border-left-color: rgba(255, 255, 255, 0.05);
-  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .toolPanelHeader {
@@ -21,29 +14,18 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--space-4);
-  height: 56px;
+  height: 40px;
   flex-shrink: 0;
   background: var(--bg-input);
   border-bottom: 1px solid var(--border-divider);
 }
 
-[data-theme="dark"] .toolPanelHeader {
-  background: #131314;
-  border-bottom-color: rgba(255, 255, 255, 0.05);
-  height: 56px;
-}
-
 .toolPanelTitle {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-black);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-widest);
-}
-
-[data-theme="dark"] .toolPanelTitle {
-  font-size: 11px;
-  letter-spacing: 0.1em;
 }
 
 .toolPanelClose {
@@ -83,10 +65,6 @@
   overflow: hidden;
 }
 
-[data-theme="dark"] .fileTreeSection {
-  border-bottom-color: rgba(255, 255, 255, 0.05);
-}
-
 .fileTreeHeader {
   display: flex;
   align-items: center;
@@ -97,22 +75,12 @@
   flex-shrink: 0;
 }
 
-[data-theme="dark"] .fileTreeHeader {
-  background: #1a1c1e;
-  border-bottom-color: rgba(255, 255, 255, 0.05);
-}
-
 .fileTreeTitle {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-black);
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-widest);
-}
-
-[data-theme="dark"] .fileTreeTitle {
-  font-size: var(--font-size-2xs);
-  color: var(--text-muted);
 }
 
 .fileTreeActions {
@@ -144,10 +112,6 @@
   background: rgba(240, 244, 247, 0.30);
 }
 
-[data-theme="dark"] .fileTreeBody {
-  background: #1a1c1e;
-}
-
 /* Diff section */
 .diffSection {
   flex: 1;
@@ -155,10 +119,6 @@
   flex-direction: column;
   overflow: hidden;
   background: var(--bg-input);
-}
-
-[data-theme="dark"] .diffSection {
-  background: transparent;
 }
 
 .diffHeader {
@@ -171,14 +131,9 @@
   flex-shrink: 0;
 }
 
-[data-theme="dark"] .diffHeader {
-  background: #1a1c1e;
-  border-bottom-color: rgba(255, 255, 255, 0.05);
-}
-
 .diffTitle {
   font-size: var(--font-size-2xs);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-black);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-widest);
@@ -191,7 +146,7 @@
 
 .diffAction {
   font-size: var(--font-size-2xs);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-black);
   text-transform: uppercase;
   background: none;
   border: none;
@@ -214,7 +169,7 @@
   overflow-y: auto;
 }
 
-/* Diff footer actions — Light: orange accept, Dark: primary accept */
+/* Diff footer actions */
 .diffFooter {
   display: flex;
   gap: var(--space-3);
@@ -224,18 +179,11 @@
   flex-shrink: 0;
 }
 
-[data-theme="dark"] .diffFooter {
-  background: #1a1c1e;
-  border-top-color: rgba(255, 255, 255, 0.05);
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
 .diffFooterBtn {
   flex: 1;
   padding: 10px 0;
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-black);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-widest);
   border-radius: var(--radius-lg);
@@ -244,13 +192,8 @@
   text-align: center;
 }
 
-[data-theme="dark"] .diffFooterBtn {
-  font-size: 12px;
-  border-radius: var(--radius-md);
-}
-
 .diffFooterReject {
-  background: rgba(217, 228, 234, 0.50);
+  background: rgba(217, 228, 234, 0.25);
   color: var(--text-muted);
   border: none;
 }
@@ -260,34 +203,13 @@
   color: var(--error);
 }
 
-[data-theme="dark"] .diffFooterReject {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(229, 226, 227, 0.80);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-}
-
-[data-theme="dark"] .diffFooterReject:hover {
-  background: rgba(255, 255, 255, 0.10);
-}
-
-/* Accept button — Light: brand-orange, Dark: primary */
 .diffFooterAccept {
-  background: var(--brand-orange);
+  background: var(--cta-gradient);
   color: white;
   border: none;
-  box-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.30);
+  box-shadow: var(--cta-shadow);
 }
 
 .diffFooterAccept:hover {
-  filter: brightness(1.1);
-}
-
-[data-theme="dark"] .diffFooterAccept {
-  background: var(--accent);
-  color: var(--text-inverse);
-  box-shadow: 0 4px 14px -2px rgba(173, 198, 255, 0.10);
-}
-
-[data-theme="dark"] .diffFooterAccept:hover {
   filter: brightness(1.1);
 }

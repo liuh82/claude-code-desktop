@@ -5,6 +5,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useChatStore } from '@/stores/useChatStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useTabStore } from '@/stores/useTabStore';
+import { TopNav } from '@/components/TopNav';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { ToolPanel } from '@/components/ToolPanel/ToolPanel';
 import { SidebarToggle, ToolPanelToggle } from '@/components/PanelToggles';
@@ -13,13 +14,13 @@ import { ProjectSelector } from '@/components/ProjectSelector';
 import { CommandPalette, type CommandItem } from '@/components/CommandPalette';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { TabBar } from '@/components/Pane/TabBar';
-import { ChatHeader } from '@/components/Chat/ChatHeader';
 import { PaneContainer } from '@/components/Pane/PaneContainer';
 import type { LayoutNode } from '@/types/pane';
 import './App.css';
 
 const SIDEBAR_KEY = 'ccdesk-sidebar-v2';
 const TOOLPANEL_KEY = 'ccdesk-toolpanel-v2';
+const SIDEBAR_WIDTH_KEY = 'ccdesk-sidebar-width';
 const TOOLPANEL_WIDTH_KEY = 'ccdesk-toolpanel-width';
 
 function readNum(key: string, fallback: number): number {
@@ -36,6 +37,8 @@ function saveNum(key: string, val: number) {
   try { localStorage.setItem(key, String(val)); } catch { /* */ }
 }
 
+const MIN_SIDEBAR = 180;
+const MAX_SIDEBAR = 400;
 const MIN_TOOLPANEL = 200;
 const MAX_TOOLPANEL = 600;
 
@@ -49,6 +52,7 @@ function AppContent() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(() => readBool(SIDEBAR_KEY, true));
   const [toolPanelOpen, setToolPanelOpen] = useState(() => readBool(TOOLPANEL_KEY, false));
+  const [sidebarWidth, setSidebarWidth] = useState(() => readNum(SIDEBAR_WIDTH_KEY, 240));
   const [toolPanelWidth, setToolPanelWidth] = useState(() => readNum(TOOLPANEL_WIDTH_KEY, 340));
 
   const projectPath = activeProject?.path ?? '';
@@ -110,6 +114,14 @@ function AppContent() {
       if (path?.trim()) handleProjectOpen(path.trim());
     }
   }, [handleProjectOpen]);
+
+  const handleSidebarResize = useCallback((delta: number) => {
+    setSidebarWidth((prev) => {
+      const next = Math.max(MIN_SIDEBAR, Math.min(MAX_SIDEBAR, prev + delta));
+      saveNum(SIDEBAR_WIDTH_KEY, next);
+      return next;
+    });
+  }, []);
 
   const handleToolPanelResize = useCallback((delta: number) => {
     setToolPanelWidth((prev) => {
@@ -183,6 +195,8 @@ function AppContent() {
 
   useKeyboardShortcuts(actions);
 
+  const projectName = activeProject?.name || projectPath.split('/').pop() || '';
+
   if (!activeProject) {
     return (
       <ThemeProvider>
@@ -194,22 +208,27 @@ function AppContent() {
 
   return (
     <div className="appLayout">
+      <TopNav projectName={projectName} />
+
       <div className="appBody">
         <SidebarToggle sidebarOpen={sidebarOpen} onToggleSidebar={toggleSidebar} />
         {sidebarOpen && (
-          <Sidebar
-            projectPath={projectPath}
-            onNewChat={handleNewTab}
-            onClose={toggleSidebar}
-            onOpenSettings={() => setSettingsOpen(true)}
-            onToggleTheme={toggleTheme}
-          />
+          <>
+            <Sidebar
+              projectPath={projectPath}
+              onNewChat={handleNewTab}
+              onClose={toggleSidebar}
+              onOpenSettings={() => setSettingsOpen(true)}
+              onToggleTheme={toggleTheme}
+              style={{ width: sidebarWidth, minWidth: sidebarWidth, maxWidth: sidebarWidth }}
+            />
+            <ResizeHandle direction="left" onResize={handleSidebarResize} />
+          </>
         )}
 
         {/* Main content area with tabs */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
           <TabBar projectPath={projectPath} />
-          <ChatHeader />
           {activeTab ? (
             <PaneContainer
               layout={activeTab.layout}

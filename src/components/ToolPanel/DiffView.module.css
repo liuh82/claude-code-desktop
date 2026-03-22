@@ -1,4 +1,4 @@
-/* ═══ DiffView — Precision Workspace v3 (colored left-border lines) ═══ */
+/* ═══ DiffView — Precision Workspace (colored left-border lines) ═══ */
 
 .diffView {
   display: flex;
@@ -32,10 +32,6 @@
   flex-direction: column;
   gap: var(--space-2);
   background: var(--bg-tertiary);
-}
-
-[data-theme="dark"] .filterBar {
-  background: var(--bg-secondary);
 }
 
 .filterBtns {
@@ -202,7 +198,7 @@
   background: var(--bg-secondary);
 }
 
-/* Diff lines — Light: emerald/red bg with colored left borders */
+/* Diff lines — colored left border (like the design) */
 .diffLine {
   display: flex;
   font-family: var(--font-mono);
@@ -212,14 +208,14 @@
 }
 
 .lineAdd {
-  background: var(--diff-add-bg);
+  background: var(--diff-add-line-bg);
   border-left-color: var(--diff-add-border);
 }
 
 .lineAdd .linePrefix { color: var(--diff-add-text); }
 
 .lineDel {
-  background: var(--diff-del-bg);
+  background: var(--diff-del-line-bg);
   border-left-color: var(--diff-del-border);
 }
 
@@ -266,6 +262,6 @@
 /* Active file highlight (in file tree context) */
 .fileActive {
   background: var(--accent-muted);
-  border: 1px solid rgba(0, 91, 192, 0.20);
+  border: 1px solid rgba(0, 91, 192, 0.15);
   box-shadow: var(--shadow-sm);
 }

@@ -1,5 +1,5 @@
 :root {
-  /* ═══ CCDesk v4 — Light Theme ("Precision Workspace") ═══ */
+  /* ═══ Precision Workspace Design System ("The Digital Atelier") ═══ */
 
   /* Surface Hierarchy (tonal layering, NO 1px borders for sectioning) */
   --bg-primary: #f8f9fb;            /* surface / base canvas */
@@ -24,17 +24,11 @@
   --accent-fixed: #d8e2ff;          /* primary-fixed */
   --accent-gradient: linear-gradient(145deg, #005bc0, #004fa9);
 
-  /* Brand Orange — v4 core accent color */
-  --brand-orange: #D97706;
-  --brand-orange-hover: #B45309;
-  --brand-orange-muted: rgba(217, 119, 6, 0.10);
-  --brand-orange-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.30);
-
-  /* CTA — uses brand-orange in v4 */
-  --cta: #D97706;
-  --cta-hover: #B45309;
-  --cta-gradient: linear-gradient(135deg, #D97706, #B45309);
-  --cta-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.30);
+  /* CTA / Orange accent */
+  --cta: #f97316;
+  --cta-hover: #ea580c;
+  --cta-gradient: linear-gradient(135deg, #f97316, #ea580c);
+  --cta-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.4);
 
   /* Status */
   --success: #22c55e;
@@ -49,52 +43,52 @@
   --info: #005bc0;
   --info-text: #005bc0;
 
-  /* Chat — User bubble: plain text (no bubble wrapper in v4) */
-  --user-bubble-bg: transparent;
-  --user-bubble-border: transparent;
-  --user-bubble-text: #2a3439;
+  /* Chat */
+  --user-bubble-bg: rgba(238, 242, 255, 0.95);
+  --user-bubble-border: rgba(99, 102, 241, 0.15);
+  --user-bubble-text: #312e81;
+  --ai-bubble-bg: transparent;
 
-  /* Diff — Light: emerald/red colored left borders */
-  --diff-add-bg: rgba(34, 197, 94, 0.10);
+  /* Diff */
+  --diff-add-bg: rgba(34, 197, 94, 0.08);
   --diff-add-text: #166534;
   --diff-add-border: #22c55e;
-  --diff-del-bg: rgba(239, 68, 68, 0.10);
+  --diff-del-bg: rgba(239, 68, 68, 0.08);
   --diff-del-text: #991b1b;
   --diff-del-border: #ef4444;
-  --diff-add-line-bg: rgba(34, 197, 94, 0.10);
-  --diff-del-line-bg: rgba(239, 68, 68, 0.10);
+  --diff-add-line-bg: #f0fdf4;
+  --diff-del-line-bg: #fef2f2;
 
   /* Code */
-  --code-bg: #ffffff;
-  --code-border: rgba(169, 180, 185, 0.20);
+  --code-bg: #f8f9fb;
+  --code-border: transparent;
   --code-traffic-red: #f87171;
   --code-traffic-yellow: #fbbf24;
-  --code-traffic-green: #4ade80;
+  --code-traffic-green: #34d399;
 
-  /* Borders — ghost border only (20-30% opacity) */
+  /* Borders — ghost border only (20% opacity) */
   --border: #a9b4b9;
   --border-ghost: rgba(169, 180, 185, 0.20);
   --border-focus: rgba(0, 91, 192, 0.50);
-  --border-divider: rgba(169, 180, 185, 0.10);
+  --border-divider: rgba(169, 180, 185, 0.12);
 
   /* Scrollbar — thin, subtle */
-  --scrollbar: #d1d5db;
+  --scrollbar: #d9e4ea;
   --scrollbar-hover: #a9b4b9;
 
   /* Elevation / Shadows — ambient, not heavy */
   --shadow-sm: 0 1px 2px rgba(42, 52, 57, 0.04);
   --shadow-md: 0 4px 24px -1px rgba(42, 52, 57, 0.06), 0 2px 8px -1px rgba(42, 52, 57, 0.04);
   --shadow-lg: 0 8px 32px -2px rgba(42, 52, 57, 0.10), 0 4px 12px -1px rgba(42, 52, 57, 0.06);
-  --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.5);
 
   /* Radius — sharp but not aggressive */
   --radius-xs: 0.0625rem;  /* 1px */
   --radius-sm: 0.125rem;   /* 2px — default */
   --radius-md: 0.25rem;    /* 4px — buttons, inputs */
   --radius-lg: 0.5rem;     /* 8px — cards */
-  --radius-xl: 1rem;       /* 16px — input bubble */
-  --radius-2xl: 1.5rem;    /* 24px — user bubble */
-  --radius-full: 1.5rem;   /* 24px — pills */
+  --radius-xl: 0.75rem;    /* 12px — pills */
+  --radius-2xl: 1rem;      /* 16px — large bubbles */
+  --radius-full: 1.5rem;   /* 24px */
 
   /* Font scale */
   --font-family: "Inter", system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
@@ -132,12 +126,11 @@
   --space-10: 2.5rem;
 
   /* Glassmorphism */
-  --glass-bg: rgba(255, 255, 255, 0.90);
+  --glass-bg: rgba(248, 249, 251, 0.85);
   --glass-blur: 20px;
 
-  /* Chat header height (replaces topnav) */
-  --chat-header-height: 56px;
-  --sidebar-width: 64px;
+  /* Top nav height */
+  --topnav-height: 40px;
 }
 
 body {
@@ -191,86 +184,74 @@ body {
   vertical-align: middle;
 }
 
-/* ═══ Dark Theme — Obsidian Pro ("The Tactical Glass Lab") ═══ */
+/* Dark theme overrides */
 [data-theme="dark"] {
-  --bg-primary: #131314;            /* surface */
-  --bg-secondary: #201f20;          /* surface-container */
-  --bg-tertiary: #2a2a2b;           /* surface-container-high */
-  --bg-elevated: #1c1b1c;           /* surface-container-low */
-  --bg-input: #0e0e0f;              /* surface-container-lowest */
-  --bg-hover: #353436;              /* surface-container-highest */
-  --bg-hover-subtle: #2a2a2b;
+  --bg-primary: #0b0f10;            /* inverse-surface */
+  --bg-secondary: #1a1e20;
+  --bg-tertiary: #252a2d;
+  --bg-elevated: #1e2224;
+  --bg-input: #2a2f32;
+  --bg-hover: #3a3f42;
+  --bg-hover-subtle: #2a2f32;
 
-  --text-primary: #e5e2e3;          /* on-surface */
-  --text-secondary: #c1c6d7;        /* on-surface-variant */
-  --text-muted: #8b90a0;            /* outline */
-  --text-inverse: #f7f7ff;          /* on-primary */
+  --text-primary: #e0e4e8;
+  --text-secondary: #b8bcc0;
+  --text-muted: #8a8f92;
+  --text-inverse: #f7f7ff;
 
-  --accent: #adc6ff;                /* primary */
-  --accent-hover: #adc6ff;          /* primary-dim */
-  --accent-muted: rgba(173, 198, 255, 0.10);
-  --accent-surface: rgba(75, 142, 255, 0.15); /* primary-container approx */
-  --accent-fixed: #d8e2ff;
-  --accent-gradient: linear-gradient(145deg, #adc6ff, #4b8eff);
+  --accent: #4a8eff;                /* inverse-primary */
+  --accent-hover: #6c9fff;
+  --accent-muted: rgba(74, 142, 255, 0.15);
+  --accent-surface: rgba(74, 142, 255, 0.10);
+  --accent-fixed: #003d85;
+  --accent-gradient: linear-gradient(145deg, #4a8eff, #6c9fff);
 
-  /* Tertiary — v4 dark accent (golden) */
-  --brand-orange: #ffb95f;
-  --brand-orange-hover: #ffb95f;
-  --brand-orange-muted: rgba(255, 185, 95, 0.10);
-  --brand-orange-shadow: 0 4px 14px -2px rgba(255, 185, 95, 0.20);
+  --cta: #fb923c;
+  --cta-hover: #f97316;
+  --cta-gradient: linear-gradient(135deg, #fb923c, #f97316);
+  --cta-shadow: 0 4px 14px -2px rgba(251, 146, 60, 0.3);
 
-  /* Dark CTA uses tertiary gold in v4 */
-  --cta: #ffb95f;
-  --cta-hover: #ffb95f;
-  --cta-gradient: linear-gradient(135deg, #ffb95f, #ca8100);
-  --cta-shadow: 0 4px 14px -2px rgba(255, 185, 95, 0.20);
+  --success: #4ec9b0;
+  --success-bg: rgba(46, 160, 67, 0.20);
+  --success-text: #4ec9b0;
+  --error: #f14c4c;
+  --error-bg: rgba(248, 81, 73, 0.20);
+  --error-text: #f14c4c;
+  --warning: #cca700;
+  --warning-bg: rgba(204, 167, 0, 0.15);
+  --warning-text: #cca700;
+  --info: #3794ff;
+  --info-text: #3794ff;
 
-  --success: #4ade80;
-  --success-bg: rgba(34, 197, 94, 0.20);
-  --success-text: #4ade80;
-  --error: #f87171;
-  --error-bg: rgba(248, 113, 113, 0.20);
-  --error-text: #f87171;
-  --warning: #fbbf24;
-  --warning-bg: rgba(251, 191, 36, 0.15);
-  --warning-text: #fbbf24;
-  --info: #adc6ff;
-  --info-text: #adc6ff;
+  --user-bubble-bg: rgba(49, 46, 129, 0.20);
+  --user-bubble-border: rgba(99, 102, 241, 0.25);
+  --user-bubble-text: #c7d2fe;
 
-  --user-bubble-bg: transparent;
-  --user-bubble-border: transparent;
-  --user-bubble-text: #e5e2e3;
+  --diff-add-bg: rgba(46, 160, 67, 0.15);
+  --diff-add-text: #4ec9b0;
+  --diff-add-border: #4ec9b0;
+  --diff-del-bg: rgba(248, 81, 73, 0.15);
+  --diff-del-text: #f14c4c;
+  --diff-del-border: #f14c4c;
+  --diff-add-line-bg: rgba(46, 160, 67, 0.08);
+  --diff-del-line-bg: rgba(248, 81, 73, 0.08);
 
-  --diff-add-bg: rgba(34, 197, 94, 0.12);
-  --diff-add-text: #4ade80;
-  --diff-add-border: #4ade80;
-  --diff-del-bg: rgba(239, 68, 68, 0.12);
-  --diff-del-text: #f87171;
-  --diff-del-border: #f87171;
-  --diff-add-line-bg: rgba(34, 197, 94, 0.08);
-  --diff-del-line-bg: rgba(248, 113, 113, 0.08);
+  --code-bg: #1a1e20;
+  --code-border: transparent;
 
-  /* Dark code block uses black background in v4 */
-  --code-bg: rgba(0, 0, 0, 0.40);
-  --code-border: rgba(255, 255, 255, 0.05);
-  --code-traffic-red: #f87171;
-  --code-traffic-yellow: #fbbf24;
-  --code-traffic-green: #4ade80;
+  --border: #3a3f42;
+  --border-ghost: rgba(58, 63, 66, 0.40);
+  --border-focus: rgba(74, 142, 255, 0.50);
+  --border-divider: rgba(58, 63, 66, 0.25);
 
-  --border: #414755;                /* outline-variant */
-  --border-ghost: rgba(255, 255, 255, 0.05);
-  --border-focus: rgba(173, 198, 255, 0.50);
-  --border-divider: rgba(255, 255, 255, 0.05);
-
-  --scrollbar: #414755;
-  --scrollbar-hover: #414755;
+  --scrollbar: rgba(121, 121, 121, 0.4);
+  --scrollbar-hover: rgba(121, 121, 121, 0.7);
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 24px -1px rgba(0, 0, 0, 0.3), 0 2px 8px -1px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 8px 32px -2px rgba(0, 0, 0, 0.4), 0 4px 12px -1px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.5);
 
-  --glass-bg: rgba(19, 19, 20, 0.80);
+  --glass-bg: rgba(26, 30, 32, 0.85);
 }
 
 * {
@@ -311,7 +292,7 @@ body {
   background: var(--scrollbar-hover);
 }
 
-/* highlight.js overrides — Solarized Light ethos (Light) */
+/* highlight.js overrides — Solarized Light ethos */
 .hljs {
   background: transparent !important;
   color: var(--text-primary) !important;
@@ -341,17 +322,17 @@ body {
 .hljs-deletion { color: var(--diff-del-text); background: var(--diff-del-bg); }
 .hljs-addition { color: var(--diff-add-text); background: var(--diff-add-bg); }
 
-/* Dark hljs overrides — v4 syntax: keyword=#adc6ff, type=#ddb7ff, function=#ffb95f, string=#a5d6ff */
-[data-theme="dark"] .hljs-keyword { color: #adc6ff; }
-[data-theme="dark"] .hljs-string { color: #a5d6ff; }
+/* Dark hljs overrides */
+[data-theme="dark"] .hljs-keyword { color: #c586c0; }
+[data-theme="dark"] .hljs-string { color: #ce9178; }
 [data-theme="dark"] .hljs-number { color: #b5cea8; }
 [data-theme="dark"] .hljs-comment { color: #6a9955; }
-[data-theme="dark"] .hljs-function { color: #ffb95f; }
-[data-theme="dark"] .hljs-title { color: #ffb95f; }
-[data-theme="dark"] .hljs-built_in { color: #4ade80; }
-[data-theme="dark"] .hljs-type { color: #ddb7ff; }
-[data-theme="dark"] .hljs-attr { color: #c1c6d7; }
-[data-theme="dark"] .hljs-variable { color: #c1c6d7; }
+[data-theme="dark"] .hljs-function { color: #dcdcaa; }
+[data-theme="dark"] .hljs-title { color: #dcdcaa; }
+[data-theme="dark"] .hljs-built_in { color: #4ec9b0; }
+[data-theme="dark"] .hljs-type { color: #4ec9b0; }
+[data-theme="dark"] .hljs-attr { color: #9cdcfe; }
+[data-theme="dark"] .hljs-variable { color: #9cdcfe; }
 [data-theme="dark"] .hljs-literal { color: #569cd6; }
 [data-theme="dark"] .hljs-meta { color: #569cd6; }
 [data-theme="dark"] .hljs-selector-tag { color: #d7baad; }
@@ -359,7 +340,7 @@ body {
 [data-theme="dark"] .hljs-selector-id { color: #d7baad; }
 [data-theme="dark"] .hljs-name { color: #569cd6; }
 [data-theme="dark"] .hljs-tag { color: #569cd6; }
-[data-theme="dark"] .hljs-attribute { color: #c1c6d7; }
+[data-theme="dark"] .hljs-attribute { color: #9cdcfe; }
 [data-theme="dark"] .hljs-symbol { color: #b5cea8; }
 
 /* Utility: glass panel */
@@ -421,20 +402,3 @@ body {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
-
-/* ═══ v4 Dark diff lines — colored left borders ═══ */
-[data-theme="dark"] .diff-added {
-  background-color: rgba(34, 197, 94, 0.12);
-  border-left: 3px solid #4ade80;
-}
-
-[data-theme="dark"] .diff-removed {
-  background-color: rgba(239, 68, 68, 0.12);
-  border-left: 3px solid #f87171;
-}
-
-/* v4 Dark code syntax highlighting */
-[data-theme="dark"] .code-keyword { color: #adc6ff; }
-[data-theme="dark"] .code-type { color: #ddb7ff; }
-[data-theme="dark"] .code-function { color: #ffb95f; }
-[data-theme="dark"] .code-string { color: #a5d6ff; }

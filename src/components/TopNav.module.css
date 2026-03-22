@@ -1,0 +1,126 @@
+/* ═══ TopNav — macOS-style precision bar ═══ */
+
+.topNav {
+  position: relative;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--topnav-height);
+  padding: 0 var(--space-4);
+  flex-shrink: 0;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: 0 1px 0 var(--border-divider);
+}
+
+/* Left section */
+.topNavLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+/* Claude logo image */
+.topNavLogoImg {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.topNavMenus {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.topNavMenu {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 0;
+  border: none;
+  background: none;
+  transition: color 0.15s;
+  border-bottom: 2px solid transparent;
+}
+
+.topNavMenu:hover {
+  color: var(--cta);
+}
+
+.topNavMenuActive {
+  color: var(--cta);
+  border-bottom-color: var(--cta);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Right section */
+.topNavRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.topNavProject {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 3px 12px;
+  background: rgba(249, 115, 22, 0.06);
+  border: 1px solid rgba(249, 115, 22, 0.12);
+  border-radius: var(--radius-full);
+}
+
+.topNavProjectIcon {
+  display: flex;
+  align-items: center;
+  color: var(--cta);
+}
+
+.topNavProjectName {
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--cta);
+  font-family: var(--font-mono);
+  letter-spacing: var(--letter-spacing-tight);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topNavActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.topNavAction {
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.15s, background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.topNavAction:hover {
+  transform: scale(1.05);
+}
+
+/* Orange CTA style for all action icons */
+.topNavActionCta:hover {
+  color: var(--cta);
+  background: rgba(249, 115, 22, 0.08);
+}

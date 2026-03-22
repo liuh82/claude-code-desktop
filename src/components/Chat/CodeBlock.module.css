@@ -1,19 +1,14 @@
-/* ═══ CodeBlock — v4 ═══ */
+/* ═══ CodeBlock — Precision Workspace (macOS traffic light header) ═══ */
 
 .codeBlock {
   position: relative;
-  background: var(--code-bg);
-  border: 1px solid var(--code-border);
+  background: var(--bg-input);
+  border: 1px solid var(--border-ghost);
   border-radius: var(--radius-lg);
   margin: var(--space-3) 0;
   overflow: hidden;
   font-size: var(--font-size-sm);
   box-shadow: var(--shadow-sm);
-}
-
-[data-theme="dark"] .codeBlock {
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xl);
 }
 
 .codeHeader {
@@ -25,51 +20,29 @@
   border-bottom: 1px solid var(--border-divider);
 }
 
-[data-theme="dark"] .codeHeader {
-  background: #201f20;
-  padding: var(--space-2) var(--space-4);
-  border-bottom-color: rgba(255, 255, 255, 0.05);
-}
-
 .codeTrafficLights {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-/* Traffic lights — Dark: smaller (w-2 h-2 = 8px) with muted colors */
 .trafficDot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
 }
 
-[data-theme="dark"] .trafficDot {
-  width: 8px;
-  height: 8px;
-}
-
-.trafficRed { background: #f87171; }
-.trafficYellow { background: #fbbf24; }
-.trafficGreen { background: #4ade80; }
-
-[data-theme="dark"] .trafficRed { background: rgba(248, 113, 113, 0.50); }
-[data-theme="dark"] .trafficYellow { background: rgba(251, 191, 36, 0.50); }
-[data-theme="dark"] .trafficGreen { background: rgba(74, 222, 128, 0.50); }
+.trafficRed { background: var(--code-traffic-red); }
+.trafficYellow { background: var(--code-traffic-yellow); }
+.trafficGreen { background: var(--code-traffic-green); }
 
 .codeLang {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-2xs);
   font-weight: var(--font-weight-bold);
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-widest);
   margin-left: var(--space-3);
-}
-
-[data-theme="dark"] .codeLang {
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-left: var(--space-2);
 }
 
 .codeHeaderRight {
@@ -96,10 +69,6 @@
   color: var(--text-primary);
 }
 
-[data-theme="dark"] .copyBtn:hover {
-  color: var(--accent);
-}
-
 .copyBtnCopied {
   color: var(--accent);
 }
@@ -123,12 +92,6 @@
   min-width: 40px;
 }
 
-[data-theme="dark"] .lineNumbers {
-  background: transparent;
-  opacity: 0.3;
-  color: rgba(139, 144, 160, 0.30);
-}
-
 .lineNumber {
   display: block;
   padding: 0 var(--space-3);
@@ -140,20 +103,13 @@
   overflow-x: auto;
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
-  line-height: var(--line-height-relaxed);
+  line-height: var(--line-height-normal);
   white-space: pre;
-  color: var(--text-muted);
-}
-
-[data-theme="dark"] .codeContent {
-  font-size: 13px;
-  line-height: 1.5;
-  padding: var(--space-5);
 }
 
 .codeInline {
   background: rgba(0, 91, 192, 0.05);
-  border: 1px solid rgba(0, 91, 192, 0.20);
+  border: 1px solid rgba(0, 91, 192, 0.12);
   border-radius: var(--radius-sm);
   padding: 1px 6px;
   font-family: var(--font-mono);
