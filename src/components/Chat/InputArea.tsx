@@ -90,7 +90,7 @@ function InputArea() {
     sendMessage(text.trim());
     setText('');
     if (textareaRef.current) {
-      textareaRef.current.style.height = '64px';
+      textareaRef.current.style.height = '100px';
     }
   }, [canSend, text, sendMessage]);
 

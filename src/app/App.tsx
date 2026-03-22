@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ThemeProvider, useTheme } from '@/theme/theme';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboard';
+import { isElectron } from '@/lib/claude-api';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useChatStore } from '@/stores/useChatStore';
 import { useProjectStore } from '@/stores/useProjectStore';
@@ -94,9 +95,6 @@ function AppContent() {
     });
   }, []);
 
-  const handleNewTab = useCallback(() => {
-    if (projectPath) createTab(projectPath);
-  }, [projectPath, createTab]);
 
   const handleProjectOpen = useCallback((path: string) => {
     const existing = useProjectStore.getState().projects.find((p) => p.path === path);
@@ -114,6 +112,26 @@ function AppContent() {
       if (path?.trim()) handleProjectOpen(path.trim());
     }
   }, [handleProjectOpen]);
+  const handleNewTab = useCallback(async () => {
+    // Try to open directory picker (Electron) to let user choose/reconfirm folder
+    try {
+      if (isElectron()) {
+        const api = (window as unknown as Record<string, unknown>).claudeAPI as { openDirectoryDialog?: () => Promise<string | null> } | undefined;
+        if (api?.openDirectoryDialog) {
+          const dir = await api.openDirectoryDialog();
+          if (dir) {
+            handleProjectOpen(dir);
+            createTab(dir);
+            return;
+          }
+          // User cancelled picker — use current project path
+          if (projectPath) { createTab(projectPath); return; }
+        }
+      }
+    } catch {}
+    // Fallback: use current project
+    if (projectPath) createTab(projectPath);
+  }, [projectPath, createTab, handleProjectOpen]);
 
   const handleSidebarResize = useCallback((delta: number) => {
     setSidebarWidth((prev) => {
