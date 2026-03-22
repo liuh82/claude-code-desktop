@@ -8,6 +8,10 @@ export interface KeyboardActions {
   onOpenProject?: () => void;
   onCommandPalette?: () => void;
   onStopGeneration?: () => void;
+  onNewTab?: () => void;
+  onSplitPaneHorizontal?: () => void;
+  onSplitPaneVertical?: () => void;
+  onClosePane?: () => void;
 }
 
 export function useKeyboardShortcuts(actions: KeyboardActions) {
@@ -23,6 +27,34 @@ export function useKeyboardShortcuts(actions: KeyboardActions) {
       if (key === 'n' && !shift) {
         e.preventDefault();
         actions.onNewChat?.();
+        return;
+      }
+
+      // Cmd/Ctrl+T — new tab
+      if (key === 't' && !shift) {
+        e.preventDefault();
+        actions.onNewTab?.();
+        return;
+      }
+
+      // Cmd/Ctrl+W — close pane / tab
+      if (key === 'w' && !shift) {
+        e.preventDefault();
+        actions.onClosePane?.();
+        return;
+      }
+
+      // Cmd/Ctrl+D — split pane horizontal
+      if (key === 'd' && !shift) {
+        e.preventDefault();
+        actions.onSplitPaneHorizontal?.();
+        return;
+      }
+
+      // Cmd/Ctrl+Shift+D — split pane vertical
+      if (key === 'd' && shift) {
+        e.preventDefault();
+        actions.onSplitPaneVertical?.();
         return;
       }
 

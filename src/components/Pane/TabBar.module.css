@@ -1,0 +1,121 @@
+/* ═══ TabBar — macOS-style tab strip ═══ */
+
+.tabBar {
+  display: flex;
+  align-items: flex-end;
+  height: 36px;
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+  padding: 0 var(--space-2);
+  gap: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-bottom: 1px solid var(--border-divider);
+}
+
+.tabBar::-webkit-scrollbar { height: 0; }
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  height: 32px;
+  min-width: 100px;
+  max-width: 180px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  position: relative;
+  font-family: var(--font-family);
+  text-align: left;
+}
+
+.tab:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.tabActive {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.tabActive::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-gradient);
+}
+
+.tabTitle {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.1s;
+  flex-shrink: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+.tab:hover .tabClose,
+.tabActive .tabClose {
+  opacity: 1;
+}
+
+.tabClose:hover {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.tabAdd {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: var(--space-1);
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.tabAdd:hover {
+  background: var(--accent-muted);
+  color: var(--accent);
+}
+
+.tabAdd .material-symbols-outlined {
+  font-size: 16px;
+}

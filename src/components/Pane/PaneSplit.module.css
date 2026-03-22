@@ -1,0 +1,102 @@
+/* ═══ PaneSplit — Draggable divider ═══ */
+
+.splitContainer {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.splitHorizontal {
+  flex-direction: row;
+}
+
+.splitVertical {
+  flex-direction: column;
+}
+
+/* The draggable divider handle */
+.handle {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 5;
+  transition: background 0.15s;
+}
+
+.handleHorizontal {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.handleVertical {
+  height: 4px;
+  cursor: row-resize;
+}
+
+/* Visible line */
+.handle::before {
+  content: '';
+  position: absolute;
+  background: var(--border-divider);
+  transition: background 0.15s, width 0.15s, height 0.15s;
+}
+
+.handleHorizontal::before {
+  top: 0;
+  bottom: 0;
+  left: 1.5px;
+  width: 1px;
+}
+
+.handleVertical::before {
+  left: 0;
+  right: 0;
+  top: 1.5px;
+  height: 1px;
+}
+
+.handle:hover::before,
+.handleActive::before {
+  background: var(--accent);
+}
+
+.handle:hover,
+.handleActive {
+  background: var(--accent-muted);
+}
+
+.handleHorizontal:hover::before,
+.handleActive.handleHorizontal::before {
+  width: 2px;
+  left: 1px;
+}
+
+.handleVertical:hover::before,
+.handleActive.handleVertical::before {
+  height: 2px;
+  top: 1px;
+}
+
+/* Resize overlay to capture events */
+.resizeOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  cursor: inherit;
+}
+
+.resizeOverlayHorizontal {
+  cursor: col-resize;
+}
+
+.resizeOverlayVertical {
+  cursor: row-resize;
+}
+
+/* Pane container (each side) */
+.paneSlot {
+  min-width: 80px;
+  min-height: 60px;
+  overflow: hidden;
+}

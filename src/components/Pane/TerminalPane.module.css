@@ -1,0 +1,187 @@
+/* ═══ TerminalPane — Individual pane view ═══ */
+
+.terminalPane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+/* Active pane gets a subtle highlight */
+.terminalPaneActive {
+  box-shadow: inset 0 0 0 1px var(--accent-muted);
+}
+
+/* Pane header */
+.paneHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-3);
+  height: 30px;
+  flex-shrink: 0;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-divider);
+}
+
+.paneHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  flex: 1;
+}
+
+.paneStatus {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.paneStatusIdle { background: var(--success); }
+.paneStatusStarting { background: var(--warning); animation: pulse 1.5s infinite; }
+.paneStatusRunning { background: #4a9eff; animation: pulse 2s infinite; }
+.paneStatusWaiting { background: var(--warning); }
+.paneStatusError { background: var(--error); }
+.paneStatusClosed { background: var(--text-muted); }
+
+.paneTitle {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.paneHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.paneAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.paneAction:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.paneActionSplit:hover {
+  color: var(--accent);
+}
+
+.paneActionClose:hover {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+/* Pane body — reuses chat view styles */
+.paneBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.paneMessages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+}
+
+.paneMessagesInner {
+  max-width: 100%;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--text-primary);
+}
+
+/* Empty state for pane */
+.paneEmpty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  opacity: 0.5;
+}
+
+/* Pane input area (compact) */
+.paneInput {
+  padding: var(--space-2) var(--space-3);
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-divider);
+}
+
+.paneInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--bg-input);
+  border: 1px solid var(--border-ghost);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-2);
+  transition: border-color 0.15s;
+}
+
+.paneInputWrapper:focus-within {
+  border-color: var(--border-focus);
+}
+
+.paneInputField {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  min-width: 0;
+}
+
+.paneInputField::placeholder {
+  color: var(--text-muted);
+}
+
+.paneSendBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-gradient);
+  border: none;
+  color: white;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.paneSendBtnActive {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.paneSendBtnActive:hover {
+  filter: brightness(1.1);
+}
