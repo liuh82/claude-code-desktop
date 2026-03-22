@@ -19,12 +19,13 @@ const CC_BUILTIN_MODELS = [
 ];
 
 const NAV_ITEMS = [
-  { id: 'newChat', icon: 'edit_note', label: '新对话' },
+  { id: 'editor', icon: 'code', label: '编辑器' },
+  { id: 'search', icon: 'search', label: '搜索' },
   { id: 'history', icon: 'history', label: '历史记录' },
+  { id: 'extensions', icon: 'extension', label: '扩展' },
 ] as const;
 
 const BOTTOM_ITEMS = [
-  { id: 'themeToggle', icon: 'dark_mode', label: '切换主题' },
   { id: 'settings', icon: 'settings', label: '设置' },
 ] as const;
 
@@ -36,10 +37,10 @@ interface SidebarProps {
   onToggleTheme: () => void;
 }
 
-function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }: SidebarProps & { style?: React.CSSProperties }) {
+function Sidebar({ projectPath: _projectPath, onNewChat: _onNewChat, onOpenSettings, style }: SidebarProps & { style?: React.CSSProperties }) {
   const { settings, updateSetting } = useSettingsStore();
   const currentModel = useChatStore((s) => s.currentModel) || settings.defaultModel;
-  const [activeNav] = useState<string>('terminal');
+  const [activeNav] = useState<string>('editor');
   const [claudeConfig, setClaudeConfig] = useState<ClaudeConfig | null>(null);
 
   useEffect(() => {
@@ -65,19 +66,16 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }
   }, [claudeConfig]);
 
   const handleNavClick = useCallback((id: string) => {
-    if (id === 'newChat') { onNewChat(); return; }
     if (id === 'settings') { onOpenSettings(); return; }
-    if (id === 'themeToggle') { updateSetting('theme', settings.theme === 'dark' ? 'light' : 'dark'); return; }
-  }, [onNewChat, onOpenSettings, updateSetting, settings.theme]);
+  }, [onOpenSettings]);
 
   return (
     <aside className={styles.sidebar} style={style}>
-      {/* Claude Logo */}
+      {/* Logo — Orange "C" */}
       <div className={styles.sidebarLogo}>
         <div className={styles.sidebarLogoImg}>
-          <span className="material-symbols-outlined">terminal</span>
+          C
         </div>
-        
       </div>
 
       {/* Model selector */}
@@ -123,6 +121,9 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }
               </span>
             </button>
           ))}
+          <div className={styles.userAvatar}>
+            <span className="material-symbols-outlined">person</span>
+          </div>
         </div>
     </aside>
   );

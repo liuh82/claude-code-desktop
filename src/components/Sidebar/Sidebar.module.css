@@ -1,7 +1,7 @@
-/* ═══ Sidebar — 48px icon-only, Stitch design ═══ */
+/* ═══ Sidebar — 64px icon-only, Stitch design ═══ */
 
 .sidebar {
-  width: 48px;
+  width: 64px;
   flex-shrink: 0;
   background: var(--bg-elevated);
   display: flex;
@@ -15,7 +15,7 @@
   border-right-color: var(--border-divider);
 }
 
-/* Logo — 32px gradient blue→indigo + white terminal icon */
+/* Logo — Orange "C" chip */
 .sidebarLogo {
   padding: 12px 8px 16px;
   display: flex;
@@ -24,24 +24,22 @@
 }
 
 .sidebarLogoImg {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #005bc0, #4f46e5);
-  box-shadow: 0 2px 8px -2px rgba(0, 91, 192, 0.30);
+  background: var(--brand-orange);
+  color: white;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.05em;
 }
 
 [data-theme="dark"] .sidebarLogoImg {
-  background: linear-gradient(135deg, #4b8eff, #818cf8);
-  box-shadow: 0 2px 8px -2px rgba(75, 142, 255, 0.15);
-}
-
-.sidebarLogoImg .material-symbols-outlined {
-  font-size: 18px;
+  background: var(--brand-orange);
   color: white;
 }
 
@@ -71,7 +69,7 @@
   font-size: var(--font-size-sm);
   text-align: center;
   width: 100%;
-  border-left: 3px solid transparent;
+  border-left: 2px solid transparent;
   position: relative;
 }
 
@@ -85,15 +83,16 @@
   color: #818cf8;
 }
 
-/* Active — primary blue left border + blue bg tint */
+/* Active — primary blue left border + white bg */
 .navItemActive {
-  background: var(--accent-muted);
+  background: var(--bg-input);
   color: var(--accent);
   border-left-color: var(--accent);
+  font-weight: 600;
 }
 
 [data-theme="dark"] .navItemActive {
-  background: var(--accent-muted);
+  background: var(--bg-input);
   color: var(--accent);
   border-left-color: var(--accent);
 }
@@ -152,4 +151,23 @@
 
 .sidebarBottom .navItem {
   padding: 10px 0;
+}
+
+/* User avatar at sidebar bottom */
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(217, 119, 6, 0.20);
+  border: 1px solid var(--brand-orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin: 4px auto 0;
+}
+
+.userAvatar .material-symbols-outlined {
+  font-size: 16px;
+  color: var(--brand-orange);
 }

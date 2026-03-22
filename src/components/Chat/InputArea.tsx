@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useChatStore } from '@/stores/useChatStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
 import type { FileNode } from '@/types/chat';
 import styles from './InputArea.module.css';
 
@@ -40,7 +39,6 @@ function InputArea() {
   const stopGeneration = useChatStore((s) => s.stopGeneration);
   const clearChat = useChatStore((s) => s.clearChat);
   const fileTree = useChatStore((s) => s.fileTree);
-  const { settings } = useSettingsStore();
 
   const flatFiles = useMemo(() => flattenTree(fileTree), [fileTree]);
 
@@ -65,7 +63,7 @@ function InputArea() {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = `${Math.min(Math.max(el.scrollHeight, 64), 200)}px`;
+    el.style.height = `${Math.min(Math.max(el.scrollHeight, 44), 200)}px`;
   }, [text]);
 
   useEffect(() => {
@@ -90,7 +88,7 @@ function InputArea() {
     sendMessage(text.trim());
     setText('');
     if (textareaRef.current) {
-      textareaRef.current.style.height = '64px';
+      textareaRef.current.style.height = '44px';
     }
   }, [canSend, text, sendMessage]);
 
@@ -183,9 +181,6 @@ function InputArea() {
   const showDropdown = showMention && filteredFiles.length > 0;
   const showSlashDropdown = showSlash && filteredCommands.length > 0;
 
-  const displayModel = useChatStore((s) => s.currentModel) || settings.defaultModel || 'claude-sonnet-4-6';
-  const modelLabel = displayModel.replace('claude-', '').replace(/-\d{8}$/, '');
-
   return (
     <div className={styles.inputArea}>
       <div className={styles.inputWrapper} ref={dropdownRef}>
@@ -195,7 +190,7 @@ function InputArea() {
           value={text}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder="输入指令，例如 '/patch fix-issue'..."
+          placeholder="给 Claude 发送消息或询问代码问题..."
           spellCheck={false}
           rows={1}
         />
@@ -236,11 +231,16 @@ function InputArea() {
           </div>
         )}
 
-        {/* Action buttons inside textarea */}
+        {/* Action toolbar — left: attach/terminal, right: send */}
         <div className={styles.inputActions}>
-          <button className={styles.attachBtn} title="附件">
-            <span className="material-symbols-outlined">attach_file</span>
-          </button>
+          <div className={styles.inputActionsLeft}>
+            <button className={styles.attachBtn} title="附件">
+              <span className="material-symbols-outlined">attach_file</span>
+            </button>
+            <button className={styles.attachBtn} title="终端">
+              <span className="material-symbols-outlined">terminal</span>
+            </button>
+          </div>
           {isGenerating ? (
             <button className={styles.stopBtn} onClick={stopGeneration} title="停止生成">
               <span className="material-symbols-outlined">stop_circle</span>
@@ -258,16 +258,9 @@ function InputArea() {
         </div>
       </div>
 
-      {/* Footer hints */}
+      {/* Footer — centered hint */}
       <div className={styles.inputFooter}>
-        <div className={styles.inputFooterLeft}>
-          <span className={styles.modelIndicator}>
-            <span className={styles.modelDot} />
-            {modelLabel}
-          </span>
-          <span className={styles.encoding}>UTF-8</span>
-        </div>
-        <span className={styles.shortcutHint}>{'\u2318'}+Enter 发送</span>
+        <span className={styles.footerHint}>Claude Code 正在预览阶段 · 使用 {'\u2318'}+K 快速唤起命令</span>
       </div>
     </div>
   );

@@ -22,7 +22,7 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
   return (
     <aside className={styles.toolPanel} style={style}>
       <div className={styles.toolPanelHeader}>
-        <span className={styles.toolPanelTitle}>工具面板</span>
+        <span className={styles.toolPanelTitle}>资源管理器</span>
         <button className={styles.toolPanelClose} onClick={onClose} title="关闭" aria-label="关闭工具面板">
           <span className="material-symbols-outlined">chevron_right</span>
         </button>

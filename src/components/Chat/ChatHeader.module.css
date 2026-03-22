@@ -1,7 +1,7 @@
 /* ═══ ChatHeader — Stitch top bar ═══ */
 
 .chatHeader {
-  height: 48px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -24,7 +24,7 @@
   gap: 12px;
 }
 
-/* Path pill — light: rounded pill, dark: mono flat */
+/* Path pill — gray bg pill */
 .headerIcon {
   font-size: 14px;
 }
@@ -34,20 +34,17 @@
   align-items: center;
   gap: 8px;
   padding: 4px 12px;
-  background: rgba(216, 226, 255, 0.20);
-  border: 1px solid rgba(0, 91, 192, 0.20);
+  background: var(--bg-secondary);
   border-radius: 9999px;
-  font-size: 10px;
-  font-weight: var(--font-weight-bold);
-  font-family: var(--font-mono);
-  color: var(--accent);
-  letter-spacing: 0.05em;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-muted);
+  border: none;
 }
 
 [data-theme="dark"] .pathPill {
-  background: var(--accent-muted);
-  border-color: var(--accent-muted);
-  color: var(--accent);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
 }
 
 .divider {
@@ -64,11 +61,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 10px;
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
   color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 [data-theme="dark"] .modelInfo {

@@ -29,6 +29,21 @@
   cursor: pointer;
 }
 
+/* Selected file — blue tint + right border accent */
+.treeRowSelected {
+  color: var(--accent);
+  background: var(--accent-muted);
+  border-right: 2px solid var(--accent);
+}
+
+.treeRowSelected .nodeName {
+  color: var(--accent);
+}
+
+.treeRowSelected .nodeIcon .material-symbols-outlined {
+  color: var(--accent);
+}
+
 .chevron {
   display: flex;
   align-items: center;

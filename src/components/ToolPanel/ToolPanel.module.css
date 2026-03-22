@@ -20,7 +20,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  height: 40px;
+  height: 56px;
   flex-shrink: 0;
   background: var(--bg-input);
   border-bottom: 1px solid var(--border-divider);

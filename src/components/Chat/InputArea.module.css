@@ -1,64 +1,70 @@
-/* ═══ InputArea — Stitch design, 768px centered ═══ */
+/* ═══ InputArea — Design spec, 768px centered ═══ */
 
 .inputArea {
   padding: 24px;
-  background: rgba(255, 255, 255, 0.60);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border-ghost);
+  background: var(--bg-primary);
   flex-shrink: 0;
 }
 
 [data-theme="dark"] .inputArea {
-  background: rgba(19, 19, 20, 0.80);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: var(--bg-primary);
 }
 
 .inputWrapper {
   position: relative;
   max-width: 768px;
   margin: 0 auto;
+  background: var(--bg-input);
+  border: 1px solid rgba(169, 180, 185, 0.30);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  padding: 12px;
+  transition: border-color 150ms, box-shadow 150ms;
 }
 
-/* Textarea — rounded-2xl, min-height 64px (from design spec) */
+.inputWrapper:focus-within {
+  border-color: rgba(0, 91, 192, 0.50);
+  box-shadow: 0 0 0 4px rgba(0, 91, 192, 0.10);
+}
+
+[data-theme="dark"] .inputWrapper:focus-within {
+  border-color: rgba(173, 198, 255, 0.50);
+  box-shadow: 0 0 0 4px rgba(173, 198, 255, 0.10);
+}
+
+/* Textarea — inside container, compact padding */
 .inputTextarea {
   width: 100%;
-  min-height: 64px !important;
+  min-height: 44px !important;
   max-height: 200px;
-  padding: 20px 56px 20px 20px;
-  background: var(--bg-input);
-  border: 2px solid var(--border-ghost);
-  border-radius: 16px;
+  padding: 8px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   color: var(--text-primary);
   font-family: var(--font-family);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   line-height: var(--line-height-normal);
   outline: none;
   resize: none;
-  box-shadow: var(--shadow-sm);
-  transition: border-color 150ms, box-shadow 150ms;
+  box-shadow: none;
 }
 
 .inputTextarea::placeholder {
   color: var(--text-muted);
 }
 
-.inputTextarea:focus {
-  border-color: rgba(0, 91, 192, 0.40);
-  box-shadow: 0 0 0 4px rgba(0, 91, 192, 0.05);
-}
-
-[data-theme="dark"] .inputTextarea:focus {
-  border-color: rgba(173, 198, 255, 0.40);
-  box-shadow: 0 0 0 4px rgba(173, 198, 255, 0.05);
-}
-
-/* Action buttons — bottom-right of textarea */
+/* Action toolbar — below textarea, separated by thin border */
 .inputActions {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(169, 180, 185, 0.10);
+}
+
+.inputActionsLeft {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -70,7 +76,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 12px;
+  border-radius: 8px;
   background: transparent;
   border: none;
   color: var(--text-muted);
@@ -85,11 +91,11 @@
 }
 
 .attachBtn:hover {
-  color: var(--accent);
-  background: var(--accent-muted);
+  color: var(--text-primary);
+  background: var(--bg-elevated);
 }
 
-/* Send button — brand-orange, active state glow */
+/* Send button — brand-orange */
 .sendBtn {
   display: flex;
   align-items: center;
@@ -119,17 +125,12 @@
 }
 
 .sendBtnActive:hover {
-  transform: translateY(-1px);
   filter: brightness(1.1);
   box-shadow: 0 6px 20px -2px rgba(217, 119, 6, 0.45);
 }
 
 [data-theme="dark"] .sendBtnActive:hover {
   box-shadow: 0 6px 20px -2px rgba(255, 185, 95, 0.30);
-}
-
-.sendBtnActive:active {
-  transform: translateY(0);
 }
 
 .stopBtn {
@@ -150,59 +151,20 @@
   opacity: 0.9;
 }
 
-/* Footer hints — model, encoding, shortcut */
+/* Footer — centered hint text */
 .inputFooter {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   max-width: 768px;
-  margin: 16px auto 0;
-  padding: 0 8px;
+  margin: 12px auto 0;
 }
 
-.inputFooterLeft {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.modelIndicator {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--font-size-2xs);
-  font-weight: var(--font-weight-bold);
-  color: var(--success);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.modelDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--success);
-  animation: pulse 2s infinite;
-}
-
-.encoding {
-  font-size: var(--font-size-2xs);
-  font-weight: var(--font-weight-bold);
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.shortcutHint {
-  font-size: var(--font-size-2xs);
-  font-weight: var(--font-weight-black);
-  color: var(--accent);
-  opacity: 0.6;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: var(--accent-muted);
-  padding: 2px 8px;
-  border-radius: 4px;
+.footerHint {
+  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0.60;
+  letter-spacing: -0.01em;
 }
 
 /* ═══ Dropdown (@ mentions + / commands) ═══ */
