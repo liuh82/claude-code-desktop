@@ -11,7 +11,7 @@
   font-size: var(--font-size-2xs);
   flex-shrink: 0;
   height: 28px;
-  border-top: 1px solid var(--border-divider);
+  border-top: 1px solid var(--border-ghost);
 }
 
 .statusLeft {
@@ -35,12 +35,16 @@
   background: rgba(0, 91, 192, 0.05);
 }
 
+[data-theme="dark"] .statusGroup:hover {
+  background: rgba(173, 198, 255, 0.06);
+}
+
 .statusGroup:hover .statusGroupIcon {
   transform: scale(1.1);
 }
 
 .statusGroupBorder {
-  border-right: 1px solid var(--border-divider);
+  border-right: 1px solid var(--border-ghost);
 }
 
 .statusGroupIcon {
@@ -98,6 +102,10 @@
 .tokenLabel {
   font-weight: var(--font-weight-normal);
   color: rgba(0, 91, 192, 0.7);
+}
+
+[data-theme="dark"] .tokenLabel {
+  color: rgba(173, 198, 255, 0.7);
 }
 
 .tokenValue {

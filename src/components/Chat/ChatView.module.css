@@ -50,7 +50,7 @@
 .emptyTitle {
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
-  color: var(--cta);
+  color: var(--brand-orange);
   letter-spacing: var(--letter-spacing-tight);
 }
 

@@ -21,6 +21,10 @@
   background: var(--bg-input);
 }
 
+[data-theme="dark"] .treeRow:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 .treeRowFile {
   cursor: pointer;
 }
@@ -34,6 +38,14 @@
   flex-shrink: 0;
   color: var(--text-muted);
   transition: transform 0.15s;
+}
+
+[data-theme="dark"] .chevron {
+  color: rgba(139, 144, 160, 0.50);
+}
+
+[data-theme="dark"] .treeRow:hover .chevron {
+  color: var(--accent);
 }
 
 .chevronOpen {
@@ -58,6 +70,10 @@
   white-space: nowrap;
   color: var(--text-primary);
   font-size: var(--font-size-xs);
+}
+
+[data-theme="dark"] .nodeName {
+  color: #c1c6d7;
 }
 
 .statusDot {

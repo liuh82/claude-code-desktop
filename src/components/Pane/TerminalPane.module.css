@@ -22,7 +22,12 @@
   height: 30px;
   flex-shrink: 0;
   background: var(--bg-elevated);
-  border-bottom: 1px solid var(--border-divider);
+  border-bottom: 1px solid var(--border-ghost);
+}
+
+[data-theme="dark"] .paneHeader {
+  background: #1a1c1e;
+  border-bottom-color: rgba(255, 255, 255, 0.05);
 }
 
 .paneHeaderLeft {
@@ -127,7 +132,7 @@
 .paneInput {
   padding: var(--space-2) var(--space-3);
   flex-shrink: 0;
-  border-top: 1px solid var(--border-divider);
+  border-top: 1px solid var(--border-ghost);
 }
 
 .paneInputWrapper {
@@ -167,7 +172,7 @@
   width: 24px;
   height: 24px;
   border-radius: var(--radius-sm);
-  background: var(--accent-gradient);
+  background: var(--brand-orange);
   border: none;
   color: white;
   cursor: pointer;
@@ -175,6 +180,11 @@
   opacity: 0.4;
   pointer-events: none;
   transition: opacity 0.15s;
+}
+
+[data-theme="dark"] .paneSendBtn {
+  background: #ffb95f;
+  color: #2a1700;
 }
 
 .paneSendBtnActive {

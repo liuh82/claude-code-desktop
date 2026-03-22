@@ -35,8 +35,8 @@
 }
 
 .inputTextarea:focus {
-  border-color: rgba(0, 91, 192, 0.35);
-  box-shadow: 0 0 0 4px rgba(0, 91, 192, 0.05);
+  border-color: rgba(217, 119, 6, 0.35);
+  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.05);
 }
 
 .inputActions {
@@ -67,6 +67,11 @@
   background: rgba(0, 91, 192, 0.06);
 }
 
+[data-theme="dark"] .attachBtn:hover {
+  color: var(--accent);
+  background: rgba(173, 198, 255, 0.06);
+}
+
 .sendBtn {
   display: flex;
   align-items: center;
@@ -74,14 +79,20 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-lg);
-  background: var(--cta-gradient);
+  background: var(--brand-orange);
   border: none;
   color: white;
   cursor: pointer;
-  box-shadow: var(--cta-shadow);
+  box-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.40);
   transition: all 0.15s;
   opacity: 0.4;
   pointer-events: none;
+}
+
+[data-theme="dark"] .sendBtn {
+  background: #ffb95f;
+  color: #2a1700;
+  box-shadow: 0 4px 14px -2px rgba(255, 185, 95, 0.20);
 }
 
 .sendBtnActive {
@@ -91,7 +102,11 @@
 
 .sendBtnActive:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px -2px rgba(249, 115, 22, 0.45);
+  box-shadow: 0 6px 20px -2px rgba(217, 119, 6, 0.45);
+}
+
+[data-theme="dark"] .sendBtnActive:hover {
+  box-shadow: 0 6px 20px -2px rgba(255, 185, 95, 0.30);
 }
 
 .sendBtnActive:active {

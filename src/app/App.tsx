@@ -5,7 +5,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useChatStore } from '@/stores/useChatStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useTabStore } from '@/stores/useTabStore';
-import { TopNav } from '@/components/TopNav';
+import { ChatHeader } from '@/components/Chat/ChatHeader';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { ToolPanel } from '@/components/ToolPanel/ToolPanel';
 import { SidebarToggle, ToolPanelToggle } from '@/components/PanelToggles';
@@ -195,8 +195,6 @@ function AppContent() {
 
   useKeyboardShortcuts(actions);
 
-  const projectName = activeProject?.name || projectPath.split('/').pop() || '';
-
   if (!activeProject) {
     return (
       <ThemeProvider>
@@ -208,7 +206,6 @@ function AppContent() {
 
   return (
     <div className="appLayout">
-      <TopNav projectName={projectName} />
 
       <div className="appBody">
         <SidebarToggle sidebarOpen={sidebarOpen} onToggleSidebar={toggleSidebar} />
@@ -229,6 +226,7 @@ function AppContent() {
         {/* Main content area with tabs */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
           <TabBar projectPath={projectPath} />
+          <ChatHeader />
           {activeTab ? (
             <PaneContainer
               layout={activeTab.layout}

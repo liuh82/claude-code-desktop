@@ -34,6 +34,10 @@
   background: var(--bg-tertiary);
 }
 
+[data-theme="dark"] .filterBar {
+  background: #1a1c1e;
+}
+
 .filterBtns {
   display: flex;
   gap: 2px;
@@ -122,6 +126,10 @@
   overflow: hidden;
 }
 
+[data-theme="dark"] .diffFile {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
 .diffFileHeader {
   display: flex;
   align-items: center;
@@ -187,7 +195,7 @@
 
 /* Diff body */
 .diffFileBody {
-  border-top: 1px solid var(--border-divider);
+  border-top: 1px solid var(--border-ghost);
 }
 
 .hunkHeader {
@@ -198,13 +206,13 @@
   background: var(--bg-secondary);
 }
 
-/* Diff lines — colored left border (like the design) */
+/* Diff lines — colored left border */
 .diffLine {
   display: flex;
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   line-height: var(--line-height-normal);
-  border-left: 4px solid transparent;
+  border-left: 3px solid transparent;
 }
 
 .lineAdd {
@@ -264,4 +272,9 @@
   background: var(--accent-muted);
   border: 1px solid rgba(0, 91, 192, 0.15);
   box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .fileActive {
+  background: rgba(75, 142, 255, 0.10);
+  border-color: rgba(173, 198, 255, 0.15);
 }
