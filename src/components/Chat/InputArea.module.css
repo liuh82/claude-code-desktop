@@ -1,7 +1,7 @@
 /* ═══ InputArea — Stitch design, 768px centered ═══ */
 
 .inputArea {
-  padding: 24px 32px 16px;
+  padding: 24px 32px 24px;
   background: var(--bg-primary);
   flex-shrink: 0;
 }
@@ -21,7 +21,7 @@
   width: 100%;
   min-height: 100px !important;
   max-height: 200px;
-  padding: 20px 56px 20px 24px;
+  padding: 20px 56px 20px 20px;
   background: var(--bg-input);
   border: 2px solid var(--border-ghost);
   border-radius: 16px;
