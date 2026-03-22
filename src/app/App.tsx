@@ -21,7 +21,6 @@ import './App.css';
 
 const SIDEBAR_KEY = 'ccdesk-sidebar-v2';
 const TOOLPANEL_KEY = 'ccdesk-toolpanel-v2';
-const SIDEBAR_WIDTH_KEY = 'ccdesk-sidebar-width';
 const TOOLPANEL_WIDTH_KEY = 'ccdesk-toolpanel-width';
 
 function readNum(key: string, fallback: number): number {
@@ -38,8 +37,6 @@ function saveNum(key: string, val: number) {
   try { localStorage.setItem(key, String(val)); } catch { /* */ }
 }
 
-const MIN_SIDEBAR = 180;
-const MAX_SIDEBAR = 400;
 const MIN_TOOLPANEL = 200;
 const MAX_TOOLPANEL = 600;
 
@@ -53,7 +50,6 @@ function AppContent() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(() => readBool(SIDEBAR_KEY, true));
   const [toolPanelOpen, setToolPanelOpen] = useState(() => readBool(TOOLPANEL_KEY, false));
-  const [sidebarWidth, setSidebarWidth] = useState(() => readNum(SIDEBAR_WIDTH_KEY, 240));
   const [toolPanelWidth, setToolPanelWidth] = useState(() => readNum(TOOLPANEL_WIDTH_KEY, 340));
 
   const projectPath = activeProject?.path ?? '';
@@ -133,13 +129,6 @@ function AppContent() {
     if (projectPath) createTab(projectPath);
   }, [projectPath, createTab, handleProjectOpen]);
 
-  const handleSidebarResize = useCallback((delta: number) => {
-    setSidebarWidth((prev) => {
-      const next = Math.max(MIN_SIDEBAR, Math.min(MAX_SIDEBAR, prev + delta));
-      saveNum(SIDEBAR_WIDTH_KEY, next);
-      return next;
-    });
-  }, []);
 
   const handleToolPanelResize = useCallback((delta: number) => {
     setToolPanelWidth((prev) => {
@@ -235,9 +224,7 @@ function AppContent() {
               onClose={toggleSidebar}
               onOpenSettings={() => setSettingsOpen(true)}
               onToggleTheme={toggleTheme}
-              style={{ width: sidebarWidth, minWidth: sidebarWidth, maxWidth: sidebarWidth }}
             />
-            <ResizeHandle direction="left" onResize={handleSidebarResize} />
           </>
         )}
 
