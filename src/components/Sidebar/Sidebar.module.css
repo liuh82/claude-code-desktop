@@ -63,7 +63,7 @@
 /* Navigation */
 .sidebarNav {
   flex: 1;
-  margin-top: var(--space-4);
+  margin-top: 40px;
   display: flex;
   flex-direction: column;
   gap: 2px;
