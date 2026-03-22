@@ -34,20 +34,20 @@
   align-items: center;
   gap: 8px;
   padding: 4px 12px;
-  background: var(--brand-orange-muted);
-  border: 1px solid rgba(217, 119, 6, 0.20);
+  background: rgba(216, 226, 255, 0.20);
+  border: 1px solid rgba(0, 91, 192, 0.20);
   border-radius: 9999px;
   font-size: 10px;
   font-weight: var(--font-weight-bold);
   font-family: var(--font-mono);
-  color: var(--brand-orange);
+  color: var(--accent);
   letter-spacing: 0.03em;
 }
 
 [data-theme="dark"] .pathPill {
-  background: var(--bg-input);
-  border-color: var(--border-divider);
-  color: var(--text-muted);
+  background: var(--accent-muted);
+  border-color: var(--accent-muted);
+  color: var(--accent);
 }
 
 .divider {

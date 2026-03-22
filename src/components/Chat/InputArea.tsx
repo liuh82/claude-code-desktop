@@ -65,7 +65,7 @@ function InputArea() {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = `${Math.min(Math.max(el.scrollHeight, 100), 200)}px`;
+    el.style.height = `${Math.min(Math.max(el.scrollHeight, 64), 200)}px`;
   }, [text]);
 
   useEffect(() => {
@@ -90,7 +90,7 @@ function InputArea() {
     sendMessage(text.trim());
     setText('');
     if (textareaRef.current) {
-      textareaRef.current.style.height = '100px';
+      textareaRef.current.style.height = '64px';
     }
   }, [canSend, text, sendMessage]);
 
