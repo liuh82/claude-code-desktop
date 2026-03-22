@@ -2,7 +2,7 @@ use rusqlite::Connection;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-use crate::core::process_pool::ProcessPool;
+use crate::core::session_manager::SessionManager;
 
 // ── Data Structures ──────────────────────────────────────────────
 
@@ -92,11 +92,13 @@ impl std::fmt::Display for SessionStatus {
 // ── Application State ────────────────────────────────────────────
 
 /// Global application state, managed by Tauri via `tauri::State`.
+///
+/// `session_manager` uses `tokio::sync::Mutex` because its async methods
+/// hold the lock across `.await` points (process spawning, stdin writes).
 pub struct AppState {
     pub tabs: Arc<Mutex<HashMap<String, Tab>>>,
     pub panes: Arc<Mutex<HashMap<String, Pane>>>,
-    pub sessions: Arc<Mutex<HashMap<String, Session>>>,
-    pub process_pool: Arc<Mutex<ProcessPool>>,
+    pub session_manager: Arc<tokio::sync::Mutex<SessionManager>>,
     pub db: Arc<Mutex<Connection>>,
 }
 
@@ -105,8 +107,7 @@ impl AppState {
         Self {
             tabs: Arc::new(Mutex::new(HashMap::new())),
             panes: Arc::new(Mutex::new(HashMap::new())),
-            sessions: Arc::new(Mutex::new(HashMap::new())),
-            process_pool: Arc::new(Mutex::new(ProcessPool::new())),
+            session_manager: Arc::new(tokio::sync::Mutex::new(SessionManager::new())),
             db: Arc::new(Mutex::new(db)),
         }
     }

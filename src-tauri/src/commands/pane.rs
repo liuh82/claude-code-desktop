@@ -11,7 +11,7 @@ pub fn split_pane(
     let mut panes = state
         .panes
         .lock()
-        .map_err(|e| format!("Failed to lock panes: {}", e))?;
+        .map_err(|e| format!("Failed to lock panes: {e}"))?;
 
     let new_pane = PaneManager::split(&mut panes, &source_pane_id)?;
 
@@ -24,18 +24,42 @@ pub fn split_pane(
 }
 
 #[tauri::command]
-pub fn close_pane(
+pub async fn close_pane(
     state: State<'_, AppState>,
     pane_id: String,
 ) -> Result<bool, String> {
-    let mut panes = state
-        .panes
-        .lock()
-        .map_err(|e| format!("Failed to lock panes: {}", e))?;
+    // 1. Get session_id from pane (if any).
+    let session_id = {
+        let panes = state
+            .panes
+            .lock()
+            .map_err(|e| format!("Failed to lock panes: {e}"))?;
+        panes.get(&pane_id).and_then(|p| p.session_id.clone())
+    };
 
-    let closed = PaneManager::close(&mut panes, &pane_id);
+    // 2. Close the session (async — kills process).
+    if let Some(sid) = session_id {
+        let mut mgr = state.session_manager.lock().await;
+        if let Err(e) = mgr.close_session(&sid).await {
+            tracing::warn!(
+                pane_id = %pane_id,
+                session_id = %sid,
+                error = %e,
+                "failed to close session on pane close"
+            );
+        }
+    }
 
-    tracing::info!(pane_id = %pane_id, closed = closed, "pane close requested");
+    // 3. Remove the pane.
+    let closed = {
+        let mut panes = state
+            .panes
+            .lock()
+            .map_err(|e| format!("Failed to lock panes: {e}"))?;
+        PaneManager::close(&mut panes, &pane_id)
+    };
+
+    tracing::info!(pane_id = %pane_id, closed = closed, "pane closed");
     Ok(closed)
 }
 

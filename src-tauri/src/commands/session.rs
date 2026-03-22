@@ -1,31 +1,27 @@
 use tauri::State;
 
-use crate::app::{AppState, Session};
-use crate::core::session_manager::SessionManager;
+use crate::app::{AppState, PaneStatus, Session};
 
 #[tauri::command]
-pub fn create_session(
+pub async fn create_session(
     state: State<'_, AppState>,
     project_path: String,
     pane_id: String,
     title: String,
 ) -> Result<Session, String> {
-    let session = SessionManager::create(&project_path, &pane_id, &title);
+    let session = {
+        let mut mgr = state.session_manager.lock().await;
+        mgr.create(&project_path, &pane_id, &title)
+    };
 
-    let mut sessions = state
-        .sessions
-        .lock()
-        .map_err(|e| format!("Failed to lock sessions: {}", e))?;
-    sessions.insert(session.id.clone(), session.clone());
-
-    // Link session to pane
+    // Link session to pane.
     let mut panes = state
         .panes
         .lock()
-        .map_err(|e| format!("Failed to lock panes: {}", e))?;
+        .map_err(|e| format!("Failed to lock panes: {e}"))?;
     if let Some(pane) = panes.get_mut(&pane_id) {
         pane.session_id = Some(session.id.clone());
-        pane.status = crate::app::PaneStatus::Idle;
+        pane.status = PaneStatus::Idle;
     }
 
     tracing::info!(session_id = %session.id, "session created");
@@ -33,65 +29,148 @@ pub fn create_session(
 }
 
 #[tauri::command]
-pub fn start_session(
+pub async fn start_session(
     state: State<'_, AppState>,
     session_id: String,
+    model: Option<String>,
 ) -> Result<(), String> {
-    let mut sessions = state
-        .sessions
-        .lock()
-        .map_err(|e| format!("Failed to lock sessions: {}", e))?;
+    // Start session (spawns process internally).
+    let pid = {
+        let mut mgr = state.session_manager.lock().await;
+        mgr.start_session(&session_id, model.as_deref())
+            .await
+            .map_err(|e| e.to_string())?
+    };
 
-    SessionManager::start(&mut sessions, &session_id)?;
+    // Update pane status to Running.
+    let pane_id = {
+        let mgr = state.session_manager.lock().await;
+        mgr.get(&session_id)
+            .map(|s| s.pane_id.clone())
+            .unwrap_or_default()
+    };
 
-    // TODO: Actually spawn the claude CLI process via process_pool
-    // and update pane status to Running.
+    if !pane_id.is_empty() {
+        let mut panes = state
+            .panes
+            .lock()
+            .map_err(|e| format!("Failed to lock panes: {e}"))?;
+        if let Some(pane) = panes.get_mut(&pane_id) {
+            pane.status = PaneStatus::Running;
+        }
+    }
 
-    tracing::info!(session_id = %session_id, "session start requested");
+    tracing::info!(session_id = %session_id, pid = pid, "session started");
     Ok(())
 }
 
 #[tauri::command]
-pub fn send_input(
-    _state: State<'_, AppState>,
-    _session_id: String,
-    _input: String,
+pub async fn send_input(
+    state: State<'_, AppState>,
+    session_id: String,
+    input: String,
 ) -> Result<(), String> {
-    // TODO: Write input to the stdin of the Claude CLI process
-    // associated with this session.
+    // Get pane_id before sending (to update pane status after).
+    let pane_id = {
+        let mgr = state.session_manager.lock().await;
+        mgr.get(&session_id)
+            .map(|s| s.pane_id.clone())
+            .unwrap_or_default()
+    };
+
+    // Send the message.
+    {
+        let mut mgr = state.session_manager.lock().await;
+        mgr.send_message(&session_id, &input)
+            .await
+            .map_err(|e| e.to_string())?;
+    }
+
+    // Set pane to Waiting.
+    if !pane_id.is_empty() {
+        let mut panes = state
+            .panes
+            .lock()
+            .map_err(|e| format!("Failed to lock panes: {e}"))?;
+        if let Some(pane) = panes.get_mut(&pane_id) {
+            pane.status = PaneStatus::Waiting;
+        }
+    }
+
+    tracing::debug!(session_id = %session_id, len = input.len(), "input sent");
     Ok(())
 }
 
 #[tauri::command]
-pub fn stop_session(
+pub async fn stop_session(
     state: State<'_, AppState>,
     session_id: String,
 ) -> Result<(), String> {
-    let mut sessions = state
-        .sessions
-        .lock()
-        .map_err(|e| format!("Failed to lock sessions: {}", e))?;
+    // Get pane_id before stopping.
+    let pane_id = {
+        let mgr = state.session_manager.lock().await;
+        mgr.get(&session_id)
+            .map(|s| s.pane_id.clone())
+            .unwrap_or_default()
+    };
 
-    SessionManager::stop(&mut sessions, &session_id)?;
+    // Stop session (kills process internally).
+    {
+        let mut mgr = state.session_manager.lock().await;
+        mgr.stop_session(&session_id)
+            .await
+            .map_err(|e| e.to_string())?;
+    }
 
-    // TODO: Kill the process in process_pool.
+    // Update pane status.
+    if !pane_id.is_empty() {
+        let mut panes = state
+            .panes
+            .lock()
+            .map_err(|e| format!("Failed to lock panes: {e}"))?;
+        if let Some(pane) = panes.get_mut(&pane_id) {
+            pane.status = PaneStatus::Closed;
+            pane.session_id = None;
+        }
+    }
 
     tracing::info!(session_id = %session_id, "session stopped");
     Ok(())
 }
 
 #[tauri::command]
-pub fn close_session(
+pub async fn close_session(
     state: State<'_, AppState>,
     session_id: String,
 ) -> Result<bool, String> {
-    let mut sessions = state
-        .sessions
-        .lock()
-        .map_err(|e| format!("Failed to lock sessions: {}", e))?;
+    // Get pane_id before closing.
+    let pane_id = {
+        let mgr = state.session_manager.lock().await;
+        mgr.get(&session_id)
+            .map(|s| s.pane_id.clone())
+            .unwrap_or_default()
+    };
 
-    let closed = SessionManager::close(&mut sessions, &session_id);
+    // Close session (kills process if running).
+    let existed = {
+        let mut mgr = state.session_manager.lock().await;
+        mgr.close_session(&session_id)
+            .await
+            .map_err(|e| e.to_string())?
+    };
 
-    tracing::info!(session_id = %session_id, closed = closed, "session closed");
-    Ok(closed)
+    // Clear pane link.
+    if !pane_id.is_empty() {
+        let mut panes = state
+            .panes
+            .lock()
+            .map_err(|e| format!("Failed to lock panes: {e}"))?;
+        if let Some(pane) = panes.get_mut(&pane_id) {
+            pane.session_id = None;
+            pane.status = PaneStatus::Idle;
+        }
+    }
+
+    tracing::info!(session_id = %session_id, existed = existed, "session closed");
+    Ok(existed)
 }

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::app::Tab;
 
 /// Manages tab lifecycle: create, close, list.
+#[derive(Default)]
 pub struct TabManager;
 
 impl TabManager {

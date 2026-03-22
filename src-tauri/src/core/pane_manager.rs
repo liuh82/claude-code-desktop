@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::app::{Pane, PaneStatus};
 
 /// Manages pane lifecycle: split, close, update.
+#[derive(Default)]
 pub struct PaneManager;
 
 impl PaneManager {
