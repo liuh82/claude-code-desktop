@@ -21,19 +21,19 @@ function TopNav({ projectName }: TopNavProps) {
       <div className={styles.topNavRight}>
         <div className={styles.topNavProject}>
           <span className={styles.topNavProjectIcon}>
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>folder_open</span>
+            <span className="material-symbols-outlined">folder_open</span>
           </span>
           <span className={styles.topNavProjectName} title={projectName}>{projectName}</span>
         </div>
         <div className={styles.topNavActions}>
           <button className={`${styles.topNavAction} ${styles.topNavActionCta}`} title="Project Tree">
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>account_tree</span>
+            <span className="material-symbols-outlined">account_tree</span>
           </button>
           <button className={`${styles.topNavAction} ${styles.topNavActionCta}`} title="Activity">
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>monitoring</span>
+            <span className="material-symbols-outlined">monitoring</span>
           </button>
           <button className={`${styles.topNavAction} ${styles.topNavActionCta}`} title="Split View">
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>splitscreen</span>
+            <span className="material-symbols-outlined">splitscreen</span>
           </button>
         </div>
       </div>

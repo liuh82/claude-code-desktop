@@ -79,7 +79,7 @@ export function ProjectSelector({ onProjectOpen }: ProjectSelectorProps) {
               {recentProjects.map((project) => (
                 <div key={project.id} className={styles.recentItem}>
                   <span className={styles.recentIcon}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>folder</span>
+                    <span className="material-symbols-outlined">folder</span>
                   </span>
                   <div className={styles.recentInfo} onClick={() => handleSelectProject(project.path)}>
                     <div className={styles.recentName}>{project.name}</div>
