@@ -11,7 +11,7 @@
 | 仓库 | `liuh82/claude-code-desktop`（private） |
 | 本地 | `/root/.openclaw/workspace/claude-code-desktop` |
 | 技术栈 | React 18 + TypeScript + Zustand + CSS Modules + Electron |
-| 设计稿 | `/tmp/stitch-new/stitch_main_chat_interface/`（Stitch 导出） |
+| 设计稿 `/tmp/stitch-final-v2/`（最终版 2026-03-23）） |
 | 当前阶段 | Phase 3 完成，UI 精化中 |
 
 ## 📁 文档地图
@@ -22,7 +22,7 @@
 | `CLAUDE.md` | **执行约束** — 所有编码规则 | 每次改代码前 |
 | `docs/ui-design-spec.md` | UI 设计规范 — Stitch token + 布局规则 | 改 UI/样式前 |
 | `docs/coding-standards.md` | 编码规范 — 命名、结构、模式 | 写新代码前 |
-| `docs/architecture.md` | 架构设计 v3.0 — 数据结构和接口 | 改架构前 |
+| `docs/docs/_archive/architecture.md` | 架构设计 v3.0 — 数据结构和接口 | 改架构前 |
 
 ### 参考（按需）
 | 文件 | 内容 |
