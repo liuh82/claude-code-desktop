@@ -1,4 +1,4 @@
-/* ═══ FileTree — Precision Workspace ═══ */
+/* ═══ FileTree — Precision Workspace v3 ═══ */
 
 .tree {
   padding: var(--space-1) 0;
@@ -19,6 +19,10 @@
 
 .treeRow:hover {
   background: var(--bg-input);
+}
+
+[data-theme="dark"] .treeRow:hover {
+  background: var(--bg-tertiary);
 }
 
 .treeRowFile {
@@ -60,12 +64,20 @@
   font-size: var(--font-size-xs);
 }
 
+[data-theme="dark"] .nodeName {
+  color: var(--text-muted);
+}
+
 .statusDot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .statusDot {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
 }
 
 .statusadded { background: var(--success); }

@@ -1,4 +1,4 @@
-/* ═══ TabBar — macOS-style tab strip ═══ */
+/* ═══ TabBar — Precision Workspace v3 ═══ */
 
 .tabBar {
   display: flex;
@@ -11,6 +11,11 @@
   overflow-x: auto;
   overflow-y: hidden;
   border-bottom: 1px solid var(--border-divider);
+}
+
+[data-theme="dark"] .tabBar {
+  background: var(--bg-secondary);
+  border-bottom-color: var(--border-divider);
 }
 
 .tabBar::-webkit-scrollbar { height: 0; }
@@ -37,8 +42,18 @@
   text-align: left;
 }
 
+[data-theme="dark"] .tab {
+  color: var(--text-muted);
+  border-radius: 0;
+}
+
 .tab:hover {
   background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .tab:hover {
+  background: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
@@ -56,6 +71,10 @@
   right: 0;
   height: 2px;
   background: var(--accent-gradient);
+}
+
+[data-theme="dark"] .tabActive {
+  background: var(--bg-primary);
 }
 
 .tabTitle {

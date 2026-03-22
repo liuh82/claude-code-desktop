@@ -1,17 +1,21 @@
-/* ═══ StatusBar — Precision Workspace (bottom bar) ═══ */
+/* ═══ StatusBar — Precision Workspace v3 (bottom bar) ═══ */
 
 .statusBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--space-3);
-  background: var(--glass-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: var(--bg-input);
   font-size: var(--font-size-2xs);
   flex-shrink: 0;
   height: 28px;
-  border-top: 1px solid var(--border-divider);
+  border-top: 1px solid var(--border-ghost);
+}
+
+[data-theme="dark"] .statusBar {
+  background: var(--bg-secondary);
+  height: 24px;
+  border-top-color: var(--border-divider);
 }
 
 .statusLeft {
@@ -35,6 +39,10 @@
   background: rgba(0, 91, 192, 0.05);
 }
 
+[data-theme="dark"] .statusGroup:hover {
+  background: transparent;
+}
+
 .statusGroup:hover .statusGroupIcon {
   transform: scale(1.1);
 }
@@ -54,9 +62,19 @@
   color: var(--text-secondary);
 }
 
+[data-theme="dark"] .statusText {
+  color: var(--text-muted);
+  font-weight: var(--font-weight-normal);
+}
+
+/* Light: indigo branch, Dark: primary */
 .branchName {
-  color: var(--accent);
+  color: #4f46e5;
   font-weight: var(--font-weight-bold);
+}
+
+[data-theme="dark"] .branchName {
+  color: var(--accent);
 }
 
 .errorCount {
@@ -71,11 +89,22 @@
   background: var(--success);
 }
 
+[data-theme="dark"] .statusDot {
+  background: var(--accent);
+  animation: pulse 2s infinite;
+}
+
 .statusLabel {
   font-weight: var(--font-weight-bold);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-tight);
+}
+
+[data-theme="dark"] .statusLabel {
+  font-weight: var(--font-weight-normal);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 /* Right section */
@@ -95,15 +124,27 @@
   background: var(--accent-muted);
 }
 
+[data-theme="dark"] .tokenGroup {
+  background: transparent;
+}
+
 .tokenLabel {
   font-weight: var(--font-weight-normal);
   color: rgba(0, 91, 192, 0.7);
+}
+
+[data-theme="dark"] .tokenLabel {
+  color: var(--text-muted);
 }
 
 .tokenValue {
   font-weight: var(--font-weight-black);
   color: var(--accent);
   font-family: var(--font-mono);
+}
+
+[data-theme="dark"] .tokenValue {
+  font-weight: var(--font-weight-normal);
 }
 
 .statusMeta {
@@ -119,16 +160,36 @@
   transition: background 0.15s;
 }
 
+[data-theme="dark"] .statusMeta {
+  font-weight: var(--font-weight-normal);
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-muted);
+}
+
 .statusMeta:hover {
   background: var(--bg-hover);
 }
 
+[data-theme="dark"] .statusMeta:hover {
+  background: transparent;
+}
+
+/* Light: blue encoding, amber language. Dark: outline */
 .encodingMeta {
-  color: #3b82f6;
+  color: #2563eb;
+}
+
+[data-theme="dark"] .encodingMeta {
+  color: var(--text-muted);
 }
 
 .langMeta {
   color: #f59e0b;
+}
+
+[data-theme="dark"] .langMeta {
+  color: var(--text-muted);
 }
 
 .notificationBtn {
@@ -148,7 +209,15 @@
   filter: brightness(1.1);
 }
 
+[data-theme="dark"] .notificationBtn {
+  background: transparent;
+}
+
 .notificationBtn .material-symbols-outlined {
   color: white;
   font-size: 14px;
+}
+
+[data-theme="dark"] .notificationBtn .material-symbols-outlined {
+  color: var(--text-primary);
 }

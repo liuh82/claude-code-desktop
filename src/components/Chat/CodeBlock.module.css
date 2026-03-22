@@ -1,14 +1,18 @@
-/* ═══ CodeBlock — Precision Workspace (macOS traffic light header) ═══ */
+/* ═══ CodeBlock — Precision Workspace v3 (macOS traffic light header) ═══ */
 
 .codeBlock {
   position: relative;
-  background: var(--bg-input);
-  border: 1px solid var(--border-ghost);
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
   border-radius: var(--radius-lg);
   margin: var(--space-3) 0;
   overflow: hidden;
   font-size: var(--font-size-sm);
   box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .codeBlock {
+  border-radius: var(--radius-md);
 }
 
 .codeHeader {
@@ -20,29 +24,40 @@
   border-bottom: 1px solid var(--border-divider);
 }
 
+[data-theme="dark"] .codeHeader {
+  background: var(--bg-secondary);
+  padding: var(--space-2) var(--space-4);
+}
+
 .codeTrafficLights {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
+/* Traffic lights — w-3 h-3 (12px) */
 .trafficDot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
 }
 
-.trafficRed { background: var(--code-traffic-red); }
-.trafficYellow { background: var(--code-traffic-yellow); }
-.trafficGreen { background: var(--code-traffic-green); }
+.trafficRed { background: #f87171; }
+.trafficYellow { background: #fbbf24; }
+.trafficGreen { background: #4ade80; }
 
 .codeLang {
-  font-size: var(--font-size-2xs);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-widest);
   margin-left: var(--space-3);
+}
+
+[data-theme="dark"] .codeLang {
+  font-size: var(--font-size-2xs);
+  color: var(--text-muted);
 }
 
 .codeHeaderRight {
@@ -69,6 +84,10 @@
   color: var(--text-primary);
 }
 
+[data-theme="dark"] .copyBtn:hover {
+  color: var(--accent);
+}
+
 .copyBtnCopied {
   color: var(--accent);
 }
@@ -92,6 +111,10 @@
   min-width: 40px;
 }
 
+[data-theme="dark"] .lineNumbers {
+  background: rgba(26, 27, 28, 0.30);
+}
+
 .lineNumber {
   display: block;
   padding: 0 var(--space-3);
@@ -103,13 +126,19 @@
   overflow-x: auto;
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
-  line-height: var(--line-height-normal);
+  line-height: var(--line-height-relaxed);
   white-space: pre;
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .codeContent {
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
 }
 
 .codeInline {
   background: rgba(0, 91, 192, 0.05);
-  border: 1px solid rgba(0, 91, 192, 0.12);
+  border: 1px solid rgba(0, 91, 192, 0.20);
   border-radius: var(--radius-sm);
   padding: 1px 6px;
   font-family: var(--font-mono);

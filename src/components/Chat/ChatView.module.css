@@ -1,4 +1,4 @@
-/* ═══ ChatView — Precision Workspace ═══ */
+/* ═══ ChatView — Precision Workspace v3 ═══ */
 
 .chatView {
   flex: 1;
@@ -50,7 +50,7 @@
 .emptyTitle {
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
-  color: var(--cta);
+  color: var(--accent);
   letter-spacing: var(--letter-spacing-tight);
 }
 

@@ -1,9 +1,13 @@
-/* ═══ InputArea — Precision Workspace ═══ */
+/* ═══ InputArea — Precision Workspace v3 ═══ */
 
 .inputArea {
   padding: var(--space-6) var(--space-8) var(--space-8);
   background: transparent;
   flex-shrink: 0;
+  border-top: 1px solid var(--border-ghost);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
 .inputWrapper {
@@ -30,13 +34,28 @@
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
+[data-theme="dark"] .inputTextarea {
+  border: 1px solid var(--border-ghost);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+}
+
 .inputTextarea::placeholder {
   color: var(--text-muted);
 }
 
+[data-theme="dark"] .inputTextarea::placeholder {
+  color: rgba(139, 144, 160, 0.5);
+}
+
 .inputTextarea:focus {
-  border-color: rgba(0, 91, 192, 0.35);
+  border-color: rgba(0, 91, 192, 0.40);
   box-shadow: 0 0 0 4px rgba(0, 91, 192, 0.05);
+}
+
+[data-theme="dark"] .inputTextarea:focus {
+  border-color: var(--accent);
+  box-shadow: none;
 }
 
 .inputActions {
@@ -46,6 +65,11 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+[data-theme="dark"] .inputActions {
+  right: var(--space-2);
+  bottom: var(--space-2);
 }
 
 .attachBtn {
@@ -62,11 +86,23 @@
   transition: all 0.15s;
 }
 
-.attachBtn:hover {
-  color: var(--accent);
-  background: rgba(0, 91, 192, 0.06);
+[data-theme="dark"] .attachBtn {
+  border-radius: var(--radius-md);
+  width: 28px;
+  height: 28px;
 }
 
+.attachBtn:hover {
+  color: #4f46e5;
+  background: rgba(79, 70, 229, 0.05);
+}
+
+[data-theme="dark"] .attachBtn:hover {
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+}
+
+/* Send button — Light: orange, Dark: primary */
 .sendBtn {
   display: flex;
   align-items: center;
@@ -74,14 +110,21 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-lg);
-  background: var(--cta-gradient);
+  background: var(--cta);
   border: none;
   color: white;
   cursor: pointer;
-  box-shadow: var(--cta-shadow);
+  box-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.30);
   transition: all 0.15s;
   opacity: 0.4;
   pointer-events: none;
+}
+
+[data-theme="dark"] .sendBtn {
+  border-radius: var(--radius-md);
+  width: 28px;
+  height: 28px;
+  box-shadow: 0 4px 14px -2px rgba(173, 198, 255, 0.10);
 }
 
 .sendBtnActive {
@@ -92,6 +135,11 @@
 .sendBtnActive:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 20px -2px rgba(249, 115, 22, 0.45);
+}
+
+[data-theme="dark"] .sendBtnActive:hover {
+  opacity: 0.9;
+  transform: none;
 }
 
 .sendBtnActive:active {
@@ -110,6 +158,12 @@
   color: white;
   cursor: pointer;
   transition: opacity 0.15s;
+}
+
+[data-theme="dark"] .stopBtn {
+  border-radius: var(--radius-md);
+  width: 28px;
+  height: 28px;
 }
 
 .stopBtn:hover {
@@ -143,6 +197,14 @@
   letter-spacing: var(--letter-spacing-widest);
 }
 
+[data-theme="dark"] .modelIndicator {
+  color: var(--text-muted);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-normal);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .modelDot {
   width: 6px;
   height: 6px;
@@ -151,12 +213,23 @@
   animation: pulse 2s infinite;
 }
 
+[data-theme="dark"] .modelDot {
+  background: var(--accent);
+}
+
 .encoding {
   font-size: var(--font-size-2xs);
   font-weight: var(--font-weight-bold);
-  color: var(--accent);
+  color: #2563eb;
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-widest);
+}
+
+[data-theme="dark"] .encoding {
+  color: var(--text-muted);
+  font-weight: var(--font-weight-normal);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .shortcutHint {
@@ -169,6 +242,10 @@
   background: var(--accent-muted);
   padding: 1px var(--space-1);
   border-radius: var(--radius-xs);
+}
+
+[data-theme="dark"] .shortcutHint {
+  display: none;
 }
 
 /* ═══ Dropdown (@ mentions + / commands) ═══ */

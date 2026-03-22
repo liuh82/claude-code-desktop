@@ -1,4 +1,4 @@
-/* ═══ ToolPanel — Precision Workspace (split file tree + diff) ═══ */
+/* ═══ ToolPanel — Precision Workspace v3 ═══ */
 
 .toolPanel {
   width: 100%;
@@ -7,6 +7,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border-left: 1px solid var(--border-ghost);
 }
 
 .toolPanelHeader {
@@ -75,12 +76,18 @@
   flex-shrink: 0;
 }
 
+/* Light: bg-white header, accent title. Dark: same surface */
 .fileTreeTitle {
-  font-size: var(--font-size-2xs);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-black);
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-widest);
+}
+
+[data-theme="dark"] .fileTreeTitle {
+  font-size: var(--font-size-2xs);
+  color: var(--text-muted);
 }
 
 .fileTreeActions {
@@ -112,6 +119,10 @@
   background: rgba(240, 244, 247, 0.30);
 }
 
+[data-theme="dark"] .fileTreeBody {
+  background: var(--bg-elevated);
+}
+
 /* Diff section */
 .diffSection {
   flex: 1;
@@ -129,6 +140,10 @@
   background: rgba(232, 239, 243, 0.30);
   border-bottom: 1px solid var(--border-divider);
   flex-shrink: 0;
+}
+
+[data-theme="dark"] .diffHeader {
+  background: var(--bg-secondary);
 }
 
 .diffTitle {
@@ -169,7 +184,7 @@
   overflow-y: auto;
 }
 
-/* Diff footer actions */
+/* Diff footer actions — Light: orange accept, Dark: primary accept */
 .diffFooter {
   display: flex;
   gap: var(--space-3);
@@ -193,7 +208,7 @@
 }
 
 .diffFooterReject {
-  background: rgba(217, 228, 234, 0.25);
+  background: rgba(217, 228, 234, 0.50);
   color: var(--text-muted);
   border: none;
 }
@@ -203,13 +218,28 @@
   color: var(--error);
 }
 
+[data-theme="dark"] .diffFooterReject {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-ghost);
+}
+
+[data-theme="dark"] .diffFooterReject:hover {
+  background: var(--bg-tertiary);
+}
+
+/* Accept button — Light: orange, Dark: primary */
 .diffFooterAccept {
-  background: var(--cta-gradient);
+  background: var(--cta);
   color: white;
   border: none;
-  box-shadow: var(--cta-shadow);
+  box-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.30);
 }
 
 .diffFooterAccept:hover {
   filter: brightness(1.1);
+}
+
+[data-theme="dark"] .diffFooterAccept {
+  box-shadow: 0 4px 14px -2px rgba(173, 198, 255, 0.10);
 }
