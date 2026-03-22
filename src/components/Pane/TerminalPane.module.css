@@ -130,24 +130,28 @@
 
 /* Pane input area (compact) */
 .paneInput {
-  padding: var(--space-2) var(--space-3);
+  padding: 16px 20px;
   flex-shrink: 0;
   border-top: 1px solid var(--border-ghost);
+  background: var(--bg-primary);
 }
 
 .paneInputWrapper {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
+  align-items: flex-start;
+  gap: var(--space-3);
   background: var(--bg-input);
-  border: 1px solid var(--border-ghost);
-  border-radius: var(--radius-md);
-  padding: var(--space-1) var(--space-2);
-  transition: border-color 0.15s;
+  border: 2px solid var(--border-ghost);
+  border-radius: 16px;
+  padding: 16px 20px 16px 20px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-shadow: var(--shadow-sm);
+  min-height: 100px;
 }
 
 .paneInputWrapper:focus-within {
-  border-color: var(--border-focus);
+  border-color: rgba(217, 119, 6, 0.35);
+  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.05);
 }
 
 .paneInputField {
@@ -155,10 +159,13 @@
   background: transparent;
   border: none;
   outline: none;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
   color: var(--text-primary);
   min-width: 0;
+  resize: none;
+  min-height: 68px;
 }
 
 .paneInputField::placeholder {
@@ -169,9 +176,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-sm);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-lg);
   background: var(--brand-orange);
   border: none;
   color: white;
@@ -180,6 +187,7 @@
   opacity: 0.4;
   pointer-events: none;
   transition: opacity 0.15s;
+  box-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.40);
 }
 
 [data-theme="dark"] .paneSendBtn {
@@ -194,4 +202,5 @@
 
 .paneSendBtnActive:hover {
   filter: brightness(1.1);
+  transform: translateY(-1px);
 }
