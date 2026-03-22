@@ -1,4 +1,4 @@
-/* ═══ ChatView — Precision Workspace v3 ═══ */
+/* ═══ ChatView — CCDesk v4 ═══ */
 
 .chatView {
   flex: 1;
@@ -13,13 +13,17 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0;
+  padding: var(--space-8);
 }
 
 .messageListInner {
   display: flex;
   flex-direction: column;
+  gap: var(--space-8);
   min-height: 100%;
+  max-width: 768px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .emptyState {
@@ -39,12 +43,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
-
-.emptyLogo img {
-  width: 72px;
-  height: 72px;
-  object-fit: contain;
+  background: var(--brand-orange-muted);
+  border-radius: var(--radius-lg);
 }
 
 .emptyTitle {

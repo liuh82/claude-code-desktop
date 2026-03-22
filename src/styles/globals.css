@@ -1,5 +1,5 @@
 :root {
-  /* ═══ Precision Workspace v3 — Light Theme ("The Digital Atelier") ═══ */
+  /* ═══ CCDesk v4 — Light Theme ("Precision Workspace") ═══ */
 
   /* Surface Hierarchy (tonal layering, NO 1px borders for sectioning) */
   --bg-primary: #f8f9fb;            /* surface / base canvas */
@@ -24,11 +24,17 @@
   --accent-fixed: #d8e2ff;          /* primary-fixed */
   --accent-gradient: linear-gradient(145deg, #005bc0, #004fa9);
 
-  /* CTA / Orange accent (Deploy, Send, Accept buttons) */
-  --cta: #f97316;
-  --cta-hover: #ea580c;
-  --cta-gradient: linear-gradient(135deg, #f97316, #ea580c);
-  --cta-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.4);
+  /* Brand Orange — v4 core accent color */
+  --brand-orange: #D97706;
+  --brand-orange-hover: #B45309;
+  --brand-orange-muted: rgba(217, 119, 6, 0.10);
+  --brand-orange-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.30);
+
+  /* CTA — uses brand-orange in v4 */
+  --cta: #D97706;
+  --cta-hover: #B45309;
+  --cta-gradient: linear-gradient(135deg, #D97706, #B45309);
+  --cta-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.30);
 
   /* Status */
   --success: #22c55e;
@@ -43,42 +49,43 @@
   --info: #005bc0;
   --info-text: #005bc0;
 
-  /* Chat — User bubble uses indigo series */
-  --user-bubble-bg: #eef2ff;
-  --user-bubble-border: #e0e7ff;
-  --user-bubble-text: #312e81;
+  /* Chat — User bubble: plain text (no bubble wrapper in v4) */
+  --user-bubble-bg: transparent;
+  --user-bubble-border: transparent;
+  --user-bubble-text: #2a3439;
 
   /* Diff — Light: emerald/red colored left borders */
-  --diff-add-bg: #f0fdf4;
+  --diff-add-bg: rgba(34, 197, 94, 0.10);
   --diff-add-text: #166534;
   --diff-add-border: #22c55e;
-  --diff-del-bg: #fef2f2;
+  --diff-del-bg: rgba(239, 68, 68, 0.10);
   --diff-del-text: #991b1b;
   --diff-del-border: #ef4444;
-  --diff-add-line-bg: #f0fdf4;
-  --diff-del-line-bg: #fef2f2;
+  --diff-add-line-bg: rgba(34, 197, 94, 0.10);
+  --diff-del-line-bg: rgba(239, 68, 68, 0.10);
 
   /* Code */
   --code-bg: #ffffff;
-  --code-border: rgba(169, 180, 185, 0.40);
+  --code-border: rgba(169, 180, 185, 0.20);
   --code-traffic-red: #f87171;
   --code-traffic-yellow: #fbbf24;
   --code-traffic-green: #4ade80;
 
   /* Borders — ghost border only (20-30% opacity) */
   --border: #a9b4b9;
-  --border-ghost: rgba(169, 180, 185, 0.30);
+  --border-ghost: rgba(169, 180, 185, 0.20);
   --border-focus: rgba(0, 91, 192, 0.50);
-  --border-divider: rgba(169, 180, 185, 0.12);
+  --border-divider: rgba(169, 180, 185, 0.10);
 
   /* Scrollbar — thin, subtle */
-  --scrollbar: #d9e4ea;
+  --scrollbar: #d1d5db;
   --scrollbar-hover: #a9b4b9;
 
   /* Elevation / Shadows — ambient, not heavy */
   --shadow-sm: 0 1px 2px rgba(42, 52, 57, 0.04);
   --shadow-md: 0 4px 24px -1px rgba(42, 52, 57, 0.06), 0 2px 8px -1px rgba(42, 52, 57, 0.04);
   --shadow-lg: 0 8px 32px -2px rgba(42, 52, 57, 0.10), 0 4px 12px -1px rgba(42, 52, 57, 0.06);
+  --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.5);
 
   /* Radius — sharp but not aggressive */
   --radius-xs: 0.0625rem;  /* 1px */
@@ -128,8 +135,9 @@
   --glass-bg: rgba(255, 255, 255, 0.90);
   --glass-blur: 20px;
 
-  /* Top nav height */
-  --topnav-height: 40px;
+  /* Chat header height (replaces topnav) */
+  --chat-header-height: 56px;
+  --sidebar-width: 64px;
 }
 
 body {
@@ -205,11 +213,17 @@ body {
   --accent-fixed: #d8e2ff;
   --accent-gradient: linear-gradient(145deg, #adc6ff, #4b8eff);
 
-  /* Dark CTA uses primary color, not orange */
-  --cta: #adc6ff;
-  --cta-hover: #4b8eff;
-  --cta-gradient: linear-gradient(135deg, #adc6ff, #4b8eff);
-  --cta-shadow: 0 4px 14px -2px rgba(173, 198, 255, 0.3);
+  /* Tertiary — v4 dark accent (golden) */
+  --brand-orange: #ffb95f;
+  --brand-orange-hover: #ffb95f;
+  --brand-orange-muted: rgba(255, 185, 95, 0.10);
+  --brand-orange-shadow: 0 4px 14px -2px rgba(255, 185, 95, 0.20);
+
+  /* Dark CTA uses tertiary gold in v4 */
+  --cta: #ffb95f;
+  --cta-hover: #ffb95f;
+  --cta-gradient: linear-gradient(135deg, #ffb95f, #ca8100);
+  --cta-shadow: 0 4px 14px -2px rgba(255, 185, 95, 0.20);
 
   --success: #4ade80;
   --success-bg: rgba(34, 197, 94, 0.20);
@@ -223,36 +237,38 @@ body {
   --info: #adc6ff;
   --info-text: #adc6ff;
 
-  --user-bubble-bg: rgba(173, 198, 255, 0.06);
-  --user-bubble-border: rgba(173, 198, 255, 0.12);
+  --user-bubble-bg: transparent;
+  --user-bubble-border: transparent;
   --user-bubble-text: #e5e2e3;
 
-  --diff-add-bg: rgba(34, 197, 94, 0.15);
+  --diff-add-bg: rgba(34, 197, 94, 0.12);
   --diff-add-text: #4ade80;
   --diff-add-border: #4ade80;
-  --diff-del-bg: rgba(248, 113, 113, 0.15);
+  --diff-del-bg: rgba(239, 68, 68, 0.12);
   --diff-del-text: #f87171;
   --diff-del-border: #f87171;
   --diff-add-line-bg: rgba(34, 197, 94, 0.08);
   --diff-del-line-bg: rgba(248, 113, 113, 0.08);
 
-  --code-bg: #0e0e0f;
-  --code-border: rgba(65, 71, 85, 0.20);
+  /* Dark code block uses black background in v4 */
+  --code-bg: rgba(0, 0, 0, 0.40);
+  --code-border: rgba(255, 255, 255, 0.05);
   --code-traffic-red: #f87171;
   --code-traffic-yellow: #fbbf24;
   --code-traffic-green: #4ade80;
 
   --border: #414755;                /* outline-variant */
-  --border-ghost: rgba(65, 71, 85, 0.20);
+  --border-ghost: rgba(255, 255, 255, 0.05);
   --border-focus: rgba(173, 198, 255, 0.50);
-  --border-divider: rgba(65, 71, 85, 0.12);
+  --border-divider: rgba(255, 255, 255, 0.05);
 
-  --scrollbar: rgba(53, 52, 54, 0.6);
-  --scrollbar-hover: rgba(53, 52, 54, 0.9);
+  --scrollbar: #414755;
+  --scrollbar-hover: #414755;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 24px -1px rgba(0, 0, 0, 0.3), 0 2px 8px -1px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 8px 32px -2px rgba(0, 0, 0, 0.4), 0 4px 12px -1px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.5);
 
   --glass-bg: rgba(19, 19, 20, 0.80);
 }
@@ -325,15 +341,15 @@ body {
 .hljs-deletion { color: var(--diff-del-text); background: var(--diff-del-bg); }
 .hljs-addition { color: var(--diff-add-text); background: var(--diff-add-bg); }
 
-/* Dark hljs overrides */
-[data-theme="dark"] .hljs-keyword { color: #ddb7ff; }
-[data-theme="dark"] .hljs-string { color: #ffb95f; }
+/* Dark hljs overrides — v4 syntax: keyword=#adc6ff, type=#ddb7ff, function=#ffb95f, string=#a5d6ff */
+[data-theme="dark"] .hljs-keyword { color: #adc6ff; }
+[data-theme="dark"] .hljs-string { color: #a5d6ff; }
 [data-theme="dark"] .hljs-number { color: #b5cea8; }
 [data-theme="dark"] .hljs-comment { color: #6a9955; }
-[data-theme="dark"] .hljs-function { color: #dcdcaa; }
-[data-theme="dark"] .hljs-title { color: #dcdcaa; }
+[data-theme="dark"] .hljs-function { color: #ffb95f; }
+[data-theme="dark"] .hljs-title { color: #ffb95f; }
 [data-theme="dark"] .hljs-built_in { color: #4ade80; }
-[data-theme="dark"] .hljs-type { color: #4ade80; }
+[data-theme="dark"] .hljs-type { color: #ddb7ff; }
 [data-theme="dark"] .hljs-attr { color: #c1c6d7; }
 [data-theme="dark"] .hljs-variable { color: #c1c6d7; }
 [data-theme="dark"] .hljs-literal { color: #569cd6; }
@@ -405,3 +421,20 @@ body {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
+
+/* ═══ v4 Dark diff lines — colored left borders ═══ */
+[data-theme="dark"] .diff-added {
+  background-color: rgba(34, 197, 94, 0.12);
+  border-left: 3px solid #4ade80;
+}
+
+[data-theme="dark"] .diff-removed {
+  background-color: rgba(239, 68, 68, 0.12);
+  border-left: 3px solid #f87171;
+}
+
+/* v4 Dark code syntax highlighting */
+[data-theme="dark"] .code-keyword { color: #adc6ff; }
+[data-theme="dark"] .code-type { color: #ddb7ff; }
+[data-theme="dark"] .code-function { color: #ffb95f; }
+[data-theme="dark"] .code-string { color: #a5d6ff; }

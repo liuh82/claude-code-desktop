@@ -1,13 +1,13 @@
-/* ═══ InputArea — Precision Workspace v3 ═══ */
+/* ═══ InputArea — v4 ═══ */
 
 .inputArea {
   padding: var(--space-6) var(--space-8) var(--space-8);
-  background: transparent;
+  background: var(--bg-primary);
   flex-shrink: 0;
-  border-top: 1px solid var(--border-ghost);
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+[data-theme="dark"] .inputArea {
+  background: linear-gradient(to top, var(--bg-primary), var(--bg-primary), transparent);
 }
 
 .inputWrapper {
@@ -16,17 +16,19 @@
   margin: 0 auto;
 }
 
+/* Light: rounded-2xl with ghost border */
 .inputTextarea {
   width: 100%;
-  min-height: 64px;
+  min-height: 44px;
   max-height: 200px;
-  padding: var(--space-5) var(--space-10);
+  padding: var(--space-2) var(--space-3);
+  padding-bottom: 0;
   background: var(--bg-input);
-  border: 2px solid var(--border-ghost);
+  border: 1px solid rgba(169, 180, 185, 0.30);
   border-radius: var(--radius-xl);
   color: var(--text-primary);
   font-family: var(--font-family);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   line-height: var(--line-height-normal);
   outline: none;
   resize: none;
@@ -35,9 +37,12 @@
 }
 
 [data-theme="dark"] .inputTextarea {
-  border: 1px solid var(--border-ghost);
   border-radius: var(--radius-md);
+  border-color: rgba(255, 255, 255, 0.10);
+  background: #1a1c1e;
   padding: var(--space-2);
+  font-size: var(--font-size-md);
+  box-shadow: var(--shadow-xl);
 }
 
 .inputTextarea::placeholder {
@@ -45,12 +50,12 @@
 }
 
 [data-theme="dark"] .inputTextarea::placeholder {
-  color: rgba(139, 144, 160, 0.5);
+  color: rgba(139, 144, 160, 0.40);
 }
 
 .inputTextarea:focus {
-  border-color: rgba(0, 91, 192, 0.40);
-  box-shadow: 0 0 0 4px rgba(0, 91, 192, 0.05);
+  border-color: rgba(0, 91, 192, 0.50);
+  box-shadow: 0 0 0 4px rgba(0, 91, 192, 0.10);
 }
 
 [data-theme="dark"] .inputTextarea:focus {
@@ -58,18 +63,23 @@
   box-shadow: none;
 }
 
+/* Actions bar below textarea */
 .inputActions {
-  position: absolute;
-  right: var(--space-4);
-  bottom: var(--space-4);
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  justify-content: space-between;
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid rgba(169, 180, 185, 0.10);
+  max-width: 768px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 [data-theme="dark"] .inputActions {
-  right: var(--space-2);
-  bottom: var(--space-2);
+  border-top-color: transparent;
+  padding: var(--space-2) var(--space-1) 0;
+  margin-top: var(--space-1);
 }
 
 .attachBtn {
@@ -86,23 +96,20 @@
   transition: all 0.15s;
 }
 
-[data-theme="dark"] .attachBtn {
-  border-radius: var(--radius-md);
-  width: 28px;
-  height: 28px;
+.attachBtn:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
 }
 
-.attachBtn:hover {
-  color: #4f46e5;
-  background: rgba(79, 70, 229, 0.05);
+[data-theme="dark"] .attachBtn {
+  color: rgba(139, 144, 160, 0.60);
 }
 
 [data-theme="dark"] .attachBtn:hover {
-  color: var(--text-muted);
-  background: var(--bg-tertiary);
+  color: var(--accent);
 }
 
-/* Send button — Light: orange, Dark: primary */
+/* Send button — Light: brand-orange, Dark: tertiary gold */
 .sendBtn {
   display: flex;
   align-items: center;
@@ -110,21 +117,23 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-lg);
-  background: var(--cta);
+  background: var(--brand-orange);
   border: none;
   color: white;
   cursor: pointer;
-  box-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.30);
+  box-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.30);
   transition: all 0.15s;
   opacity: 0.4;
   pointer-events: none;
 }
 
 [data-theme="dark"] .sendBtn {
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
-  width: 28px;
-  height: 28px;
-  box-shadow: 0 4px 14px -2px rgba(173, 198, 255, 0.10);
+  background: #ffb95f;
+  color: #2a1700;
+  box-shadow: 0 4px 14px -2px rgba(255, 185, 95, 0.20);
 }
 
 .sendBtnActive {
@@ -134,16 +143,20 @@
 
 .sendBtnActive:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px -2px rgba(249, 115, 22, 0.45);
+  box-shadow: 0 6px 20px -2px rgba(217, 119, 6, 0.45);
 }
 
 [data-theme="dark"] .sendBtnActive:hover {
-  opacity: 0.9;
-  transform: none;
+  transform: scale(1.05);
+  box-shadow: 0 4px 14px -2px rgba(255, 185, 95, 0.30);
 }
 
 .sendBtnActive:active {
-  transform: translateY(0);
+  transform: scale(0.95);
+}
+
+[data-theme="dark"] .sendBtnActive:active {
+  transform: scale(0.95);
 }
 
 .stopBtn {
@@ -162,8 +175,8 @@
 
 [data-theme="dark"] .stopBtn {
   border-radius: var(--radius-md);
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
 }
 
 .stopBtn:hover {

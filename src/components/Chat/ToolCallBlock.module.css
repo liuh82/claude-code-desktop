@@ -1,6 +1,6 @@
-/* ═══ ToolCallBlock — Precision Workspace v3 ═══ */
+/* ═══ ToolCallBlock — v4 ═══ */
 
-/* Light: card with border, Dark: left-border accent */
+/* Light: card with border */
 .toolCall {
   margin: var(--space-2) 0;
   border: 1px solid rgba(0, 91, 192, 0.30);
@@ -11,12 +11,14 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* Dark: rounded pill with ghost border */
 [data-theme="dark"] .toolCall {
   border: none;
-  border-left: 4px solid rgba(173, 198, 255, 0.40);
   border-radius: var(--radius-md);
-  background: var(--bg-elevated);
+  background: #201f20;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: none;
+  width: fit-content;
 }
 
 .toolCallHeader {
@@ -58,6 +60,10 @@
   color: var(--accent);
 }
 
+[data-theme="dark"] .toolIcon .material-symbols-outlined {
+  font-size: 18px;
+}
+
 .toolLabel {
   font-weight: var(--font-weight-bold);
   color: var(--accent);
@@ -66,8 +72,9 @@
 }
 
 [data-theme="dark"] .toolLabel {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  color: rgba(193, 198, 215, 0.80);
 }
 
 .toolSummary {
@@ -82,7 +89,8 @@
 }
 
 [data-theme="dark"] .toolSummary {
-  font-size: var(--font-size-xs);
+  font-size: 13px;
+  color: rgba(193, 198, 215, 0.80);
 }
 
 .toolStatusArea {

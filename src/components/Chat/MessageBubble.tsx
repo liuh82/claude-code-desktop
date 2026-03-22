@@ -9,7 +9,7 @@ interface MessageBubbleProps {
 
 function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
-  const roleLabel = isUser ? 'You' : 'Assistant';
+  const roleLabel = isUser ? '你' : 'Claude Code';
   const timeStr = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const avatar = isUser ? (
@@ -18,12 +18,12 @@ function MessageBubble({ message }: MessageBubbleProps) {
     </div>
   ) : (
     <div className={styles.aiAvatar}>
-      <img src="/claude-icon-32.png" alt="Claude" />
+      <span className="material-symbols-outlined">smart_toy</span>
     </div>
   );
 
   return (
-    <div className={`${styles.message} ${isUser ? styles.messageUser : styles.messageAssistant}`}>
+    <div className={styles.message}>
       {avatar}
       <div className={styles.messageBody}>
         <div className={styles.messageMeta}>
@@ -32,9 +32,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
         </div>
 
         {isUser ? (
-          <div className={styles.userBubble}>
-            <div className={styles.messageContent}>{message.content}</div>
-          </div>
+          <div className={styles.messageContent}>{message.content}</div>
         ) : (
           <>
             {message.toolCalls && message.toolCalls.length > 0 && (

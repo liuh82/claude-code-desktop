@@ -1,4 +1,4 @@
-/* ═══ ToolPanel — Precision Workspace v3 ═══ */
+/* ═══ ToolPanel — v4 ═══ */
 
 .toolPanel {
   width: 100%;
@@ -7,7 +7,13 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-left: 1px solid var(--border-ghost);
+  border-left: 1px solid rgba(169, 180, 185, 0.20);
+}
+
+[data-theme="dark"] .toolPanel {
+  background: #1a1c1e;
+  border-left-color: rgba(255, 255, 255, 0.05);
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .toolPanelHeader {
@@ -15,18 +21,29 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--space-4);
-  height: 40px;
+  height: 56px;
   flex-shrink: 0;
   background: var(--bg-input);
   border-bottom: 1px solid var(--border-divider);
 }
 
+[data-theme="dark"] .toolPanelHeader {
+  background: #131314;
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+  height: 56px;
+}
+
 .toolPanelTitle {
-  font-size: var(--font-size-2xs);
-  font-weight: var(--font-weight-black);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-widest);
+}
+
+[data-theme="dark"] .toolPanelTitle {
+  font-size: 11px;
+  letter-spacing: 0.1em;
 }
 
 .toolPanelClose {
@@ -66,6 +83,10 @@
   overflow: hidden;
 }
 
+[data-theme="dark"] .fileTreeSection {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
 .fileTreeHeader {
   display: flex;
   align-items: center;
@@ -76,10 +97,14 @@
   flex-shrink: 0;
 }
 
-/* Light: bg-white header, accent title. Dark: same surface */
+[data-theme="dark"] .fileTreeHeader {
+  background: #1a1c1e;
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
 .fileTreeTitle {
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-black);
+  font-weight: var(--font-weight-bold);
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-widest);
@@ -120,7 +145,7 @@
 }
 
 [data-theme="dark"] .fileTreeBody {
-  background: var(--bg-elevated);
+  background: #1a1c1e;
 }
 
 /* Diff section */
@@ -130,6 +155,10 @@
   flex-direction: column;
   overflow: hidden;
   background: var(--bg-input);
+}
+
+[data-theme="dark"] .diffSection {
+  background: transparent;
 }
 
 .diffHeader {
@@ -143,12 +172,13 @@
 }
 
 [data-theme="dark"] .diffHeader {
-  background: var(--bg-secondary);
+  background: #1a1c1e;
+  border-bottom-color: rgba(255, 255, 255, 0.05);
 }
 
 .diffTitle {
   font-size: var(--font-size-2xs);
-  font-weight: var(--font-weight-black);
+  font-weight: var(--font-weight-bold);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-widest);
@@ -161,7 +191,7 @@
 
 .diffAction {
   font-size: var(--font-size-2xs);
-  font-weight: var(--font-weight-black);
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   background: none;
   border: none;
@@ -194,17 +224,29 @@
   flex-shrink: 0;
 }
 
+[data-theme="dark"] .diffFooter {
+  background: #1a1c1e;
+  border-top-color: rgba(255, 255, 255, 0.05);
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
 .diffFooterBtn {
   flex: 1;
   padding: 10px 0;
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-black);
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-widest);
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all 0.15s;
   text-align: center;
+}
+
+[data-theme="dark"] .diffFooterBtn {
+  font-size: 12px;
+  border-radius: var(--radius-md);
 }
 
 .diffFooterReject {
@@ -219,21 +261,21 @@
 }
 
 [data-theme="dark"] .diffFooterReject {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-ghost);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(229, 226, 227, 0.80);
+  border: 1px solid rgba(255, 255, 255, 0.10);
 }
 
 [data-theme="dark"] .diffFooterReject:hover {
-  background: var(--bg-tertiary);
+  background: rgba(255, 255, 255, 0.10);
 }
 
-/* Accept button — Light: orange, Dark: primary */
+/* Accept button — Light: brand-orange, Dark: primary */
 .diffFooterAccept {
-  background: var(--cta);
+  background: var(--brand-orange);
   color: white;
   border: none;
-  box-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.30);
+  box-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.30);
 }
 
 .diffFooterAccept:hover {
@@ -241,5 +283,11 @@
 }
 
 [data-theme="dark"] .diffFooterAccept {
+  background: var(--accent);
+  color: var(--text-inverse);
   box-shadow: 0 4px 14px -2px rgba(173, 198, 255, 0.10);
+}
+
+[data-theme="dark"] .diffFooterAccept:hover {
+  filter: brightness(1.1);
 }
