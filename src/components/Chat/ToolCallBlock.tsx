@@ -6,6 +6,14 @@ interface ToolCallBlockProps {
   toolCall: ToolCall;
 }
 
+function getToolIconClass(name: string): string {
+  if (name === 'ReadFile' || name === 'Read') return 'toolIconRead';
+  if (name === 'WriteFile' || name === 'Write' || name === 'Edit') return 'toolIconWrite';
+  if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') return 'toolIconExec';
+  if (name === 'SearchFiles' || name === 'Grep' || name === 'Glob') return 'toolIconSearch';
+  return 'toolIconDefault';
+}
+
 function getToolIcon(name: string): { icon: string; label: string } {
   if (name === 'ReadFile' || name === 'Read') return { icon: 'description', label: '读取' };
   if (name === 'WriteFile' || name === 'Write' || name === 'Edit') return { icon: 'edit_note', label: '写入' };
@@ -23,19 +31,11 @@ function getShortSummary(toolCall: ToolCall): string {
   return '';
 }
 
-function getToolIconColor(name: string): string {
-  if (name === 'ReadFile' || name === 'Read') return 'var(--accent)';
-  if (name === 'WriteFile' || name === 'Write' || name === 'Edit') return 'var(--warning)';
-  if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') return 'var(--success)';
-  if (name === 'SearchFiles' || name === 'Grep' || name === 'Glob') return 'var(--accent)';
-  return 'var(--text-muted)';
-}
-
 function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
   const [expanded, setExpanded] = useState(false);
   const { icon, label } = getToolIcon(toolCall.name);
   const summary = getShortSummary(toolCall);
-  const iconColor = getToolIconColor(toolCall.name);
+  const iconClass = getToolIconClass(toolCall.name);
 
   const toggleExpand = useCallback(() => {
     setExpanded((prev) => !prev);
@@ -63,8 +63,8 @@ function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
   return (
     <div className={styles.toolCall}>
       <div className={styles.toolCallHeader} onClick={toggleExpand}>
-        <span className={styles.toolIcon}>
-          <span className="material-symbols-outlined" style={{ fontSize: 18, color: iconColor }}>{icon}</span>
+        <span className={`${styles.toolIcon} ${styles[iconClass]}`}>
+          <span className="material-symbols-outlined">{icon}</span>
         </span>
         <span className={styles.toolLabel}>{label}</span>
         {summary && <span className={styles.toolSummary}>{summary}</span>}
@@ -72,7 +72,7 @@ function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
           {statusBadge}
         </span>
         <span className={`${styles.chevron} ${expanded ? styles.chevronOpen : ''}`}>
-          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_right</span>
+          <span className="material-symbols-outlined">chevron_right</span>
         </span>
       </div>
 
@@ -82,7 +82,7 @@ function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
           <div className={styles.toolCallContent}>{inputStr}</div>
           {toolCall.output && (
             <>
-              <div className={styles.toolCallLabel} style={{ marginTop: 8 }}>输出</div>
+              <div className={`${styles.toolCallLabel} ${styles.toolCallLabelOutput}`}>输出</div>
               <div className={styles.toolCallContent}>{toolCall.output}</div>
             </>
           )}

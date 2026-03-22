@@ -53,6 +53,18 @@
   transition: transform 0.15s;
 }
 
+.statusGroupIcon .material-symbols-outlined {
+  font-size: 14px;
+}
+
+.statusGroupIconBranch {
+  color: #6366f1;
+}
+
+.statusGroupIconError {
+  color: var(--error);
+}
+
 .statusText {
   font-weight: var(--font-weight-bold);
   color: var(--text-secondary);
@@ -159,4 +171,5 @@
 .notificationBtn .material-symbols-outlined {
   color: white;
   font-size: 14px;
+  font-variation-settings: 'FILL' 1;
 }

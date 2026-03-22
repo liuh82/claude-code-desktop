@@ -51,13 +51,13 @@ function TreeNode({ node, depth, onFileClick, defaultExpanded }: { node: FileNod
       >
         {isDir ? (
           <span className={`${styles.chevron} ${expanded ? styles.chevronOpen : ''}`}>
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_right</span>
+            <span className="material-symbols-outlined">chevron_right</span>
           </span>
         ) : (
           <span className={styles.chevronSpacer} />
         )}
-        <span className={styles.nodeIcon}>
-          <span className="material-symbols-outlined" style={{ fontSize: 16, color: isDir ? 'var(--accent)' : 'var(--text-muted)' }}>
+        <span className={`${styles.nodeIcon} ${isDir ? styles.nodeIconDir : ''}`}>
+          <span className="material-symbols-outlined">
             {isDir ? 'folder' : getFileIcon(node.name)}
           </span>
         </span>

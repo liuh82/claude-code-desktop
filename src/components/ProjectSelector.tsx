@@ -61,14 +61,14 @@ export function ProjectSelector({ onProjectOpen }: ProjectSelectorProps) {
       <div className={styles.container}>
         <div className={styles.header}>
           <div className={styles.logoArea}>
-            <span className="material-symbols-outlined" style={{ fontSize: 40, color: "white" }}>terminal</span>
+            <span className="material-symbols-outlined">terminal</span>
           </div>
           <div className={styles.logo}>Claude Code</div>
           <div className={styles.tagline}>AI 驱动的终端工作空间</div>
         </div>
 
         <button className={styles.openBtn} onClick={handleOpenFolder}>
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>folder_open</span>
+          <span className="material-symbols-outlined">folder_open</span>
           打开项目目录
         </button>
 

@@ -1,4 +1,4 @@
-/* ═══ PanelToggles — Precision Workspace ═══ */
+/* ═══ PanelToggles — Stitch design ═══ */
 
 .toggleBtn {
   display: flex;
@@ -10,7 +10,7 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  transition: color 150ms, background 150ms;
 }
 
 .toggleLeft {

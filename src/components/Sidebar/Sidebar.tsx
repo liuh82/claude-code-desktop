@@ -73,7 +73,7 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }
   return (
     <aside className={styles.sidebar} style={style}>
       {/* Claude Logo */}
-      <div className={styles.sidebarLogo} style={{ justifyContent: "center" }}>
+      <div className={styles.sidebarLogo}>
         <div className={styles.sidebarLogoImg}>
           <span className="material-symbols-outlined">terminal</span>
         </div>

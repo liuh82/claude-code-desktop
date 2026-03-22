@@ -1,4 +1,4 @@
-/* ═══ ToolPanel — Precision Workspace (split file tree + diff) ═══ */
+/* ═══ ToolPanel — Split file tree + diff, Stitch design ═══ */
 
 .toolPanel {
   width: 100%;
@@ -7,26 +7,28 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border-left: 1px solid var(--border-divider);
 }
 
 [data-theme="dark"] .toolPanel {
-  background: #1a1c1e;
+  background: var(--bg-elevated);
+  border-left-color: var(--border-divider);
 }
 
 .toolPanelHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--space-4);
+  padding: 0 16px;
   height: 40px;
   flex-shrink: 0;
   background: var(--bg-input);
-  border-bottom: 1px solid var(--border-ghost);
+  border-bottom: 1px solid var(--border-divider);
 }
 
 [data-theme="dark"] .toolPanelHeader {
-  background: #131314;
-  border-bottom-color: rgba(255, 255, 255, 0.05);
+  background: var(--bg-primary);
+  border-bottom-color: var(--border-divider);
 }
 
 .toolPanelTitle {
@@ -34,7 +36,7 @@
   font-weight: var(--font-weight-black);
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-widest);
+  letter-spacing: 0.1em;
 }
 
 .toolPanelClose {
@@ -47,8 +49,12 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition: background 0.15s, color 0.15s;
+  border-radius: 4px;
+  transition: background 150ms, color 150ms;
+}
+
+.toolPanelClose .material-symbols-outlined {
+  font-size: 16px;
 }
 
 .toolPanelClose:hover {
@@ -56,7 +62,7 @@
   color: var(--text-primary);
 }
 
-/* Split layout: file tree on top, diff on bottom */
+/* Split layout */
 .toolPanelSplit {
   flex: 1;
   display: flex;
@@ -68,7 +74,7 @@
 .fileTreeSection {
   height: 33.33%;
   min-height: 120px;
-  border-bottom: 1px solid var(--border-ghost);
+  border-bottom: 1px solid var(--border-divider);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -78,15 +84,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) var(--space-4);
+  padding: 12px 16px;
   background: var(--bg-input);
-  border-bottom: 1px solid var(--border-ghost);
+  border-bottom: 1px solid var(--border-divider);
   flex-shrink: 0;
 }
 
 [data-theme="dark"] .fileTreeHeader {
-  background: #1a1c1e;
-  border-bottom-color: rgba(255, 255, 255, 0.05);
+  background: var(--bg-elevated);
+  border-bottom-color: var(--border-divider);
 }
 
 .fileTreeTitle {
@@ -94,12 +100,12 @@
   font-weight: var(--font-weight-black);
   color: var(--accent);
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-widest);
+  letter-spacing: 0.1em;
 }
 
 .fileTreeActions {
   display: flex;
-  gap: var(--space-2);
+  gap: 8px;
 }
 
 .fileTreeAction {
@@ -111,8 +117,12 @@
   color: var(--text-muted);
   cursor: pointer;
   padding: 2px;
-  border-radius: var(--radius-sm);
-  transition: color 0.15s;
+  border-radius: 4px;
+  transition: color 150ms;
+}
+
+.fileTreeAction .material-symbols-outlined {
+  font-size: 16px;
 }
 
 .fileTreeAction:hover {
@@ -122,12 +132,12 @@
 .fileTreeBody {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-1) 0;
+  padding: 4px 0;
   background: rgba(240, 244, 247, 0.30);
 }
 
 [data-theme="dark"] .fileTreeBody {
-  background: rgba(0, 0, 0, 0.20);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 /* Diff section */
@@ -143,15 +153,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) var(--space-4);
+  padding: 12px 16px;
   background: rgba(232, 239, 243, 0.30);
-  border-bottom: 1px solid var(--border-ghost);
+  border-bottom: 1px solid var(--border-divider);
   flex-shrink: 0;
 }
 
 [data-theme="dark"] .diffHeader {
-  background: #1a1c1e;
-  border-bottom-color: rgba(255, 255, 255, 0.05);
+  background: var(--bg-elevated);
+  border-bottom-color: var(--border-divider);
 }
 
 .diffTitle {
@@ -159,12 +169,12 @@
   font-weight: var(--font-weight-black);
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-widest);
+  letter-spacing: 0.1em;
 }
 
 .diffActions {
   display: flex;
-  gap: var(--space-3);
+  gap: 12px;
 }
 
 .diffAction {
@@ -174,8 +184,8 @@
   background: none;
   border: none;
   cursor: pointer;
-  letter-spacing: var(--letter-spacing-widest);
-  transition: text-decoration 0.15s;
+  letter-spacing: 0.1em;
+  transition: text-decoration 150ms;
   padding: 0;
 }
 
@@ -192,19 +202,19 @@
   overflow-y: auto;
 }
 
-/* Diff footer actions */
+/* Diff footer */
 .diffFooter {
   display: flex;
-  gap: var(--space-3);
-  padding: var(--space-5);
+  gap: 12px;
+  padding: 20px;
   background: var(--bg-input);
-  border-top: 1px solid var(--border-ghost);
+  border-top: 1px solid var(--border-divider);
   flex-shrink: 0;
 }
 
 [data-theme="dark"] .diffFooter {
-  background: #1a1c1e;
-  border-top-color: rgba(255, 255, 255, 0.05);
+  background: var(--bg-elevated);
+  border-top-color: var(--border-divider);
 }
 
 .diffFooterBtn {
@@ -213,15 +223,15 @@
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-black);
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-widest);
-  border-radius: var(--radius-lg);
+  letter-spacing: 0.1em;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 150ms;
   text-align: center;
 }
 
 .diffFooterReject {
-  background: rgba(217, 228, 234, 0.25);
+  background: var(--bg-tertiary);
   color: var(--text-muted);
   border: none;
 }
@@ -239,8 +249,8 @@
 }
 
 [data-theme="dark"] .diffFooterAccept {
-  background: #adc6ff;
-  color: #002e69;
+  background: var(--accent);
+  color: var(--text-inverse);
   box-shadow: 0 8px 24px -2px rgba(75, 142, 255, 0.15);
 }
 

@@ -210,7 +210,7 @@ function InputArea() {
                 onClick={() => handleMentionSelect(file)}
                 onMouseEnter={() => setMentionIndex(i)}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--text-muted)' }}>description</span>
+                <span className="material-symbols-outlined">description</span>
                 <span className={styles.dropdownPath}>{file.path}</span>
               </div>
             ))}
@@ -226,7 +226,7 @@ function InputArea() {
                 onClick={() => executeCommand(cmd.name)}
                 onMouseEnter={() => setSlashIndex(i)}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--text-muted)' }}>{cmd.icon}</span>
+                <span className="material-symbols-outlined">{cmd.icon}</span>
                 <div className={styles.dropdownCommand}>
                   <span className={styles.dropdownCmdName}>{cmd.name}</span>
                   <span className={styles.dropdownCmdDesc}>{cmd.description}</span>
@@ -239,11 +239,11 @@ function InputArea() {
         {/* Action buttons inside textarea */}
         <div className={styles.inputActions}>
           <button className={styles.attachBtn} title="附件">
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>attach_file</span>
+            <span className="material-symbols-outlined">attach_file</span>
           </button>
           {isGenerating ? (
             <button className={styles.stopBtn} onClick={stopGeneration} title="停止生成">
-              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>stop_circle</span>
+              <span className="material-symbols-outlined">stop_circle</span>
             </button>
           ) : (
             <button
@@ -252,7 +252,7 @@ function InputArea() {
               disabled={!canSend}
               title="发送 (⌘+Enter)"
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_upward</span>
+              <span className="material-symbols-outlined">arrow_upward</span>
             </button>
           )}
         </div>

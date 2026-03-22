@@ -1,4 +1,4 @@
-/* ═══ TabBar — macOS-style tab strip ═══ */
+/* ═══ TabBar — macOS-style tab strip, Stitch design ═══ */
 
 .tabBar {
   display: flex;
@@ -6,11 +6,11 @@
   height: 36px;
   flex-shrink: 0;
   background: var(--bg-secondary);
-  padding: 0 var(--space-2);
+  padding: 0 8px;
   gap: 0;
   overflow-x: auto;
   overflow-y: hidden;
-  border-bottom: 1px solid var(--border-ghost);
+  border-bottom: 1px solid var(--border-divider);
 }
 
 .tabBar::-webkit-scrollbar { height: 0; }
@@ -18,8 +18,8 @@
 .tab {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: 0 var(--space-3);
+  gap: 8px;
+  padding: 0 12px;
   height: 32px;
   min-width: 100px;
   max-width: 180px;
@@ -29,8 +29,8 @@
   cursor: pointer;
   border: none;
   background: transparent;
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-  transition: all 0.15s;
+  border-radius: 6px 6px 0 0;
+  transition: all 150ms;
   flex-shrink: 0;
   position: relative;
   font-family: var(--font-family);
@@ -48,6 +48,7 @@
   font-weight: var(--font-weight-semibold);
 }
 
+/* Active tab indicator — orange bottom bar */
 .tabActive::after {
   content: '';
   position: absolute;
@@ -75,14 +76,14 @@
   justify-content: center;
   width: 16px;
   height: 16px;
-  border-radius: var(--radius-sm);
+  border-radius: 4px;
   background: transparent;
   border: none;
   color: var(--text-muted);
   font-size: 12px;
   cursor: pointer;
   opacity: 0;
-  transition: all 0.1s;
+  transition: all 100ms;
   flex-shrink: 0;
   padding: 0;
   line-height: 1;
@@ -104,13 +105,13 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  margin-left: var(--space-1);
-  border-radius: var(--radius-md);
+  margin-left: 4px;
+  border-radius: 6px;
   background: transparent;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 150ms;
   flex-shrink: 0;
   align-self: center;
 }

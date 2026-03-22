@@ -1,3 +1,5 @@
+/* ═══ ChatHeader — Stitch top bar ═══ */
+
 .chatHeader {
   height: 48px;
   display: flex;
@@ -5,7 +7,7 @@
   justify-content: space-between;
   padding: 0 24px;
   background: var(--bg-primary);
-  border-bottom: 1px solid rgba(169, 180, 185, 0.20);
+  border-bottom: 1px solid var(--border-divider);
   flex-shrink: 0;
 }
 
@@ -13,7 +15,7 @@
   background: rgba(19, 19, 20, 0.80);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom-color: rgba(255, 255, 255, 0.05);
+  border-bottom-color: var(--border-divider);
 }
 
 .headerLeft {
@@ -22,32 +24,36 @@
   gap: 12px;
 }
 
+/* Path pill — light: rounded pill, dark: mono flat */
+.headerIcon {
+  font-size: 14px;
+}
+
 .pathPill {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 4px 12px;
-  background: var(--bg-secondary);
+  background: var(--brand-orange-muted);
+  border: 1px solid rgba(217, 119, 6, 0.20);
   border-radius: 9999px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-mono);
+  color: var(--brand-orange);
+  letter-spacing: 0.03em;
 }
 
 [data-theme="dark"] .pathPill {
-  background: transparent;
-  border-radius: 0;
-  padding: 0;
-  font-family: var(--font-mono);
-  font-size: 12px;
+  background: var(--bg-input);
+  border-color: var(--border-divider);
   color: var(--text-muted);
-  opacity: 0.80;
 }
 
 .divider {
   width: 1px;
   height: 16px;
-  background: rgba(169, 180, 185, 0.30);
+  background: var(--border-divider);
 }
 
 [data-theme="dark"] .divider {
@@ -58,8 +64,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+[data-theme="dark"] .modelInfo {
   color: var(--accent);
 }
 
@@ -79,7 +91,11 @@
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
-  transition: color 0.15s;
+  transition: color 150ms;
+}
+
+.moreIcon {
+  font-size: 18px;
 }
 
 .moreBtn:hover {

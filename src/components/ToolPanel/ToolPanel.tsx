@@ -24,7 +24,7 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
       <div className={styles.toolPanelHeader}>
         <span className={styles.toolPanelTitle}>工具面板</span>
         <button className={styles.toolPanelClose} onClick={onClose} title="关闭" aria-label="关闭工具面板">
-          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_right</span>
+          <span className="material-symbols-outlined">chevron_right</span>
         </button>
       </div>
 
@@ -35,10 +35,10 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
             <span className={styles.fileTreeTitle}>项目文件</span>
             <div className={styles.fileTreeActions}>
               <button className={styles.fileTreeAction} title="搜索">
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>search</span>
+                <span className="material-symbols-outlined">search</span>
               </button>
               <button className={styles.fileTreeAction} title="刷新">
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>refresh</span>
+                <span className="material-symbols-outlined">refresh</span>
               </button>
             </div>
           </div>

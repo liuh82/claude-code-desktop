@@ -1,4 +1,4 @@
-/* ═══ TerminalPane — Individual pane view ═══ */
+/* ═══ TerminalPane — Individual pane view, Stitch design ═══ */
 
 .terminalPane {
   display: flex;
@@ -8,7 +8,7 @@
   background: var(--bg-primary);
 }
 
-/* Active pane gets a subtle highlight */
+/* Active pane gets subtle highlight */
 .terminalPaneActive {
   box-shadow: inset 0 0 0 1px var(--accent-muted);
 }
@@ -18,22 +18,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--space-3);
+  padding: 0 12px;
   height: 30px;
   flex-shrink: 0;
   background: var(--bg-elevated);
-  border-bottom: 1px solid var(--border-ghost);
+  border-bottom: 1px solid var(--border-divider);
 }
 
 [data-theme="dark"] .paneHeader {
-  background: #1a1c1e;
-  border-bottom-color: rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
+  border-bottom-color: var(--border-divider);
 }
 
 .paneHeaderLeft {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 8px;
   min-width: 0;
   flex: 1;
 }
@@ -64,7 +64,7 @@
 .paneHeaderRight {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: 4px;
 }
 
 .paneAction {
@@ -73,12 +73,16 @@
   justify-content: center;
   width: 22px;
   height: 22px;
-  border-radius: var(--radius-sm);
+  border-radius: 4px;
   background: transparent;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 150ms;
+}
+
+.paneAction .material-symbols-outlined {
+  font-size: 14px;
 }
 
 .paneAction:hover {
@@ -95,7 +99,7 @@
   color: var(--error);
 }
 
-/* Pane body — reuses chat view styles */
+/* Pane body */
 .paneBody {
   flex: 1;
   display: flex;
@@ -107,7 +111,7 @@
 .paneMessages {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-4);
+  padding: 16px;
 }
 
 .paneMessagesInner {
@@ -117,7 +121,7 @@
   color: var(--text-primary);
 }
 
-/* Empty state for pane */
+/* Empty state */
 .paneEmpty {
   flex: 1;
   display: flex;
@@ -128,30 +132,35 @@
   opacity: 0.5;
 }
 
-/* Pane input area (compact) */
+/* Pane input — compact, centered */
 .paneInput {
   padding: 16px 20px;
   flex-shrink: 0;
-  border-top: 1px solid var(--border-ghost);
+  border-top: 1px solid var(--border-divider);
   background: var(--bg-primary);
 }
 
 .paneInputWrapper {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
+  align-items: flex-end;
+  gap: 12px;
   background: var(--bg-input);
   border: 2px solid var(--border-ghost);
-  border-radius: 16px;
-  padding: 16px 20px 16px 20px;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  border-radius: 12px;
+  padding: 12px 12px 12px 16px;
+  transition: border-color 150ms, box-shadow 150ms;
   box-shadow: var(--shadow-sm);
-  min-height: 100px;
+  min-height: 44px;
 }
 
 .paneInputWrapper:focus-within {
-  border-color: rgba(217, 119, 6, 0.35);
-  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.05);
+  border-color: rgba(217, 119, 6, 0.40);
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.05);
+}
+
+[data-theme="dark"] .paneInputWrapper:focus-within {
+  border-color: rgba(173, 198, 255, 0.40);
+  box-shadow: 0 0 0 3px rgba(173, 198, 255, 0.05);
 }
 
 .paneInputField {
@@ -160,12 +169,11 @@
   border: none;
   outline: none;
   font-family: var(--font-family);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
   color: var(--text-primary);
   min-width: 0;
   resize: none;
-  min-height: 68px;
 }
 
 .paneInputField::placeholder {
@@ -176,9 +184,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-lg);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background: var(--brand-orange);
   border: none;
   color: white;
@@ -186,8 +194,12 @@
   flex-shrink: 0;
   opacity: 0.4;
   pointer-events: none;
-  transition: opacity 0.15s;
-  box-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.40);
+  transition: opacity 150ms;
+  box-shadow: 0 2px 8px -1px rgba(217, 119, 6, 0.30);
+}
+
+.paneSendBtn .material-symbols-outlined {
+  font-size: 14px;
 }
 
 [data-theme="dark"] .paneSendBtn {

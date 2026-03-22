@@ -1,4 +1,4 @@
-/* ═══ ResizeHandle — Precision Workspace ═══ */
+/* ═══ ResizeHandle — Stitch design ═══ */
 
 .handle {
   position: relative;
@@ -33,7 +33,7 @@
   background: var(--border);
   border-radius: 1px;
   opacity: 0;
-  transition: opacity 0.15s, background 0.15s;
+  transition: opacity 150ms, background 150ms;
 }
 
 .left:hover::after,
@@ -61,7 +61,7 @@
   background: var(--border);
   border-radius: 1px;
   opacity: 0;
-  transition: opacity 0.15s, background 0.15s;
+  transition: opacity 150ms, background 150ms;
 }
 
 .right:hover::after,

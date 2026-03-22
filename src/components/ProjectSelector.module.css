@@ -1,4 +1,4 @@
-/* ═══ ProjectSelector — Precision Workspace ═══ */
+/* ═══ ProjectSelector — Stitch design ═══ */
 
 .overlay {
   position: fixed;
@@ -17,7 +17,7 @@
   flex-direction: column;
   background: var(--bg-input);
   border: 1px solid var(--border-ghost);
-  border-radius: var(--radius-lg);
+  border-radius: 12px;
   box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
@@ -30,9 +30,9 @@
 .logoArea {
   width: 80px;
   height: 80px;
-  margin: 0 auto var(--space-5);
-  border-radius: var(--radius-lg);
-  background: var(--accent-gradient);
+  margin: 0 auto 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--brand-orange), var(--brand-orange-hover));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,12 +44,20 @@
   font-size: 40px;
 }
 
+.openBtn .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.recentIcon .material-symbols-outlined {
+  font-size: 18px;
+}
+
 .logo {
   font-size: 24px;
   font-weight: 800;
   color: var(--brand-orange);
   letter-spacing: var(--letter-spacing-tight);
-  margin-bottom: var(--space-2);
+  margin-bottom: 8px;
 }
 
 .tagline {
@@ -59,21 +67,21 @@
 }
 
 .openBtn {
-  margin: 0 32px var(--space-6);
+  margin: 0 32px 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  padding: 12px var(--space-4);
-  background: var(--cta-gradient);
+  gap: 8px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, var(--brand-orange), var(--brand-orange-hover));
   color: white;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: 8px;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
-  transition: all 0.15s;
-  box-shadow: var(--cta-shadow);
+  transition: all 150ms;
+  box-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.40);
   line-height: var(--line-height-normal);
 }
 
@@ -83,7 +91,7 @@
 }
 
 .recentSection {
-  padding: 0 32px var(--space-6);
+  padding: 0 32px 24px;
 }
 
 .recentTitle {
@@ -91,8 +99,8 @@
   font-weight: var(--font-weight-bold);
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-widest);
-  margin-bottom: var(--space-2);
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
 }
 
 .recentList {
@@ -103,11 +111,11 @@
 .recentItem {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-3);
+  gap: 12px;
+  padding: 12px;
   cursor: pointer;
-  border-radius: var(--radius-lg);
-  transition: background 0.15s;
+  border-radius: 8px;
+  transition: background 150ms;
 }
 
 .recentItem:hover {
@@ -155,7 +163,7 @@
   cursor: pointer;
   font-size: 16px;
   padding: 2px 4px;
-  border-radius: var(--radius-sm);
+  border-radius: 4px;
 }
 
 .recentItem:hover .recentRemove {
@@ -168,10 +176,10 @@
 }
 
 .footer {
-  padding: var(--space-4) 32px;
+  padding: 16px 32px;
   background: var(--bg-secondary);
   text-align: center;
   font-size: var(--font-size-2xs);
   color: var(--text-muted);
-  letter-spacing: var(--letter-spacing-label);
+  letter-spacing: 0.04em;
 }

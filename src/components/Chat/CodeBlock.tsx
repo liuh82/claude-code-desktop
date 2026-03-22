@@ -30,7 +30,7 @@ function CodeBlock({ code, language }: CodeBlockProps) {
   return (
     <div className={styles.codeBlock}>
       <div className={styles.codeHeader}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div className={styles.codeHeaderLeft}>
           <div className={styles.codeTrafficLights}>
             <span className={`${styles.trafficDot} ${styles.trafficRed}`} />
             <span className={`${styles.trafficDot} ${styles.trafficYellow}`} />
@@ -45,7 +45,7 @@ function CodeBlock({ code, language }: CodeBlockProps) {
             aria-label="复制代码"
             title="复制"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
+            <span className="material-symbols-outlined">
               {copied ? 'check' : 'content_copy'}
             </span>
           </button>

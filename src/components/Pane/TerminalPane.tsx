@@ -118,21 +118,21 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
             onClick={handleSplitHorizontal}
             title="水平分割 (⌘D)"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>vertical_split</span>
+            <span className="material-symbols-outlined">vertical_split</span>
           </button>
           <button
             className={`${styles.paneAction} ${styles.paneActionSplit}`}
             onClick={handleSplitVertical}
             title="垂直分割 (⌘⇧D)"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>horizontal_split</span>
+            <span className="material-symbols-outlined">horizontal_split</span>
           </button>
           <button
             className={`${styles.paneAction} ${styles.paneActionClose}`}
             onClick={handleClose}
             title="关闭面板 (⌘W)"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>close</span>
+            <span className="material-symbols-outlined">close</span>
           </button>
         </div>
       </div>
@@ -170,7 +170,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               onClick={handleSend}
               disabled={!canSend}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_upward</span>
+              <span className="material-symbols-outlined">arrow_upward</span>
             </button>
           </div>
         </div>

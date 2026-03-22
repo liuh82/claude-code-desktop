@@ -14,15 +14,15 @@ function StatusBar() {
     <div className={styles.statusBar}>
       <div className={styles.statusLeft}>
         <div className={`${styles.statusGroup} ${styles.statusGroupBorder}`} title="Git branch">
-          <span className={styles.statusGroupIcon} style={{ color: '#6366f1' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>account_tree</span>
+          <span className={`${styles.statusGroupIcon} ${styles.statusGroupIconBranch}`}>
+            <span className="material-symbols-outlined">account_tree</span>
           </span>
           <span className={styles.branchName}>main*</span>
         </div>
 
         <div className={`${styles.statusGroup} ${styles.statusGroupBorder}`} title="Problems">
-          <span className={styles.statusGroupIcon} style={{ color: 'var(--error)' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>sync_problem</span>
+          <span className={`${styles.statusGroupIcon} ${styles.statusGroupIconError}`}>
+            <span className="material-symbols-outlined">sync_problem</span>
           </span>
           <span className={styles.errorCount}>0</span>
         </div>
@@ -47,7 +47,7 @@ function StatusBar() {
         </div>
 
         <button className={styles.notificationBtn} title="Notifications">
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>notifications</span>
+          <span className="material-symbols-outlined">notifications</span>
         </button>
       </div>
     </div>

@@ -1,9 +1,13 @@
-/* ═══ InputArea — Precision Workspace ═══ */
+/* ═══ InputArea — Stitch design, 768px centered ═══ */
 
 .inputArea {
-  padding: 24px 32px;
+  padding: 24px 32px 16px;
   background: var(--bg-primary);
   flex-shrink: 0;
+}
+
+[data-theme="dark"] .inputArea {
+  background: var(--bg-primary);
 }
 
 .inputWrapper {
@@ -12,22 +16,23 @@
   margin: 0 auto;
 }
 
+/* Textarea — rounded-2xl, min-height 100px */
 .inputTextarea {
   width: 100%;
   min-height: 100px !important;
   max-height: 200px;
-  padding: 20px 24px 20px 24px;
+  padding: 20px 56px 20px 24px;
   background: var(--bg-input);
   border: 2px solid var(--border-ghost);
   border-radius: 16px;
   color: var(--text-primary);
   font-family: var(--font-family);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
   outline: none;
   resize: none;
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 150ms, box-shadow 150ms;
 }
 
 .inputTextarea::placeholder {
@@ -35,17 +40,23 @@
 }
 
 .inputTextarea:focus {
-  border-color: rgba(217, 119, 6, 0.35);
+  border-color: rgba(217, 119, 6, 0.40);
   box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.05);
 }
 
+[data-theme="dark"] .inputTextarea:focus {
+  border-color: rgba(173, 198, 255, 0.40);
+  box-shadow: 0 0 0 4px rgba(173, 198, 255, 0.05);
+}
+
+/* Action buttons — bottom-right of textarea */
 .inputActions {
   position: absolute;
-  right: var(--space-4);
-  bottom: var(--space-4);
+  right: 16px;
+  bottom: 16px;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 8px;
 }
 
 .attachBtn {
@@ -54,37 +65,39 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-lg);
+  border-radius: 8px;
   background: transparent;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 150ms;
+}
+
+.attachBtn .material-symbols-outlined,
+.sendBtn .material-symbols-outlined,
+.stopBtn .material-symbols-outlined {
+  font-size: 18px;
 }
 
 .attachBtn:hover {
   color: var(--accent);
-  background: rgba(0, 91, 192, 0.06);
+  background: var(--accent-muted);
 }
 
-[data-theme="dark"] .attachBtn:hover {
-  color: var(--accent);
-  background: rgba(173, 198, 255, 0.06);
-}
-
+/* Send button — brand-orange, active state glow */
 .sendBtn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-lg);
+  border-radius: 12px;
   background: var(--brand-orange);
   border: none;
   color: white;
   cursor: pointer;
   box-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.40);
-  transition: all 0.15s;
+  transition: all 150ms;
   opacity: 0.4;
   pointer-events: none;
 }
@@ -102,6 +115,7 @@
 
 .sendBtnActive:hover {
   transform: translateY(-1px);
+  filter: brightness(1.1);
   box-shadow: 0 6px 20px -2px rgba(217, 119, 6, 0.45);
 }
 
@@ -119,43 +133,43 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-lg);
+  border-radius: 12px;
   background: var(--error);
   border: none;
   color: white;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: opacity 150ms;
 }
 
 .stopBtn:hover {
   opacity: 0.9;
 }
 
-/* Footer hints */
+/* Footer hints — model, encoding, shortcut */
 .inputFooter {
   display: flex;
   align-items: center;
   justify-content: space-between;
   max-width: 768px;
-  margin: var(--space-3) auto 0;
-  padding: 0 var(--space-2);
+  margin: 12px auto 0;
+  padding: 0 8px;
 }
 
 .inputFooterLeft {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 12px;
 }
 
 .modelIndicator {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: 6px;
   font-size: var(--font-size-2xs);
   font-weight: var(--font-weight-bold);
   color: var(--success);
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-widest);
+  letter-spacing: 0.08em;
 }
 
 .modelDot {
@@ -171,7 +185,7 @@
   font-weight: var(--font-weight-bold);
   color: var(--accent);
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-widest);
+  letter-spacing: 0.08em;
 }
 
 .shortcutHint {
@@ -180,10 +194,10 @@
   color: var(--accent);
   opacity: 0.6;
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-widest);
+  letter-spacing: 0.08em;
   background: var(--accent-muted);
-  padding: 1px var(--space-1);
-  border-radius: var(--radius-xs);
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
 /* ═══ Dropdown (@ mentions + / commands) ═══ */
@@ -196,20 +210,25 @@
   overflow-y: auto;
   background: var(--bg-input);
   border: 1px solid var(--border-ghost);
-  border-radius: var(--radius-lg);
+  border-radius: 8px;
   box-shadow: var(--shadow-md);
-  padding: var(--space-1);
+  padding: 4px;
   z-index: 10;
 }
 
 .dropdownItem {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-2);
-  border-radius: var(--radius-md);
+  gap: 8px;
+  padding: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 100ms;
+}
+
+.dropdownItem .material-symbols-outlined {
+  font-size: 14px;
+  color: var(--text-muted);
 }
 
 .dropdownItem:hover,

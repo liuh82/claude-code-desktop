@@ -229,7 +229,7 @@ function AppContent() {
         )}
 
         {/* Main content area with tabs */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+        <div className="appMainContent">
           <TabBar projectPath={projectPath} />
           <ChatHeader />
           {activeTab ? (
@@ -240,15 +240,7 @@ function AppContent() {
               onRatioChange={handlePaneRatioChange}
             />
           ) : (
-            <div style={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-muted)',
-              fontSize: 'var(--font-size-sm)',
-              opacity: 0.5,
-            }}>
+            <div className="appEmptyState">
               按 ⌘T 新建会话
             </div>
           )}

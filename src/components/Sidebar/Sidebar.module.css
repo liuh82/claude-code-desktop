@@ -1,37 +1,43 @@
-/* ═══ Sidebar — Precision Workspace ═══ */
+/* ═══ Sidebar — 48px icon-only, Stitch design ═══ */
 
 .sidebar {
   width: 48px;
   flex-shrink: 0;
-  background: #f0f4f7;
+  background: var(--bg-elevated);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border-right: 1px solid var(--border-divider);
 }
 
 [data-theme="dark"] .sidebar {
-  background: #201f20;
+  background: var(--bg-secondary);
+  border-right-color: var(--border-divider);
 }
 
-/* Logo area */
+/* Logo — 32px gradient orange + white terminal icon */
 .sidebarLogo {
-  padding: 20px 8px;
+  padding: 12px 8px 16px;
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  justify-content: center;
 }
 
-/* Claude official logo */
 .sidebarLogoImg {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-lg);
+  border-radius: 8px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--brand-orange), #B45309);
+  background: linear-gradient(135deg, var(--brand-orange), var(--brand-orange-hover));
   box-shadow: 0 4px 12px -2px rgba(217, 119, 6, 0.35);
+}
+
+[data-theme="dark"] .sidebarLogoImg {
+  background: linear-gradient(135deg, var(--brand-orange), #e8a83e);
+  box-shadow: 0 4px 12px -2px rgba(255, 185, 95, 0.25);
 }
 
 .sidebarLogoImg .material-symbols-outlined {
@@ -39,15 +45,14 @@
   color: white;
 }
 
-
-
-/* Navigation */
+/* Navigation — centered icons */
 .sidebarNav {
   flex: 1;
-  margin-top: 40px;
+  margin-top: 32px;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding: 0 6px;
 }
 
 .navItem {
@@ -55,39 +60,40 @@
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: 8px 0;
+  padding: 10px 0;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.15s ease-out;
+  transition: all 150ms ease-out;
   border: none;
   background: transparent;
-  border-radius: var(--radius-md);
+  border-radius: 6px;
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
-  text-align: left;
+  text-align: center;
   width: 100%;
+  border-left: 3px solid transparent;
+  position: relative;
 }
 
 .navItem:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-hover-subtle);
 }
 
 [data-theme="dark"] .navItem:hover {
-  color: #adc6ff;
-  background: #2a2a2b;
+  background: var(--bg-tertiary);
 }
 
+/* Active — orange left border + orange bg tint */
 .navItemActive {
-  background: rgba(217, 119, 6, 0.10);
+  background: var(--brand-orange-muted);
   color: var(--brand-orange);
-  border-left: 3px solid var(--brand-orange);
-  font-weight: var(--font-weight-semibold);
+  border-left-color: var(--brand-orange);
 }
 
 [data-theme="dark"] .navItemActive {
   background: rgba(255, 185, 95, 0.10);
   color: #ffb95f;
-  border-left: 3px solid #ffb95f;
+  border-left-color: #ffb95f;
 }
 
 .navItemActive .navIcon {
@@ -101,8 +107,9 @@
 .navIcon {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  transition: color 0.15s;
+  transition: color 150ms ease-out;
   color: var(--text-muted);
 }
 
@@ -111,11 +118,7 @@
   font-size: 20px;
 }
 
-.navLabel {
-  font-weight: var(--font-weight-medium);
-}
-
-/* Model selector */
+/* Model selector — hidden in 48px mode */
 .modelRow {
   display: none;
 }
@@ -125,131 +128,14 @@
   background: var(--bg-input);
   color: var(--text-secondary);
   border: 1px solid var(--border-ghost);
-  border-radius: var(--radius-md);
+  border-radius: 6px;
   padding: 5px 8px;
   font-size: var(--font-size-xs);
   cursor: pointer;
   outline: none;
   font-family: var(--font-mono);
-  transition: border-color 0.15s;
+  transition: border-color 150ms;
 }
-
-.modelSelect:hover {
-  border-color: var(--border);
-}
-
-.modelSelect:focus {
-  border-color: var(--brand-orange);
-  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.06);
-}
-
-/* Session list area */
-.sessionList {
-  flex: 1;
-  overflow-y: auto;
-  padding: var(--space-2) 0;
-}
-
-.sessionEmpty {
-  padding: var(--space-6) var(--space-4);
-  text-align: center;
-  color: var(--text-muted);
-  font-size: var(--font-size-xs);
-}
-
-/* Bottom: user profile card */
-.sidebarFooter {
-  padding: var(--space-4);
-  flex-shrink: 0;
-}
-
-.userCard {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2);
-  border-radius: var(--radius-lg);
-  background: rgba(217, 119, 6, 0.04);
-  border: 1px solid rgba(217, 119, 6, 0.10);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.userCard:hover {
-  border-color: rgba(217, 119, 6, 0.20);
-}
-
-.userAvatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid rgba(217, 119, 6, 0.15);
-  box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.05);
-  flex-shrink: 0;
-  background: var(--bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.userAvatar .material-symbols-outlined {
-  font-size: 20px;
-  color: var(--text-muted);
-}
-
-.userInfo {
-  flex: 1;
-  overflow: hidden;
-}
-
-.userName {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.userPlan {
-  font-size: var(--font-size-2xs);
-  font-weight: var(--font-weight-bold);
-  color: var(--cta);
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-/* Footer action buttons */
-.sidebarActions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: var(--space-2) 0 0;
-  border-top: 1px solid var(--border-divider);
-  margin-top: var(--space-2);
-}
-
-.footerBtn {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
-  transition: all 0.15s;
-}
-
-.footerBtn:hover {
-  background: rgba(217, 119, 6, 0.08);
-  color: var(--brand-orange);
-}
-
 
 /* Bottom actions — theme + settings */
 .sidebarBottom {
@@ -257,12 +143,11 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 0;
+  padding: 0 6px 12px;
   border-top: 1px solid var(--border-divider);
   padding-top: 8px;
-  margin-bottom: 12px;
 }
 
 .sidebarBottom .navItem {
-  padding: 8px 0;
+  padding: 10px 0;
 }

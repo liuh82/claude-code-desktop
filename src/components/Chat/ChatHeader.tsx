@@ -16,18 +16,18 @@ function ChatHeader() {
     <header className={styles.chatHeader}>
       <div className={styles.headerLeft}>
         <div className={styles.pathPill}>
-          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>folder</span>
+          <span className="material-symbols-outlined headerIcon">folder</span>
           <span>{projectPath ? `~/${projectName}` : '~/projects'}</span>
         </div>
         <div className={styles.divider} />
         <div className={styles.modelInfo}>
-          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>model_training</span>
+          <span className="material-symbols-outlined headerIcon">model_training</span>
           <span>{modelLabel}</span>
         </div>
       </div>
       <div className={styles.headerRight}>
         <button className={styles.moreBtn} title="更多选项">
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>more_horiz</span>
+          <span className="material-symbols-outlined moreIcon">more_horiz</span>
         </button>
       </div>
     </header>
