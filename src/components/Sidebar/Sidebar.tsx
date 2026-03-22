@@ -75,7 +75,7 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }
       {/* Claude Logo */}
       <div className={styles.sidebarLogo} style={{ justifyContent: "center" }}>
         <div className={styles.sidebarLogoImg}>
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>terminal</span>
+          <span className="material-symbols-outlined">terminal</span>
         </div>
         
       </div>
@@ -104,7 +104,7 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }
             title={item.label}
           >
             <span className={styles.navIcon}>
-              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{item.icon}</span>
+              <span className="material-symbols-outlined" >{item.icon}</span>
             </span>
           </button>
         ))}
@@ -119,7 +119,7 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }
               title={item.label}
             >
               <span className={styles.navIcon}>
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{item.icon}</span>
+                <span className="material-symbols-outlined" >{item.icon}</span>
               </span>
             </button>
           ))}

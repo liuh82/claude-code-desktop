@@ -1,8 +1,8 @@
 /* ═══ InputArea — Precision Workspace ═══ */
 
 .inputArea {
-  padding: var(--space-6) var(--space-8) var(--space-8);
-  background: transparent;
+  padding: 24px 32px;
+  background: var(--bg-primary);
   flex-shrink: 0;
 }
 
@@ -14,12 +14,12 @@
 
 .inputTextarea {
   width: 100%;
-  min-height: 100px; /* Stitch: py-5 (20px) */
+  min-height: 100px;
   max-height: 200px;
   padding: var(--space-5) var(--space-10);
   background: var(--bg-input);
   border: 2px solid var(--border-ghost);
-  border-radius: var(--radius-xl);
+  border-radius: 16px;
   color: var(--text-primary);
   font-family: var(--font-family);
   font-size: var(--font-size-md);
