@@ -18,7 +18,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
     </div>
   ) : (
     <div className={styles.aiAvatar}>
-      <span className="material-symbols-outlined">smart_toy</span>
+      <img src="/claude-icon-32.png" alt="Claude" />
     </div>
   );
 

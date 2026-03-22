@@ -35,23 +35,22 @@
 .emptyLogo {
   width: 72px;
   height: 72px;
-  border-radius: var(--radius-xl);
-  background: var(--accent-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 32px -4px rgba(0, 91, 192, 0.25);
+  flex-shrink: 0;
 }
 
-.emptyLogo .material-symbols-outlined {
-  color: white;
-  font-size: 36px;
+.emptyLogo img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
 }
 
 .emptyTitle {
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
-  color: var(--accent);
+  color: var(--cta);
   letter-spacing: var(--letter-spacing-tight);
 }
 

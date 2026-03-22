@@ -25,7 +25,7 @@ function ChatView() {
           {messages.length === 0 ? (
             <div className={styles.emptyState}>
               <div className={styles.emptyLogo}>
-                <span className="material-symbols-outlined">smart_toy</span>
+                <img src="/claude-icon-64.png" alt="Claude" />
               </div>
               <div>
                 <div className={styles.emptyTitle}>Claude Code</div>

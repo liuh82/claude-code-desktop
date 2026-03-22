@@ -10,7 +10,7 @@ function TopNav({ projectName }: TopNavProps) {
   return (
     <header className={styles.topNav}>
       <div className={styles.topNavLeft}>
-        <span className={styles.topNavLogo}>Claude Code</span>
+        <img src="/claude-icon-32.png" alt="Claude" className={styles.topNavLogoImg} />
         <nav className={styles.topNavMenus}>
           {MENUS.map((menu) => (
             <button key={menu} className={styles.topNavMenu}>{menu}</button>
@@ -20,17 +20,19 @@ function TopNav({ projectName }: TopNavProps) {
 
       <div className={styles.topNavRight}>
         <div className={styles.topNavProject}>
-          <span className={`material-symbols-outlined ${styles.topNavProjectIcon}`}>folder_open</span>
+          <span className={styles.topNavProjectIcon}>
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>folder_open</span>
+          </span>
           <span className={styles.topNavProjectName} title={projectName}>{projectName}</span>
         </div>
         <div className={styles.topNavActions}>
-          <button className={`${styles.topNavAction} ${styles.topNavActionIndigo}`} title="Project Tree">
+          <button className={`${styles.topNavAction} ${styles.topNavActionCta}`} title="Project Tree">
             <span className="material-symbols-outlined" style={{ fontSize: 18 }}>account_tree</span>
           </button>
-          <button className={`${styles.topNavAction} ${styles.topNavActionEmerald}`} title="Activity">
+          <button className={`${styles.topNavAction} ${styles.topNavActionCta}`} title="Activity">
             <span className="material-symbols-outlined" style={{ fontSize: 18 }}>monitoring</span>
           </button>
-          <button className={`${styles.topNavAction} ${styles.topNavActionAmber}`} title="Split View">
+          <button className={`${styles.topNavAction} ${styles.topNavActionCta}`} title="Split View">
             <span className="material-symbols-outlined" style={{ fontSize: 18 }}>splitscreen</span>
           </button>
         </div>

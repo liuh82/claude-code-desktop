@@ -19,11 +19,11 @@ const CC_BUILTIN_MODELS = [
 ];
 
 const NAV_ITEMS = [
-  { id: 'terminal', icon: 'terminal', label: 'Terminal', color: 'var(--accent)' },
-  { id: 'projects', icon: 'folder_open', label: 'Projects', color: '#6366f1' },
-  { id: 'history', icon: 'history', label: 'History', color: '#f59e0b' },
-  { id: 'settings', icon: 'settings', label: 'Settings', color: '#3b82f6' },
-  { id: 'help', icon: 'help', label: 'Help', color: '#10b981' },
+  { id: 'terminal', icon: 'terminal', label: 'Terminal' },
+  { id: 'projects', icon: 'folder_open', label: 'Projects' },
+  { id: 'history', icon: 'history', label: 'History' },
+  { id: 'settings', icon: 'settings', label: 'Settings' },
+  { id: 'help', icon: 'help', label: 'Help' },
 ] as const;
 
 interface SidebarProps {
@@ -70,9 +70,10 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onClose, onOpenSettings
 
   return (
     <aside className={styles.sidebar} style={style}>
+      {/* Claude Logo */}
       <div className={styles.sidebarLogo}>
-        <div className={styles.sidebarLogoIcon}>
-          <span className="material-symbols-outlined">terminal</span>
+        <div className={styles.sidebarLogoImg}>
+          <img src="/claude-icon-64.png" alt="Claude Code" />
         </div>
         <div className={styles.sidebarLogoText}>
           <span className={styles.sidebarLogoTitle}>Claude Code</span>
@@ -80,6 +81,7 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onClose, onOpenSettings
         </div>
       </div>
 
+      {/* Model selector */}
       <div className={styles.modelRow}>
         <select
           className={styles.modelSelect}
@@ -93,6 +95,7 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onClose, onOpenSettings
         </select>
       </div>
 
+      {/* Navigation */}
       <nav className={styles.sidebarNav}>
         {NAV_ITEMS.map((item) => (
           <button
@@ -100,7 +103,7 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onClose, onOpenSettings
             className={`${styles.navItem} ${activeNav === item.id ? styles.navItemActive : ''}`}
             onClick={() => handleNavClick(item.id)}
           >
-            <span className={styles.navIcon} style={{ color: activeNav === item.id ? item.color : undefined }}>
+            <span className={styles.navIcon}>
               <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{item.icon}</span>
             </span>
             <span className={styles.navLabel}>{item.label}</span>
@@ -108,6 +111,7 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onClose, onOpenSettings
         ))}
       </nav>
 
+      {/* Bottom: User Profile */}
       <div className={styles.sidebarFooter}>
         <div className={styles.userCard}>
           <div className={styles.userAvatar}>
