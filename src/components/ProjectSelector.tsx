@@ -61,7 +61,7 @@ export function ProjectSelector({ onProjectOpen }: ProjectSelectorProps) {
       <div className={styles.container}>
         <div className={styles.header}>
           <div className={styles.logoArea}>
-            <img src="/claude-icon-64.png" alt="Claude" />
+            <span className="material-symbols-outlined">terminal</span>
           </div>
           <div className={styles.logo}>Claude Code</div>
           <div className={styles.tagline}>AI 驱动的终端工作空间</div>

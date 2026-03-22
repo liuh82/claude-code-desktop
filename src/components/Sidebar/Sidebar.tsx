@@ -69,14 +69,11 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }
   return (
     <aside className={styles.sidebar} style={style}>
       {/* Claude Logo */}
-      <div className={styles.sidebarLogo}>
+      <div className={styles.sidebarLogo} style={{ justifyContent: "center" }}>
         <div className={styles.sidebarLogoImg}>
-          <span className="material-symbols-outlined">terminal</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 28 }}>terminal</span>
         </div>
-        <div className={styles.sidebarLogoText}>
-          <span className={styles.sidebarLogoTitle}>Claude Code</span>
-          <span className={styles.sidebarLogoSubtitle}>CLI Workspace</span>
-        </div>
+        
       </div>
 
       {/* Model selector */}
@@ -100,11 +97,11 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, style }
             key={item.id}
             className={`${styles.navItem} ${activeNav === item.id ? styles.navItemActive : ''}`}
             onClick={() => handleNavClick(item.id)}
+            title={item.label}
           >
             <span className={styles.navIcon}>
-              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{item.icon}</span>
+              <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{item.icon}</span>
             </span>
-            <span className={styles.navLabel}>{item.label}</span>
           </button>
         ))}
       </nav>

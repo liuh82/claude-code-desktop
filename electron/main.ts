@@ -105,10 +105,10 @@ function initDatabase() {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1024,
-    height: 720,
-    minWidth: 640,
-    minHeight: 480,
+    width: 1280,
+    height: 800,
+    minWidth: 900,
+    minHeight: 600,
     title: 'CCDesk',
     backgroundColor: '#1e1e1e',
     webPreferences: {

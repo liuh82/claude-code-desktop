@@ -1,7 +1,7 @@
 /* ═══ Sidebar — Precision Workspace ═══ */
 
 .sidebar {
-  width: 100%;
+  width: 56px;
   flex-shrink: 0;
   background: #f0f4f7;
   display: flex;
@@ -23,18 +23,17 @@
 
 /* Claude official logo */
 .sidebarLogoImg {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.sidebarLogoImg img {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
+.sidebarLogoImg .material-symbols-outlined {
+  font-size: 28px;
+  color: var(--brand-orange);
 }
 
 .sidebarLogoText {
@@ -72,17 +71,15 @@
 .navItem {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: 10px var(--space-4);
+  justify-content: center;
+  gap: 0;
+  padding: 12px 0;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s ease-out;
-  border-left: 3px solid transparent;
+  border: none;
   background: transparent;
-  border-right: none;
-  border-top: none;
-  border-bottom: none;
-  border-radius: 0;
+  border-radius: var(--radius-md);
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
   text-align: left;
@@ -99,24 +96,22 @@
 }
 
 .navItemActive {
-  background: rgba(255, 255, 255, 0.60);
-  color: #005bc0;
-  border-left-color: #005bc0;
+  background: rgba(217, 119, 6, 0.12);
+  color: var(--brand-orange);
   font-weight: var(--font-weight-semibold);
 }
 
 [data-theme="dark"] .navItemActive {
-  background: #2a2a2b;
-  color: #adc6ff;
-  border-left-color: #adc6ff;
+  background: rgba(255, 185, 95, 0.12);
+  color: #ffb95f;
 }
 
 .navItemActive .navIcon {
-  color: #005bc0;
+  color: var(--brand-orange);
 }
 
 [data-theme="dark"] .navItemActive .navIcon {
-  color: #adc6ff;
+  color: #ffb95f;
 }
 
 .navIcon {
@@ -133,8 +128,7 @@
 
 /* Model selector */
 .modelRow {
-  padding: 0 var(--space-5);
-  margin-top: var(--space-3);
+  display: none;
 }
 
 .modelSelect {
