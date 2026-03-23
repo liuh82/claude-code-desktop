@@ -325,14 +325,32 @@
   transform: scale(0.95);
 }
 
-/* Bottom hint text — centered */
+/* Bottom hint text — centered, 2-row layout */
 .paneInputHint {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   margin-top: 12px;
-  font-size: 10px;
+  padding: 8px 12px;
+  font-size: 11px;
+  line-height: 1.6;
   color: var(--text-muted);
   opacity: 0.50;
   letter-spacing: -0.01em;
+}
+
+.paneInputHintRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paneInputHintDot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-muted);
 }
 
 /* ═══ @ Mention dropdown — Stitch file_mention_light design ═══ */

@@ -269,6 +269,7 @@ function AppContent() {
         isOpen={historyOpen}
         onClose={() => setHistoryOpen(false)}
         onSelectSession={(id) => console.log('Load session:', id)}
+        projectPath={projectPath}
       />
       <SettingsDialog isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>

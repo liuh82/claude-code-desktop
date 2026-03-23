@@ -605,8 +605,85 @@ function registerIpcHandlers() {
   ipcMain.handle('list-sessions', (_event, { projectId }: { projectId: string }) => {
     if (!db) return [];
     return db.prepare(
-      'SELECT id, project_path as projectPath, title, status, created_at as createdAt, updated_at as updatedAt FROM sessions ORDER BY updated_at DESC'
+      'SELECT id, project_path as projectPath, title, status, created_at as createdAt, updated_at as updatedAt, message_count as messageCount FROM sessions ORDER BY updated_at DESC'
     ).all();
+  });
+
+  // ── List Claude CLI sessions from ~/.claude/projects/ ──
+  ipcMain.handle('list-claude-sessions', async (_event, { projectPath }: { projectPath: string }) => {
+    const home = process.env.HOME || process.env.USERPROFILE || '';
+    if (!home || !projectPath) return [];
+
+    // Encode project path: replace / and non-alphanumeric chars with -
+    const encoded = projectPath.replace(/[^a-zA-Z0-9]/g, '-');
+    const sessionsDir = path.join(home, '.claude', 'projects', encoded);
+
+    if (!fs.existsSync(sessionsDir)) return [];
+
+    try {
+      const entries = fs.readdirSync(sessionsDir);
+      const sessions: Array<{
+        sessionId: string;
+        preview: string;
+        lastUsed: number;
+        messageCount: number;
+      }> = [];
+
+      for (const entry of entries) {
+        // Only process .jsonl files (skip directories)
+        if (!entry.endsWith('.jsonl')) continue;
+
+        const filePath = path.join(sessionsDir, entry);
+        const stat = fs.statSync(filePath);
+        if (!stat.isFile()) continue;
+
+        const sessionId = entry.replace(/\.jsonl$/, '');
+
+        // Read first few lines to extract session info
+        let preview = '';
+        let messageCount = 0;
+
+        try {
+          const content = fs.readFileSync(filePath, 'utf-8');
+          const lines = content.split('\n').filter(l => l.trim());
+          messageCount = lines.length;
+
+          // Find first user message for preview
+          for (const line of lines) {
+            try {
+              const parsed = JSON.parse(line);
+              if (parsed.type === 'user' && parsed.message?.content) {
+                const text = typeof parsed.message.content === 'string'
+                  ? parsed.message.content
+                  : Array.isArray(parsed.message.content)
+                    ? parsed.message.content
+                        .filter((b: any) => b.type === 'text')
+                        .map((b: any) => b.text)
+                        .join(' ')
+                    : '';
+                if (text) {
+                  preview = text.slice(0, 120).replace(/\n/g, ' ');
+                  break;
+                }
+              }
+            } catch {}
+          }
+        } catch {}
+
+        sessions.push({
+          sessionId,
+          preview,
+          lastUsed: stat.mtimeMs,
+          messageCount,
+        });
+      }
+
+      // Sort by most recently modified
+      sessions.sort((a, b) => b.lastUsed - a.lastUsed);
+      return sessions;
+    } catch {
+      return [];
+    }
   });
 
   // ── Projects ──

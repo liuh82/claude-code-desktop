@@ -6,42 +6,43 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSelectSession: (sessionId: string) => void;
+  projectPath: string;
 }
 
-interface Session {
-  id: string;
-  title: string;
-  updatedAt: string;
+interface ClaudeSession {
+  sessionId: string;
+  preview: string;
+  lastUsed: number;
   messageCount: number;
 }
 
-export function HistoryDialog({ isOpen, onClose, onSelectSession }: Props) {
-  const [sessions, setSessions] = useState<Session[]>([]);
+function formatRelativeTime(ms: number): string {
+  const diff = Date.now() - ms;
+  if (diff < 60000) return '刚刚';
+  if (diff < 3600000) return `${Math.floor(diff / 60000)} 分钟前`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`;
+  if (diff < 604800000) return `${Math.floor(diff / 86400000)} 天前`;
+  const d = new Date(ms);
+  return d.toLocaleDateString('zh-CN');
+}
+
+export function HistoryDialog({ isOpen, onClose, onSelectSession, projectPath }: Props) {
+  const [sessions, setSessions] = useState<ClaudeSession[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
     setLoading(true);
-    claudeApi.listSessions({ projectId: 'default' }).then((data: any) => {
-      setSessions(data as Session[]);
+    claudeApi.listClaudeSessions({ projectPath }).then((data) => {
+      setSessions(data);
       setLoading(false);
-    }).catch(() => setLoading(false));
-  }, [isOpen]);
+    }).catch(() => {
+      setSessions([]);
+      setLoading(false);
+    });
+  }, [isOpen, projectPath]);
 
   if (!isOpen) return null;
-
-  const formatDate = (iso: string) => {
-    try {
-      const d = new Date(iso);
-      const now = new Date();
-      const diff = now.getTime() - d.getTime();
-      if (diff < 60000) return '刚刚';
-      if (diff < 3600000) return `${Math.floor(diff / 60000)} 分钟前`;
-      if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`;
-      if (diff < 604800000) return `${Math.floor(diff / 86400000)} 天前`;
-      return d.toLocaleDateString('zh-CN');
-    } catch { return ''; }
-  };
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -59,16 +60,18 @@ export function HistoryDialog({ isOpen, onClose, onSelectSession }: Props) {
           )}
           {!loading && sessions.map((s) => (
             <button
-              key={s.id}
+              key={s.sessionId}
               className={styles.sessionItem}
-              onClick={() => { onSelectSession(s.id); onClose(); }}
+              onClick={() => { onSelectSession(s.sessionId); onClose(); }}
             >
               <div className={styles.sessionLeft}>
                 <span className="material-symbols-outlined" style={{ fontSize: 16, marginRight: 8, opacity: 0.5 }}>chat</span>
                 <div>
-                  <div className={styles.sessionTitle}>{s.title}</div>
+                  <div className={styles.sessionTitle}>
+                    {s.preview || '空会话'}
+                  </div>
                   <div className={styles.sessionMeta}>
-                    {formatDate(s.updatedAt)} · {s.messageCount} 条消息
+                    {formatRelativeTime(s.lastUsed)} · {s.messageCount} 条消息
                   </div>
                 </div>
               </div>

@@ -17,6 +17,7 @@ interface ElectronAPI {
   sendInput: (args: { sessionId: string; input: string }) => Promise<void>;
   closeSession: (args: { sessionId: string }) => Promise<void>;
   listSessions: (args: { projectId: string }) => Promise<unknown[]>;
+  listClaudeSessions: (args: { projectPath: string }) => Promise<Array<{ sessionId: string; preview: string; lastUsed: number; messageCount: number }>>;
   openProject: (args: { projectPath: string }) => Promise<{ id: string; name: string; path: string; favorite: boolean; lastOpened: number; sessionCount: number }>;
   listRecentProjects: () => Promise<unknown[]>;
   openDirectoryDialog: () => Promise<string | null>;
@@ -53,6 +54,7 @@ export const claudeApi: ElectronAPI = {
   sendInput: (a) => getApi()?.sendInput(a) ?? Promise.resolve(),
   closeSession: (a) => getApi()?.closeSession(a) ?? Promise.resolve(),
   listSessions: (a) => getApi()?.listSessions(a) ?? Promise.resolve([]),
+  listClaudeSessions: (a) => getApi()?.listClaudeSessions(a) ?? Promise.resolve([]),
   openProject: (a) => getApi()?.openProject(a) ?? Promise.resolve({ id: '1', name: 'Mock', path: a.projectPath, favorite: false, lastOpened: Date.now(), sessionCount: 0 }),
   listRecentProjects: () => getApi()?.listRecentProjects() ?? Promise.resolve([]),
   openDirectoryDialog: () => getApi()?.openDirectoryDialog() ?? Promise.resolve(null),

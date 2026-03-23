@@ -102,6 +102,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const splitPane = useTabStore((s) => s.splitPane);
   const closePane = useTabStore((s) => s.closePane);
   const activeProject = useProjectStore((s) => s.activeProject);
+  const paneProjectPath = useTabStore((s) => s.projectPaths.get(paneId)) ?? activeProject?.path ?? '';
   const projectPath = activeProject?.path ?? '';
 
   const paneState = useChatStore((s) => s.panes.get(paneId));
@@ -213,10 +214,10 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   // ── Initialize / cleanup pane ──
 
   useEffect(() => {
-    if (projectPath) {
-      useChatStore.getState().initPane(paneId, projectPath);
+    if (paneProjectPath) {
+      useChatStore.getState().initPane(paneId, paneProjectPath);
     }
-  }, [paneId, projectPath]);
+  }, [paneId, paneProjectPath]);
 
   useEffect(() => {
     return () => {
@@ -499,6 +500,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const statusClass = `paneStatus${status.charAt(0).toUpperCase()}${status.slice(1)}`;
   const isSinglePane = (tab?.panes.size ?? 0) <= 1;
   const canSend = text.trim().length > 0 && !isGenerating;
+  const shortProjectName = paneProjectPath ? paneProjectPath.split('/').filter(Boolean).pop() || '' : '';
 
   return (
     <div
@@ -509,7 +511,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       {!isSinglePane && <div className={styles.paneHeader}>
         <div className={styles.paneHeaderLeft}>
           <span className={`${styles.paneStatus} ${styles[statusClass]}`} />
-          <span className={styles.paneTitle}>{pane?.title || 'Terminal'}</span>
+          <span className={styles.paneTitle}>{shortProjectName || pane?.title || 'Terminal'}</span>
         </div>
         <div className={styles.paneHeaderRight}>
           <button
@@ -692,15 +694,18 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               </div>
             </div>
           </div>
-          {/* Bottom hint — model + tokens */}
+          {/* Bottom hint — 2-row layout */}
           <div className={styles.paneInputHint}>
-            <span>{currentModel.replace('claude-', '').replace(/-\d{8}$/, '')}</span>
-            <span>·</span>
-            <span>{editMode === 'plan' ? 'Plan' : editMode === 'auto' ? 'Auto Edit' : 'Confirm Edit'}</span>
-            <span>·</span>
-            <span>{tokenUsage.input > 1000 ? Math.round(tokenUsage.input / 1000) + 'K' : tokenUsage.input} in / {tokenUsage.output > 1000 ? Math.round(tokenUsage.output / 1000) + 'K' : tokenUsage.output} out</span>
-            <span>·</span>
-            <span>{200000 - tokenUsage.input - tokenUsage.output > 0 ? Math.round((200000 - tokenUsage.input - tokenUsage.output) / 1000) + 'K' : 0} remaining</span>
+            <div className={styles.paneInputHintRow}>
+              <span>{currentModel.replace('claude-', '').replace(/-\d{8}$/, '')}</span>
+              <span className={styles.paneInputHintDot} />
+              <span>{editMode === 'plan' ? 'Plan' : editMode === 'auto' ? 'Auto Edit' : 'Confirm Edit'}</span>
+            </div>
+            <div className={styles.paneInputHintRow}>
+              <span>{tokenUsage.input > 1000 ? Math.round(tokenUsage.input / 1000) + 'K' : tokenUsage.input} in / {tokenUsage.output > 1000 ? Math.round(tokenUsage.output / 1000) + 'K' : tokenUsage.output} out</span>
+              <span className={styles.paneInputHintDot} />
+              <span>{200000 - tokenUsage.input - tokenUsage.output > 0 ? Math.round((200000 - tokenUsage.input - tokenUsage.output) / 1000) + 'K' : 0} remaining</span>
+            </div>
           </div>
         </div>
       </div>

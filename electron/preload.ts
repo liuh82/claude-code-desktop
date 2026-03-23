@@ -30,6 +30,8 @@ const api = {
     ipcRenderer.invoke('close-session', args),
   listSessions: (args: { projectId: string }) =>
     ipcRenderer.invoke('list-sessions', args),
+  listClaudeSessions: (args: { projectPath: string }) =>
+    ipcRenderer.invoke('list-claude-sessions', args),
 
   // Projects
   openProject: (args: { projectPath: string }) =>

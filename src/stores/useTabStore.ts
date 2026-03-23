@@ -17,6 +17,7 @@ interface TabState {
   tabs: Map<string, Tab>;
   activeTabId: string | null;
   tabOrder: string[]; /* ordered tab IDs */
+  projectPaths: Map<string, string>; /* paneId → projectPath */
 
   // Actions
   createTab: (projectPath: string, title?: string) => string;
@@ -30,6 +31,7 @@ interface TabState {
   setActivePane: (tabId: string, paneId: string) => void;
   setPaneStatus: (tabId: string, paneId: string, status: Pane['status']) => void;
   updatePaneRatio: (tabId: string, paneId: string, ratio: number) => void;
+  setPaneProject: (paneId: string, projectPath: string) => void;
   getActiveTab: () => Tab | null;
 }
 
@@ -74,6 +76,7 @@ export const useTabStore = create<TabState>()((set, get) => ({
   tabs: new Map(),
   activeTabId: null,
   tabOrder: [],
+  projectPaths: new Map(),
 
   createTab: (projectPath: string, title?: string) => {
     const state = get();
@@ -88,13 +91,17 @@ export const useTabStore = create<TabState>()((set, get) => ({
     newTabs.set(tabId, tab);
     const newOrder = [...state.tabOrder, tabId];
 
+    // Store project path for the initial pane
+    const newProjectPaths = new Map(state.projectPaths);
+    newProjectPaths.set(tab.activePaneId, projectPath);
+
     // Enforce max tabs
     while (newOrder.length > MAX_TABS) {
       const oldest = newOrder.shift()!;
       newTabs.delete(oldest);
     }
 
-    set({ tabs: newTabs, activeTabId: tabId, tabOrder: newOrder });
+    set({ tabs: newTabs, activeTabId: tabId, tabOrder: newOrder, projectPaths: newProjectPaths });
     return tabId;
   },
 
@@ -186,7 +193,12 @@ export const useTabStore = create<TabState>()((set, get) => ({
       activePaneId: newPaneId,
     });
 
-    set({ tabs: newTabs });
+    // Copy projectPath from source pane to new pane
+    const newProjectPaths = new Map(state.projectPaths);
+    const sourcePath = newProjectPaths.get(paneId) || tab.projectPath;
+    newProjectPaths.set(newPaneId, sourcePath);
+
+    set({ tabs: newTabs, projectPaths: newProjectPaths });
   },
 
   closePane: (tabId: string, paneId: string) => {
@@ -216,7 +228,11 @@ export const useTabStore = create<TabState>()((set, get) => ({
       activePaneId: newActiveId,
     });
 
-    set({ tabs: newTabs });
+    // Clean up projectPath for closed pane
+    const newProjectPaths = new Map(state.projectPaths);
+    newProjectPaths.delete(paneId);
+
+    set({ tabs: newTabs, projectPaths: newProjectPaths });
   },
 
   setActivePane: (tabId: string, paneId: string) => {
@@ -249,6 +265,12 @@ export const useTabStore = create<TabState>()((set, get) => ({
     const newTabs = new Map(state.tabs);
     newTabs.set(tabId, { ...tab, layout: newLayout });
     set({ tabs: newTabs });
+  },
+
+  setPaneProject: (paneId: string, projectPath: string) => {
+    const newProjectPaths = new Map(get().projectPaths);
+    newProjectPaths.set(paneId, projectPath);
+    set({ projectPaths: newProjectPaths });
   },
 
   getActiveTab: () => {
