@@ -27,6 +27,7 @@ const NAV_ITEMS = [
 
 const BOTTOM_ITEMS = [
   { id: 'settings', icon: 'settings', label: '设置' },
+  { id: 'theme', icon: 'palette', label: '皮肤切换' },
 ] as const;
 
 interface SidebarProps {
@@ -37,7 +38,7 @@ interface SidebarProps {
   onToggleTheme: () => void;
 }
 
-function Sidebar({ projectPath: _projectPath, onNewChat: _onNewChat, onOpenSettings, style }: SidebarProps & { style?: React.CSSProperties }) {
+function Sidebar({ projectPath: _projectPath, onNewChat: _onNewChat, onOpenSettings, onToggleTheme, style }: SidebarProps & { style?: React.CSSProperties }) {
   const { settings, updateSetting } = useSettingsStore();
   const currentModel = useChatStore((s) => s.currentModel) || settings.defaultModel;
   const [activeNav] = useState<string>('editor');
@@ -67,7 +68,8 @@ function Sidebar({ projectPath: _projectPath, onNewChat: _onNewChat, onOpenSetti
 
   const handleNavClick = useCallback((id: string) => {
     if (id === 'settings') { onOpenSettings(); return; }
-  }, [onOpenSettings]);
+    if (id === 'theme') { onToggleTheme(); return; }
+  }, [onOpenSettings, onToggleTheme]);
 
   return (
     <aside className={styles.sidebar} style={style}>
@@ -121,9 +123,6 @@ function Sidebar({ projectPath: _projectPath, onNewChat: _onNewChat, onOpenSetti
               </span>
             </button>
           ))}
-          <div className={styles.userAvatar}>
-            <span className="material-symbols-outlined">person</span>
-          </div>
         </div>
     </aside>
   );

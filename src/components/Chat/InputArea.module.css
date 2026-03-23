@@ -16,9 +16,9 @@
   margin: 0 auto;
   background: var(--bg-input);
   border: 1px solid rgba(169, 180, 185, 0.30);
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: var(--shadow-sm);
-  padding: 12px;
+  padding: 8px;
   transition: border-color 150ms, box-shadow 150ms;
 }
 
@@ -37,7 +37,7 @@
   width: 100%;
   min-height: 44px !important;
   max-height: 200px;
-  padding: 8px 8px;
+  padding: 8px 4px;
   background: transparent;
   border: none;
   border-radius: 0;

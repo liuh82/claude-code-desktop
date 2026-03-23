@@ -2,7 +2,6 @@ import { useRef, useEffect, useCallback } from 'react';
 import { useChatStore } from '@/stores/useChatStore';
 import { MessageBubble } from './MessageBubble';
 import { InputArea } from './InputArea';
-import { StatusBar } from './StatusBar';
 import styles from './ChatView.module.css';
 
 function ChatView() {
@@ -56,7 +55,6 @@ function ChatView() {
           <div ref={bottomRef} />
         </div>
       </div>
-      <StatusBar />
       <InputArea />
     </div>
   );
