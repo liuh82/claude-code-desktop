@@ -5,8 +5,8 @@ import styles from './ChatHeader.module.css';
 
 function ChatHeader() {
   const activeProject = useProjectStore((s) => s.activeProject);
-  const currentModel = useChatStore((s) => s.currentModel);
   const { settings } = useSettingsStore();
+  const currentModel = useChatStore((s) => s.currentModel) || settings.defaultModel;
   const projectPath = activeProject?.path ?? '';
   const projectName = activeProject?.name || projectPath.split('/').pop() || '';
   const displayModel = currentModel || settings.defaultModel || 'claude-sonnet-4-6';

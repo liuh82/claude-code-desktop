@@ -1,14 +1,14 @@
 import { create } from 'zustand';
 import type { ChatMessage, ToolCall, FileNode, DiffFile, TokenUsage } from '@/types/chat';
 import { claudeApi, isElectron } from '@/lib/claude-api';
-import { parseClaudeLine, extractTokenUsage, extractModel } from '@/lib/claude-parser';
+import { parseClaudeLine, extractModel } from '@/lib/claude-parser';
 import type { ParsedAssistantMessage, ParsedResult } from '@/lib/claude-parser';
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-// ── Mock data (used in browser only) ──
+// ── Mock data (browser only) ──
 
 const MOCK_RESPONSES = [
   `我来帮你处理这个。先看一下当前的代码结构。
@@ -62,60 +62,127 @@ const MOCK_FILE_TREE: FileNode[] = [
   },
 ];
 
-// ── Real Claude session state ──
+// ── Per-pane state ──
 
-let activeSessionId: string | null = null;
+interface PaneState {
+  messages: ChatMessage[];
+  isGenerating: boolean;
+  tokenUsage: TokenUsage;
+  currentModel: string;
+  sessionId: string | null;
+}
+
+function emptyPaneState(): PaneState {
+  return {
+    messages: [],
+    isGenerating: false,
+    tokenUsage: { input: 0, output: 0 },
+    currentModel: '',
+    sessionId: null,
+  };
+}
+
+// ── Global session state ──
+
+let listenersStarted = false;
+// Map paneId → per-pane stream state
+const paneStreamingState = new Map<string, {
+  assistantId: string | null;
+  currentModel: string;
+}>();
+// Map sessionId → paneId (for IPC routing)
+const sessionIdToPaneId = new Map<string, string>();
+
+// Global IPC cleanup
 let cleanupFns: Array<() => void> = [];
-let currentAssistantId: string | null = null;
-let currentModel = '';
 
 function startListening() {
+  if (listenersStarted) return;
+  listenersStarted = true;
   stopListening();
-  const unsubOutput = claudeApi.onClaudeOutput((line: string, _sessionId: string) => {
-    handleClaudeOutput(line);
+
+  const unsubOutput = claudeApi.onClaudeOutput((line: string, sessionId: string) => {
+    handleClaudeOutput(line, sessionId);
   });
   const unsubStderr = claudeApi.onClaudeStderr((data: string) => {
     console.warn('[CCDesk stderr]', data);
   });
-  const unsubExit = claudeApi.onClaudeExit((_info) => {
-    // Process exited — finalize any streaming message
-    finalizeAssistantMessage();
-    useChatStore.setState({ isGenerating: false });
+  const unsubExit = claudeApi.onClaudeExit((info) => {
+    const paneId = sessionIdToPaneId.get(info.sessionId);
+    if (paneId) {
+      finalizeAssistantForPane(paneId);
+      useChatStore.setState((s) => {
+        const next = new Map(s.panes);
+        const pane = next.get(paneId);
+        if (pane) next.set(paneId, { ...pane, isGenerating: false });
+        return { panes: next };
+      });
+    }
   });
   const unsubError = claudeApi.onClaudeError((info) => {
+    const paneId = sessionIdToPaneId.get(info.sessionId);
+    if (!paneId) return;
     console.error('[CCDesk error]', info);
-    finalizeAssistantMessage();
-    // Add error as a system message
-    const errorMsg: ChatMessage = {
-      id: generateId(),
-      role: 'assistant',
-      content: `⚠️ 错误：${info.error}`,
-      timestamp: Date.now(),
-    };
-    useChatStore.setState((s) => ({
-      isGenerating: false,
-      messages: [...s.messages, errorMsg],
-    }));
+    finalizeAssistantForPane(paneId);
+    useChatStore.setState((s) => {
+      const next = new Map(s.panes);
+      const pane = next.get(paneId);
+      if (!pane) return s;
+      const errorMsg: ChatMessage = {
+        id: generateId(),
+        role: 'assistant',
+        content: `⚠️ 错误：${info.error}`,
+        timestamp: Date.now(),
+      };
+      next.set(paneId, { ...pane, messages: [...pane.messages, errorMsg], isGenerating: false });
+      return { panes: next };
+    });
   });
+
   cleanupFns = [unsubOutput, unsubStderr, unsubExit, unsubError];
 }
 
 function stopListening() {
   cleanupFns.forEach(fn => fn());
   cleanupFns = [];
+  listenersStarted = false;
 }
 
-function handleClaudeOutput(line: string) {
+function finalizeAssistantForPane(paneId: string) {
+  const streaming = paneStreamingState.get(paneId);
+  if (!streaming?.assistantId) return;
+
+  useChatStore.setState((s) => {
+    const pane = s.panes.get(paneId);
+    if (!pane) return s;
+    return {
+      panes: new Map(s.panes).set(paneId, {
+        ...pane,
+        messages: pane.messages.map(m =>
+          m.id === streaming.assistantId
+            ? { ...m, isStreaming: false }
+            : m
+        ),
+      }),
+    };
+  });
+  paneStreamingState.set(paneId, { assistantId: null, currentModel: streaming.currentModel });
+}
+
+function handleClaudeOutput(line: string, sessionId: string) {
+  const paneId = sessionIdToPaneId.get(sessionId);
+  if (!paneId) return;
+
   const parsed = parseClaudeLine(line);
   if (!parsed) return;
 
-  // Skip user messages (tool_result) — only track diffs
-  if (parsed.type === "user") {
+  // User/tool results — track diffs only
+  if (parsed.type === 'user') {
     const tr = (parsed as any).tool_use_result;
     if (tr && tr.filePath) {
       const state = useChatStore.getState();
       const existingIdx = state.diffFiles.findIndex((d: any) => d.filePath === tr.filePath);
-      const status = tr.type === "create" ? "added" : tr.type === "delete" ? "deleted" : "modified";
+      const status = tr.type === 'create' ? 'added' : tr.type === 'delete' ? 'deleted' : 'modified';
       const diffFile: any = { filePath: tr.filePath, status, hunks: [] };
       if (tr.structuredPatch && tr.structuredPatch.length > 0) {
         diffFile.hunks = tr.structuredPatch.map((hunk: any) => ({
@@ -135,63 +202,65 @@ function handleClaudeOutput(line: string) {
     return;
   }
 
-  
-
-  // System init — extract model info
+  // System init — extract model
   if (parsed.type === 'system') {
     const model = extractModel(parsed);
     if (model) {
-      currentModel = model;
-      useChatStore.setState({ currentModel: model });
+      useChatStore.setState((s) => {
+        const next = new Map(s.panes);
+        const pane = next.get(paneId);
+        if (pane) next.set(paneId, { ...pane, currentModel: model });
+        return { panes: next };
+      });
     }
     return;
   }
 
-  // Assistant message — accumulate text and tool calls
+  // Assistant — accumulate into streaming message
   if (parsed.type === 'assistant' && parsed.message) {
     const msg = parsed as ParsedAssistantMessage;
 
-    // Update model if present
     if (msg.message.model) {
-      currentModel = msg.message.model;
-      useChatStore.setState({ currentModel: msg.message.model });
-    }
-
-    // Update token usage if available in intermediate message
-    if (msg.message.usage) {
-      useChatStore.setState({
-        tokenUsage: {
-          input: msg.message.usage.input_tokens,
-          output: msg.message.usage.output_tokens,
-        },
+      useChatStore.setState((s) => {
+        const next = new Map(s.panes);
+        const pane = next.get(paneId);
+        if (pane) next.set(paneId, { ...pane, currentModel: msg.message.model || pane.currentModel });
+        return { panes: next };
       });
     }
 
     for (const block of msg.message.content) {
       if (block.type === 'text' && block.text) {
-        if (!currentAssistantId) {
-          currentAssistantId = generateId();
+        useChatStore.setState((s) => {
+          const next = new Map(s.panes);
+          const pane = next.get(paneId);
+          if (!pane || !pane.isGenerating) return s;
+
+          const streaming = paneStreamingState.get(paneId);
+          const assistantId = streaming?.assistantId || generateId();
           const assistantMsg: ChatMessage = {
-            id: currentAssistantId,
+            id: assistantId,
             role: 'assistant',
             content: block.text,
             toolCalls: [],
             timestamp: Date.now(),
             isStreaming: true,
-            model: currentModel || undefined,
+            model: pane.currentModel || undefined,
           };
-          useChatStore.setState({
-            messages: [...useChatStore.getState().messages, assistantMsg],
-          });
-        } else {
-          useChatStore.setState({
-            messages: useChatStore.getState().messages.map(m =>
-              m.id === currentAssistantId
-                ? { ...m, content: m.content + block.text }
-                : m
-            ),
-          });
-        }
+
+          if (!streaming?.assistantId) {
+            next.set(paneId, { ...pane, messages: [...pane.messages, assistantMsg] });
+            paneStreamingState.set(paneId, { assistantId, currentModel: pane.currentModel });
+          } else {
+            next.set(paneId, {
+              ...pane,
+              messages: pane.messages.map(m =>
+                m.id === assistantId ? { ...m, content: m.content + block.text } : m
+              ),
+            });
+          }
+          return { panes: next };
+        });
       } else if (block.type === 'tool_use') {
         const toolCall: ToolCall = {
           id: block.id,
@@ -200,137 +269,182 @@ function handleClaudeOutput(line: string) {
           input: block.input,
         };
 
-        if (!currentAssistantId) {
-          currentAssistantId = generateId();
-          const assistantMsg: ChatMessage = {
-            id: currentAssistantId,
-            role: 'assistant',
-            content: '',
-            toolCalls: [toolCall],
-            timestamp: Date.now(),
-            isStreaming: true,
-            model: currentModel || undefined,
-          };
-          useChatStore.setState({
-            messages: [...useChatStore.getState().messages, assistantMsg],
-          });
-        } else {
-          useChatStore.setState({
-            messages: useChatStore.getState().messages.map(m =>
-              m.id === currentAssistantId
-                ? { ...m, toolCalls: [...(m.toolCalls || []), toolCall] }
-                : m
-            ),
-          });
-        }
+        useChatStore.setState((s) => {
+          const next = new Map(s.panes);
+          const pane = next.get(paneId);
+          if (!pane || !pane.isGenerating) return s;
+
+          const streaming = paneStreamingState.get(paneId);
+          const assistantId = streaming?.assistantId || generateId();
+
+          if (!streaming?.assistantId) {
+            const assistantMsg: ChatMessage = {
+              id: assistantId,
+              role: 'assistant',
+              content: '',
+              toolCalls: [toolCall],
+              timestamp: Date.now(),
+              isStreaming: true,
+              model: pane.currentModel || undefined,
+            };
+            next.set(paneId, { ...pane, messages: [...pane.messages, assistantMsg] });
+            paneStreamingState.set(paneId, { assistantId, currentModel: pane.currentModel });
+          } else {
+            next.set(paneId, {
+              ...pane,
+              messages: pane.messages.map(m =>
+                m.id === assistantId
+                  ? { ...m, toolCalls: [...(m.toolCalls || []), toolCall] }
+                  : m
+              ),
+            });
+          }
+          return { panes: next };
+        });
       }
     }
 
-    // If stop_reason present, finalize
     if (msg.message.stop_reason) {
-      finalizeAssistantMessage();
+      finalizeAssistantForPane(paneId);
     }
     return;
   }
 
-  // Final result — finalize and update token usage
+  // Result — finalize
   if (parsed.type === 'result') {
     const result = parsed as ParsedResult;
-    // Note: result.result is a duplicate of the already-streamed assistant content
-    // Only use it if assistant content is empty (safety fallback)
-
-    // Update token usage
-    const usage = extractTokenUsage(result);
-    if (usage) {
-      const state = useChatStore.getState();
-      useChatStore.setState({
-        tokenUsage: {
-          input: state.tokenUsage.input + usage.input,
-          output: state.tokenUsage.output + usage.output,
-        },
+    if (result.usage) {
+      useChatStore.setState((s) => {
+        const next = new Map(s.panes);
+        const pane = next.get(paneId);
+        if (pane && pane.isGenerating) {
+          next.set(paneId, {
+            ...pane,
+            tokenUsage: {
+              input: pane.tokenUsage.input + (result.usage.input_tokens || 0),
+              output: pane.tokenUsage.output + (result.usage.output_tokens || 0),
+            },
+          });
+        }
+        return { panes: next };
       });
     }
-
-    finalizeAssistantMessage();
-    useChatStore.setState({ isGenerating: false });
+    finalizeAssistantForPane(paneId);
+    useChatStore.setState((s) => {
+      const next = new Map(s.panes);
+      const pane = next.get(paneId);
+      if (pane) next.set(paneId, { ...pane, isGenerating: false });
+      return { panes: next };
+    });
     return;
   }
-}
-
-function finalizeAssistantMessage() {
-  if (!currentAssistantId) return;
-  const state = useChatStore.getState();
-  useChatStore.setState({
-    messages: state.messages.map(m =>
-      m.id === currentAssistantId
-        ? {
-            ...m,
-            isStreaming: false,
-            toolCalls: (m.toolCalls || []).map(tc =>
-              tc.status === 'running' ? { ...tc, status: 'completed' as const } : tc
-            ),
-          }
-        : m
-    ),
-  });
-  currentAssistantId = null;
 }
 
 // ── Store ──
 
 interface ChatState {
-  messages: ChatMessage[];
-  isGenerating: boolean;
-  tokenUsage: TokenUsage;
+  panes: Map<string, PaneState>;
   fileTree: FileNode[];
   diffFiles: DiffFile[];
-  currentModel: string;
   projectPath: string;
+  currentModel: string;
 
   setProjectPath: (path: string) => void;
-  sendMessage: (text: string) => void;
-  stopGeneration: () => void;
-  clearChat: () => void;
-  initSession: (projectPath: string, model?: string) => Promise<void>;
+  setCurrentModel: (model: string) => void;
+  getMessages: (paneId: string) => ChatMessage[];
+  isPaneGenerating: (paneId: string) => boolean;
+  getPaneTokenUsage: (paneId: string) => TokenUsage;
+  initPane: (paneId: string, projectPath: string, model?: string) => Promise<void>;
+  sendMessage: (paneId: string, text: string) => void;
+  stopGeneration: (paneId: string) => void;
+  clearPane: (paneId: string) => void;
 }
 
 export const useChatStore = create<ChatState>()((set, get) => ({
-  messages: [],
-  isGenerating: false,
-  tokenUsage: { input: 0, output: 0 },
+  panes: new Map([['default', emptyPaneState()]]),
   fileTree: isElectron() ? [] : MOCK_FILE_TREE,
+  currentModel: '',
   diffFiles: [],
-  currentModel: "",
-  projectPath: "",
+  projectPath: '',
+
   setProjectPath: (path: string) => {
     set({ projectPath: path });
   },
 
-  initSession: async (projectPath: string, model?: string) => {
-    if (!isElectron()) return;
+  setCurrentModel: (model: string) => {
+    set({ currentModel: model });
+  },
+
+  getMessages: (paneId: string) => {
+    return get().panes.get(paneId)?.messages ?? [];
+  },
+
+  isPaneGenerating: (paneId: string) => {
+    return get().panes.get(paneId)?.isGenerating ?? false;
+  },
+
+  getPaneTokenUsage: (paneId: string) => {
+    return get().panes.get(paneId)?.tokenUsage ?? { input: 0, output: 0 };
+  },
+
+  initPane: async (paneId: string, projectPath: string, model?: string) => {
+    // Close existing session if any
+    const existing = get().panes.get(paneId);
+    if (existing?.sessionId) {
+      try { claudeApi.closeSession({ sessionId: existing.sessionId }); } catch {}
+      sessionIdToPaneId.delete(existing.sessionId);
+    }
+
+    if (!isElectron()) {
+      set((s) => ({
+        panes: new Map(s.panes).set(paneId, emptyPaneState()),
+        fileTree: MOCK_FILE_TREE,
+        projectPath,
+      }));
+      return;
+    }
+
+    startListening();
 
     try {
-      startListening();
       const { session_id } = await claudeApi.createSession({
         projectId: 'default',
         projectPath,
       });
-      activeSessionId = session_id;
+
+      sessionIdToPaneId.set(session_id, paneId);
+
       await claudeApi.startSession({
         sessionId: session_id,
         projectPath,
         model,
       });
 
-      // Load real file tree from filesystem
+      // Load file tree
       const tree = await claudeApi.readDirectory({ dirPath: projectPath, maxDepth: 5 });
-      set({ projectPath, fileTree: tree as FileNode[] });
+
+      set((s) => ({
+        panes: new Map(s.panes).set(paneId, {
+          ...emptyPaneState(),
+          sessionId: session_id,
+          currentModel: model || '',
+        }),
+        fileTree: tree as FileNode[],
+        projectPath,
+      }));
     } catch (err) {
-      console.error('[CCDesk] Failed to init session:', err);
+      console.error('[CCDesk] Failed to init pane:', err);
+      set((s) => ({
+        panes: new Map(s.panes).set(paneId, emptyPaneState()),
+        projectPath,
+      }));
     }
   },
 
-  sendMessage: async (text: string) => {
+  sendMessage: (paneId: string, text: string) => {
+    const paneState = get().panes.get(paneId);
+    if (!paneState) return;
+
     const userMessage: ChatMessage = {
       id: generateId(),
       role: 'user',
@@ -338,53 +452,78 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       timestamp: Date.now(),
     };
 
-    set((state) => ({
-      messages: [...state.messages, userMessage],
-      isGenerating: true,
-    }));
+    set((s) => {
+      const pane = s.panes.get(paneId);
+      if (!pane) return s;
+      return {
+        panes: new Map(s.panes).set(paneId, {
+          ...pane,
+          messages: [...pane.messages, userMessage],
+          isGenerating: true,
+        }),
+      };
+    });
 
-    if (isElectron() && activeSessionId) {
-      // Real mode: spawn claude -p with the message
+    if (isElectron()) {
       try {
-        await claudeApi.sendMessage({
-          sessionId: activeSessionId,
+        claudeApi.sendMessage({
+          sessionId: paneState.sessionId || 'default',
           projectPath: get().projectPath,
           message: text,
         });
       } catch (err) {
         console.error('[CCDesk] sendMessage failed:', err);
-        set({ isGenerating: false });
+        set((s) => {
+          const pane = s.panes.get(paneId);
+          if (!pane) return s;
+          return { panes: new Map(s.panes).set(paneId, { ...pane, isGenerating: false }) };
+        });
       }
-    } else if (isElectron() && !activeSessionId) {
-      set({ isGenerating: false });
     } else {
-      // Mock mode: simulate typing
-      mockTypingResponse(get, set);
+      mockTypingResponse(get, set, paneId);
     }
   },
 
-  stopGeneration: () => {
-    if (isElectron() && activeSessionId) {
-      claudeApi.stopGeneration({ sessionId: activeSessionId });
-      finalizeAssistantMessage();
+  stopGeneration: (paneId: string) => {
+    const paneState = get().panes.get(paneId);
+    if (isElectron() && paneState?.sessionId) {
+      claudeApi.stopGeneration({ sessionId: paneState.sessionId });
     }
-    set({ isGenerating: false });
+    const streaming = paneStreamingState.get(paneId);
+    if (streaming?.assistantId) {
+      set((s) => {
+        const pane = s.panes.get(paneId);
+        if (!pane) return s;
+        return {
+          panes: new Map(s.panes).set(paneId, {
+            ...pane,
+            isGenerating: false,
+            messages: pane.messages.map(m =>
+              m.id === streaming.assistantId ? { ...m, isStreaming: false } : m
+            ),
+          }),
+        };
+      });
+      paneStreamingState.set(paneId, { assistantId: null, currentModel: streaming.currentModel });
+    } else {
+      set((s) => {
+        const pane = s.panes.get(paneId);
+        if (!pane) return s;
+        return { panes: new Map(s.panes).set(paneId, { ...pane, isGenerating: false }) };
+      });
+    }
   },
 
-  clearChat: () => {
-    if (isElectron() && activeSessionId) {
-      claudeApi.closeSession({ sessionId: activeSessionId });
-      activeSessionId = null;
-      currentAssistantId = null;
-      stopListening();
+  clearPane: (paneId: string) => {
+    const paneState = get().panes.get(paneId);
+    if (isElectron() && paneState?.sessionId) {
+      claudeApi.closeSession({ sessionId: paneState.sessionId });
+      sessionIdToPaneId.delete(paneState.sessionId);
     }
-    set({
-      messages: [],
-      isGenerating: false,
-      tokenUsage: { input: 0, output: 0 },
-      diffFiles: [],
-  currentModel: "",
-    });
+    paneStreamingState.delete(paneId);
+    set((s) => ({
+      panes: new Map(s.panes).set(paneId, emptyPaneState()),
+    }));
   },
 }));
 
@@ -393,6 +532,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 function mockTypingResponse(
   get: () => ChatState,
   set: (fn: (state: ChatState) => Partial<ChatState>) => void,
+  paneId: string,
 ) {
   const responseIndex = Math.floor(Math.random() * MOCK_RESPONSES.length);
   const fullResponse = MOCK_RESPONSES[responseIndex];
@@ -409,47 +549,65 @@ function mockTypingResponse(
   };
 
   setTimeout(() => {
-    set((state) => ({ messages: [...state.messages, assistantMessage] }));
+    set((s) => {
+      const pane = s.panes.get(paneId);
+      if (!pane) return s;
+      return { panes: new Map(s.panes).set(paneId, { ...pane, messages: [...pane.messages, assistantMessage] }) };
+    });
 
     let charIndex = 0;
     const chunkSize = 3;
     const interval = setInterval(() => {
-      if (!get().isGenerating) {
+      if (!get().panes.get(paneId)?.isGenerating) {
         clearInterval(interval);
-        finishMock(assistantId, toolCalls, set);
+        finishMock(paneId, assistantId, toolCalls, set, get);
         return;
       }
       charIndex += chunkSize;
       if (charIndex >= fullResponse.length) {
         clearInterval(interval);
-        finishMock(assistantId, toolCalls, set);
+        finishMock(paneId, assistantId, toolCalls, set, get);
         return;
       }
       const partial = fullResponse.slice(0, charIndex);
-      set((s) => ({
-        messages: s.messages.map(m =>
-          m.id === assistantId ? { ...m, content: partial } : m
-        ),
-      }));
+      set((s) => {
+        const pane = s.panes.get(paneId);
+        if (!pane) return s;
+        return {
+          panes: new Map(s.panes).set(paneId, {
+            ...pane,
+            messages: pane.messages.map(m =>
+              m.id === assistantId ? { ...m, content: partial } : m
+            ),
+          }),
+        };
+      });
     }, 15);
   }, 300);
 }
 
 function finishMock(
+  paneId: string,
   assistantId: string,
   toolCalls: ToolCall[],
   set: (fn: (state: ChatState) => Partial<ChatState>) => void,
+  _get: () => ChatState,
 ) {
-  set((s) => ({
-    messages: s.messages.map(m =>
-      m.id === assistantId
-        ? { ...m, isStreaming: false, toolCalls }
-        : m
-    ),
-    isGenerating: false,
-    tokenUsage: {
-      input: s.tokenUsage.input + Math.floor(Math.random() * 500 + 200),
-      output: s.tokenUsage.output + Math.floor(Math.random() * 1200 + 400),
-    },
-  }));
+  set((s) => {
+    const pane = s.panes.get(paneId);
+    if (!pane) return s;
+    return {
+      panes: new Map(s.panes).set(paneId, {
+        ...pane,
+        isGenerating: false,
+        messages: pane.messages.map(m =>
+          m.id === assistantId ? { ...m, isStreaming: false, toolCalls } : m
+        ),
+        tokenUsage: {
+          input: pane.tokenUsage.input + Math.floor(Math.random() * 500 + 200),
+          output: pane.tokenUsage.output + Math.floor(Math.random() * 1200 + 400),
+        },
+      }),
+    };
+  });
 }

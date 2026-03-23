@@ -60,6 +60,7 @@ function AppContent() {
     if (!s.activeTabId) return null;
     return s.tabs.get(s.activeTabId) ?? null;
   });
+  const activePaneId = activeTab?.activePaneId;
   const createTab = useTabStore((s) => s.createTab);
   const closeTab = useTabStore((s) => s.closeTab);
 
@@ -179,7 +180,9 @@ function AppContent() {
       onOpenSettings: () => setSettingsOpen(true),
       onOpenProject: handleOpenProject,
       onCommandPalette: () => setCommandPaletteOpen(true),
-      onStopGeneration: stopGeneration,
+      onStopGeneration: () => {
+        if (activePaneId) stopGeneration(activePaneId);
+      },
       onSplitPaneHorizontal: () => {
         if (activeTab) useTabStore.getState().splitPane(activeTab.id, activeTab.activePaneId, 'horizontal');
       },
@@ -197,7 +200,7 @@ function AppContent() {
         }
       },
     }),
-    [handleNewTab, toggleSidebar, toggleToolPanel, stopGeneration, handleOpenProject, activeTab, closeTab],
+    [handleNewTab, toggleSidebar, toggleToolPanel, stopGeneration, handleOpenProject, activeTab, closeTab, activePaneId],
   );
 
   useKeyboardShortcuts(actions);

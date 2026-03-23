@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useTabStore } from '@/stores/useTabStore';
+import { useChatStore } from '@/stores/useChatStore';
+import { useProjectStore } from '@/stores/useProjectStore';
 import { MessageBubble } from '@/components/Chat/MessageBubble';
-import type { ChatMessage } from '@/types/chat';
 import styles from './TerminalPane.module.css';
 
 interface TerminalPaneProps {
@@ -10,24 +11,22 @@ interface TerminalPaneProps {
   isActive: boolean;
 }
 
-// Pane-local chat state (each pane has its own conversation)
-const paneChats = new Map<string, ChatMessage[]>();
-const paneGenerating = new Map<string, boolean>();
-
-function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
-
 function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const tab = useTabStore((s) => s.tabs.get(tabId));
   const pane = tab?.panes.get(paneId);
   const setActivePane = useTabStore((s) => s.setActivePane);
   const splitPane = useTabStore((s) => s.splitPane);
   const closePane = useTabStore((s) => s.closePane);
+  const activeProject = useProjectStore((s) => s.activeProject);
+  const projectPath = activeProject?.path ?? '';
+
+  // Chat state per pane from store
+  const paneState = useChatStore((s) => s.panes.get(paneId));
+  const messages = paneState?.messages ?? [];
+  const isGenerating = paneState?.isGenerating ?? false;
+  const tokenUsage = paneState?.tokenUsage ?? { input: 0, output: 0 };
 
   const [text, setText] = useState('');
-  const messages = paneChats.get(paneId) || [];
-  const isGenerating = paneGenerating.get(paneId) || false;
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -36,14 +35,21 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = `${Math.min(Math.max(el.scrollHeight, 36), 200)}px`;
+    el.style.height = `${Math.min(Math.max(el.scrollHeight, 44), 200)}px`;
   }, [text]);
 
-  // Initialize pane chat if not exists
+  // Initialize pane session on mount
   useEffect(() => {
-    if (!paneChats.has(paneId)) {
-      paneChats.set(paneId, []);
+    if (projectPath) {
+      useChatStore.getState().initPane(paneId, projectPath);
     }
+  }, [paneId, projectPath]);
+
+  // Clear pane session on unmount
+  useEffect(() => {
+    return () => {
+      useChatStore.getState().clearPane(paneId);
+    };
   }, [paneId]);
 
   // Scroll to bottom on new messages
@@ -58,35 +64,10 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const handleSend = useCallback(() => {
     const trimmed = text.trim();
     if (!trimmed) return;
-
-    const userMsg: ChatMessage = {
-      id: generateId(),
-      role: 'user',
-      content: trimmed,
-      timestamp: Date.now(),
-    };
-
-    const current = paneChats.get(paneId) || [];
-    paneChats.set(paneId, [...current, userMsg]);
-    paneGenerating.set(paneId, true);
     setText('');
-    if (textareaRef.current) textareaRef.current.style.height = '36px';
-
-    // Mock response (will be replaced with real CLI bridge)
-    setTimeout(() => {
-      const assistantMsg: ChatMessage = {
-        id: generateId(),
-        role: 'assistant',
-        content: `[${pane?.title || 'Terminal'}] 收到: ${trimmed}\n\n这是一个独立面板的会话。未来将连接真实的 Claude CLI 进程。`,
-        timestamp: Date.now(),
-      };
-      const msgs = paneChats.get(paneId) || [];
-      paneChats.set(paneId, [...msgs, assistantMsg]);
-      paneGenerating.set(paneId, false);
-      // Force re-render
-      useTabStore.setState((s) => ({ tabs: new Map(s.tabs) }));
-    }, 600);
-  }, [text, pane?.title, paneId]);
+    if (textareaRef.current) textareaRef.current.style.height = '44px';
+    useChatStore.getState().sendMessage(paneId, trimmed);
+  }, [text, paneId]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -94,6 +75,10 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       handleSend();
     }
   }, [handleSend]);
+
+  const handleStop = useCallback(() => {
+    useChatStore.getState().stopGeneration(paneId);
+  }, [paneId]);
 
   const handleSplitHorizontal = useCallback(() => {
     splitPane(tabId, paneId, 'horizontal');
@@ -111,6 +96,12 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const statusClass = `paneStatus${status.charAt(0).toUpperCase()}${status.slice(1)}`;
   const isSinglePane = (tab?.panes.size ?? 0) <= 1;
   const canSend = text.trim().length > 0 && !isGenerating;
+
+  // Token display
+  const tokensLeft = 200000 - (tokenUsage.input + tokenUsage.output);
+  const tokensDisplay = tokensLeft > 1000
+    ? `${Math.round(tokensLeft / 1000)}K tokens left`
+    : `${tokensLeft} tokens left`;
 
   return (
     <div
@@ -165,7 +156,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
           </div>
         </div>
 
-        {/* Compact input */}
+        {/* Input */}
         <div className={styles.paneInput}>
           <div className={styles.paneInputWrapper}>
             <button className={styles.paneAttachBtn} title="附件">
@@ -181,15 +172,26 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               spellCheck={false}
               rows={1}
             />
-            <button
-              className={`${styles.paneSendBtn} ${canSend ? styles.paneSendBtnActive : ''}`}
-              onClick={handleSend}
-              disabled={!canSend}
-            >
-              <span className="material-symbols-outlined">arrow_upward</span>
-            </button>
+            {isGenerating ? (
+              <button
+                className={styles.paneSendBtn}
+                onClick={handleStop}
+                title="停止生成"
+              >
+                <span className="material-symbols-outlined">stop_circle</span>
+              </button>
+            ) : (
+              <button
+                className={`${styles.paneSendBtn} ${canSend ? styles.paneSendBtnActive : ''}`}
+                onClick={handleSend}
+                disabled={!canSend}
+                title="发送 (⌘Enter)"
+              >
+                <span className="material-symbols-outlined">arrow_upward</span>
+              </button>
+            )}
           </div>
-          {/* Footer — shortcut hints */}
+          {/* Footer */}
           <div className={styles.paneInputFooter}>
             <div className={styles.paneFooterLeft}>
               <span className={styles.paneFooterHint}>
@@ -199,7 +201,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                 <span className="material-symbols-outlined">keyboard_command_key</span> K 快速修复
               </span>
             </div>
-            <span className={styles.paneFooterHint}>4096 tokens left</span>
+            <span className={styles.paneFooterHint}>{tokensDisplay}</span>
           </div>
         </div>
       </div>
