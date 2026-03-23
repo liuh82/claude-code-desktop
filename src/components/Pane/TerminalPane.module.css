@@ -116,7 +116,7 @@
 }
 
 .paneMessagesInner {
-  max-width: 896px;
+  max-width: min(896px, 92%);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -177,7 +177,7 @@
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  max-width: 896px;
+  max-width: min(896px, 92%);
   margin: 0 auto;
   background: var(--bg-input);
   border: 1px solid rgba(169, 180, 185, 0.30);
@@ -209,7 +209,7 @@
   min-width: 0;
   resize: none;
   padding: 8px 4px;
-  min-height: 36px !important;
+  min-height: 44px !important;
   max-height: 200px;
 }
 
@@ -265,7 +265,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 896px;
+  max-width: min(896px, 92%);
   margin: 8px auto 0;
   padding: 0 8px;
 }
