@@ -112,6 +112,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const currentModel = useChatStore((s) => s.currentModel) || 'claude-sonnet-4-6';
 
   const [text, setText] = useState('');
+  const [editMode, setEditMode] = useState<'plan' | 'auto' | 'confirm'>('confirm');
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionIndex, setMentionIndex] = useState(0);
   const [showMention, setShowMention] = useState(false);
@@ -646,7 +647,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                 rows={2}
               />
 
-              {/* Bottom row: attach + image | send */}
+              {/* Bottom row: attach + image | mode selector | send */}
               <div className={styles.paneInputActions}>
                 <div className={styles.paneInputActionsLeft}>
                   <button className={styles.actionToolBtn} title="附加文件" onClick={handleAttachFile}>
@@ -655,6 +656,24 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                   <button className={styles.actionToolBtn} title="附加图片" onClick={handleAttachImage}>
                     <span className="material-symbols-outlined">image</span>
                   </button>
+                </div>
+                <div className={styles.paneInputSpacer} />
+                <div className={styles.modeSelector}>
+                  {([
+                    { key: 'plan' as const, icon: 'psychology', label: 'Plan' },
+                    { key: 'auto' as const, icon: 'bolt', label: 'Auto Edit' },
+                    { key: 'confirm' as const, icon: 'verified', label: 'Confirm Edit' },
+                  ]).map((m) => (
+                    <button
+                      key={m.key}
+                      className={`${styles.modeBtn} ${editMode === m.key ? styles.modeBtnActive : ''}`}
+                      onClick={() => setEditMode(m.key)}
+                      title={m.label}
+                    >
+                      <span className="material-symbols-outlined">{m.icon}</span>
+                      <span>{m.label}</span>
+                    </button>
+                  ))}
                 </div>
                 {isGenerating ? (
                   <button className={styles.paneSendBtn} onClick={handleStop} title="停止生成">
@@ -676,6 +695,8 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
           {/* Bottom hint — model + tokens */}
           <div className={styles.paneInputHint}>
             <span>{currentModel.replace('claude-', '').replace(/-\d{8}$/, '')}</span>
+            <span>·</span>
+            <span>{editMode === 'plan' ? 'Plan' : editMode === 'auto' ? 'Auto Edit' : 'Confirm Edit'}</span>
             <span>·</span>
             <span>{tokenUsage.input > 1000 ? Math.round(tokenUsage.input / 1000) + 'K' : tokenUsage.input} in / {tokenUsage.output > 1000 ? Math.round(tokenUsage.output / 1000) + 'K' : tokenUsage.output} out</span>
             <span>·</span>
