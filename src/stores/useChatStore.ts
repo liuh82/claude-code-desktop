@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { ChatMessage, ToolCall, FileNode, DiffFile, TokenUsage } from '@/types/chat';
 import { claudeApi, isElectron } from '@/lib/claude-api';
+import path from 'path';
 import { parseClaudeLine, extractModel } from '@/lib/claude-parser';
 import type { ParsedAssistantMessage, ParsedResult } from '@/lib/claude-parser';
 
@@ -358,7 +359,7 @@ interface ChatState {
   isPaneGenerating: (paneId: string) => boolean;
   getPaneTokenUsage: (paneId: string) => TokenUsage;
   initPane: (paneId: string, projectPath: string, model?: string) => Promise<void>;
-  sendMessage: (paneId: string, text: string) => void;
+  sendMessage: (paneId: string, text: string) => Promise<void>;
   stopGeneration: (paneId: string) => void;
   clearPane: (paneId: string) => void;
 }
@@ -444,14 +445,38 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     }
   },
 
-  sendMessage: (paneId: string, text: string) => {
+  sendMessage: async (paneId: string, text: string) => {
     const paneState = get().panes.get(paneId);
     if (!paneState) return;
+
+    // Resolve @ file references — read file content and embed in message
+    let resolvedText = text;
+    if (isElectron()) {
+      const { claudeApi } = await import('@/lib/claude-api');
+      const atPattern = /@([\w\/.\-]+\.[\w]+)/g;
+      let match;
+      const replacements: Array<{ full: string; content: string }> = [];
+      while ((match = atPattern.exec(text)) !== null) {
+        const filePath = match[1];
+        // Try as relative to project path first, then absolute
+        const fullPath = path.join(get().projectPath, filePath);
+        const result = await claudeApi.readFile({ filePath: fullPath });
+        if (result.content !== null) {
+          replacements.push({
+            full: match[0],
+            content: `@${filePath}\n\n---\n${result.content}\n---`,
+          });
+        }
+      }
+      for (const r of replacements) {
+        resolvedText = resolvedText.replace(r.full, r.content);
+      }
+    }
 
     const userMessage: ChatMessage = {
       id: generateId(),
       role: 'user',
-      content: text,
+      content: text, // Display original text (with @)
       timestamp: Date.now(),
     };
 
@@ -472,7 +497,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         claudeApi.sendMessage({
           sessionId: paneState.sessionId || 'default',
           projectPath: get().projectPath,
-          message: text,
+          message: resolvedText,
         });
       } catch (err) {
         console.error('[CCDesk] sendMessage failed:', err);

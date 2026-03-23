@@ -184,6 +184,7 @@
   border-radius: 12px;
   box-shadow: var(--shadow-sm);
   padding: 8px;
+  position: relative;
   transition: border-color 150ms, box-shadow 150ms;
 }
 

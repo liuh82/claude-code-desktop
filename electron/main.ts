@@ -449,6 +449,18 @@ function registerIpcHandlers() {
     return result;
   });
 
+  // ── Read File ──
+
+  ipcMain.handle('read-file', async (_event, { filePath }: { filePath: string }) => {
+    try {
+      if (!fs.existsSync(filePath)) return { content: null, error: 'File not found' };
+      const content = fs.readFileSync(filePath, 'utf-8');
+      return { content, error: null };
+    } catch (err: any) {
+      return { content: null, error: err.message };
+    }
+  });
+
   // ── Claude Config ──
 
   ipcMain.handle('get-claude-config', () => {
