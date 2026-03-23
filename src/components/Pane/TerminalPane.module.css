@@ -111,11 +111,15 @@
 .paneMessages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 24px;
 }
 
 .paneMessagesInner {
-  max-width: 100%;
+  max-width: 896px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
   font-size: var(--font-size-sm);
   line-height: var(--line-height-normal);
   color: var(--text-primary);
@@ -160,7 +164,7 @@
 
 /* Pane input — aligned with InputArea design spec */
 .paneInput {
-  padding: 24px;
+  padding: 8px 24px 16px;
   flex-shrink: 0;
   background: var(--bg-primary);
 }
@@ -173,6 +177,8 @@
   display: flex;
   align-items: flex-end;
   gap: 8px;
+  max-width: 896px;
+  margin: 0 auto;
   background: var(--bg-input);
   border: 1px solid rgba(169, 180, 185, 0.30);
   border-radius: 12px;
@@ -215,7 +221,7 @@
   width: 40px;
   height: 40px;
   flex-shrink: 0;
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--brand-orange);
   border: none;
   color: white;
