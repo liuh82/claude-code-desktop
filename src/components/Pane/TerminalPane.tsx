@@ -42,7 +42,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const isGenerating = paneState?.isGenerating ?? false;
   const tokenUsage = paneState?.tokenUsage ?? { input: 0, output: 0 };
   const fileTree = useChatStore((s) => s.fileTree);
-  console.log('[CCDesk] fileTree:', fileTree.length, 'projectPath:', projectPath);
+  console.log('[CCDesk] fileTree top-level:', fileTree.length, 'projectPath:', projectPath);
 
   const [text, setText] = useState('');
   const [mentionQuery, setMentionQuery] = useState('');
@@ -54,12 +54,14 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
 
   // Flatten file tree for @ mentions
   const flatFiles = useMemo(() => flattenTree(fileTree), [fileTree]);
+  console.log('[CCDesk] flatFiles total:', flatFiles.length);
+
   const filteredFiles = useMemo(() => {
-    if (!mentionQuery) return flatFiles.slice(0, 8);
+    if (!mentionQuery) return flatFiles.slice(0, 20);
     const q = mentionQuery.toLowerCase();
     return flatFiles
       .filter(f => f.name.toLowerCase().includes(q) || f.path.toLowerCase().includes(q))
-      .slice(0, 8);
+      .slice(0, 20);
   }, [flatFiles, mentionQuery]);
 
   // Auto-resize textarea
