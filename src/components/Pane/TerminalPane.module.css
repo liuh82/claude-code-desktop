@@ -536,3 +536,42 @@
   color: var(--accent);
   opacity: 0.70;
 }
+
+/* Special mention item description */
+.mentionDesc {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* File icon colors by type */
+.fileIconCode {
+  color: #0186e9;
+}
+
+.fileIconConfig {
+  color: #f55347;
+}
+
+.fileIconStyle {
+  color: #e91e63;
+}
+
+.fileIconTest {
+  color: #22c55e;
+}
+
+.fileIconDocs {
+  color: #519aba;
+}
+
+.fileIconImage {
+  color: #10b981;
+}
+
+.fileIconJson {
+  color: #cbcb41;
+}
+
+.fileIconDefault {
+  color: var(--text-muted);
+}
