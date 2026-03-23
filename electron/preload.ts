@@ -45,6 +45,9 @@ const api = {
   getConfig: (args: { key: string }) => ipcRenderer.invoke('get-config', args),
   setConfig: (args: { key: string; value: unknown }) => ipcRenderer.invoke('set-config', args),
 
+  // Slash Commands
+  listSlashCommands: (args: { projectPath: string }) => ipcRenderer.invoke('list-slash-commands', args) as Promise<Array<{ name: string; description: string; source: string; pluginName?: string }>>,
+
   // Events from main process (CC CLI output)
   onClaudeOutput: (callback: (line: string, sessionId: string) => void) => {
     const handler = (_event: Electron.IpcRendererEvent, line: string, sessionId: string) => callback(line, sessionId);

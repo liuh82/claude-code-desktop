@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import type { ChatMessage, ToolCall, FileNode, DiffFile, TokenUsage } from '@/types/chat';
 import { claudeApi, isElectron } from '@/lib/claude-api';
-import path from 'path';
 import { parseClaudeLine, extractModel } from '@/lib/claude-parser';
 import type { ParsedAssistantMessage, ParsedResult } from '@/lib/claude-parser';
 
@@ -460,7 +459,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       while ((match = atPattern.exec(text)) !== null) {
         const filePath = match[1];
         // Try as relative to project path first, then absolute
-        const fullPath = path.join(get().projectPath, filePath);
+        const fullPath = get().projectPath + '/' + filePath;
         const result = await claudeApi.readFile({ filePath: fullPath });
         if (result.content !== null) {
           replacements.push({

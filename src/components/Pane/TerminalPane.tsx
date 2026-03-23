@@ -8,32 +8,34 @@ import { claudeApi, isElectron } from '@/lib/claude-api';
 import type { FileNode } from '@/types/chat';
 import styles from './TerminalPane.module.css';
 
-// Claude Code slash commands — grouped per Stitch design spec
-const COMMON_COMMANDS = [
-  { name: '/edit', description: '修改或创建工作区文件' },
-  { name: '/explain', description: '获取代码或逻辑的详细解读' },
-];
+// ── Slash command types ──
 
-const ALL_COMMANDS = [
-  { name: '/clear', description: '清除对话历史' },
-  { name: '/compact', description: '压缩对话上下文' },
-  { name: '/config', description: '查看/修改配置' },
-  { name: '/cost', description: '查看 token 使用量' },
-  { name: '/doctor', description: '检查 Claude Code 健康状态' },
-  { name: '/help', description: '显示帮助信息' },
-  { name: '/init', description: '初始化 Claude Code 项目' },
-  { name: '/login', description: '登录 Anthropic 账户' },
-  { name: '/logout', description: '登出 Anthropic 账户' },
-  { name: '/model', description: '切换模型' },
-  { name: '/permissions', description: '管理权限' },
-  { name: '/review', description: '代码审查' },
-  { name: '/status', description: '查看状态' },
-  { name: '/test', description: '为选定函数生成单元测试' },
-  { name: '/bug', description: '报告 CLI 行为中的 bug' },
-  { name: '/vim', description: '切换 vim 模式' },
-];
+interface SlashCommand {
+  name: string;
+  description: string;
+  source: 'built-in' | 'skill' | 'plugin' | 'project';
+  pluginName?: string;
+}
 
-const ALL_SLASH = [...COMMON_COMMANDS, ...ALL_COMMANDS];
+// Built-in commands — locally handled
+const BUILT_IN_COMMANDS: SlashCommand[] = [
+  { name: '/clear', description: '清除对话历史', source: 'built-in' },
+  { name: '/compact', description: '压缩对话上下文', source: 'built-in' },
+  { name: '/config', description: '查看/修改配置', source: 'built-in' },
+  { name: '/cost', description: '查看 token 使用量', source: 'built-in' },
+  { name: '/doctor', description: '检查 Claude Code 健康状态', source: 'built-in' },
+  { name: '/help', description: '显示帮助信息', source: 'built-in' },
+  { name: '/init', description: '初始化 Claude Code 项目', source: 'built-in' },
+  { name: '/login', description: '登录 Anthropic 账户', source: 'built-in' },
+  { name: '/logout', description: '登出 Anthropic 账户', source: 'built-in' },
+  { name: '/model', description: '切换模型', source: 'built-in' },
+  { name: '/permissions', description: '管理权限', source: 'built-in' },
+  { name: '/review', description: '代码审查', source: 'built-in' },
+  { name: '/status', description: '查看状态', source: 'built-in' },
+  { name: '/test', description: '为选定函数生成单元测试', source: 'built-in' },
+  { name: '/bug', description: '报告 CLI 行为中的 bug', source: 'built-in' },
+  { name: '/vim', description: '切换 vim 模式', source: 'built-in' },
+];
 
 const AVAILABLE_MODELS = [
   { id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6' },
@@ -41,22 +43,67 @@ const AVAILABLE_MODELS = [
   { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5' },
 ];
 
+// ── @ Mention types ──
+
+interface SpecialContext {
+  name: string;
+  icon: string;
+  description: string;
+}
+
+const SPECIAL_CONTEXTS: SpecialContext[] = [
+  { name: '@git', icon: 'git_diff', description: 'Git diff context' },
+  { name: '@tree', icon: 'folder', description: 'File tree' },
+  { name: '@url', icon: 'link', description: 'URL content' },
+];
+
+// File extension → Material Symbols icon
+function getFileIcon(filename: string): { icon: string; colorClass: string } {
+  const ext = filename.split('.').pop()?.toLowerCase() ?? '';
+  if (['ts', 'tsx', 'js', 'jsx', 'py', 'go', 'rs', 'java', 'kt', 'swift', 'c', 'cpp', 'h'].includes(ext)) {
+    return { icon: 'code_blocks', colorClass: styles.fileIconCode };
+  }
+  if (['html', 'htm'].includes(ext)) {
+    return { icon: 'html', colorClass: styles.fileIconStyle };
+  }
+  if (['css', 'scss', 'sass', 'less'].includes(ext)) {
+    return { icon: 'css', colorClass: styles.fileIconStyle };
+  }
+  if (['json', 'yaml', 'yml', 'toml'].includes(ext)) {
+    return { icon: 'data_object', colorClass: styles.fileIconJson };
+  }
+  if (['md', 'txt', 'rst'].includes(ext)) {
+    return { icon: 'description', colorClass: styles.fileIconDocs };
+  }
+  if (['sh', 'bash', 'zsh', 'fish'].includes(ext)) {
+    return { icon: 'terminal', colorClass: styles.fileIconConfig };
+  }
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ico', 'bmp'].includes(ext)) {
+    return { icon: 'image', colorClass: styles.fileIconImage };
+  }
+  if (['test.ts', 'test.tsx', 'test.js', 'test.jsx', 'spec.ts', 'spec.tsx', 'spec.js', 'spec.jsx'].some(t => filename.endsWith(t))) {
+    return { icon: 'science', colorClass: styles.fileIconTest };
+  }
+  return { icon: 'description', colorClass: styles.fileIconDefault };
+}
+
+// ── Props & helpers ──
+
 interface TerminalPaneProps {
   tabId: string;
   paneId: string;
   isActive: boolean;
 }
 
-// Flatten file tree for search
 function flattenTree(nodes: FileNode[], prefix = ''): FileNode[] {
   const result: FileNode[] = [];
   for (const node of nodes) {
-    const path = prefix ? `${prefix}/${node.name}` : node.name;
+    const p = prefix ? `${prefix}/${node.name}` : node.name;
     if (node.type === 'file') {
-      result.push({ ...node, path });
+      result.push({ ...node, path: p });
     }
     if (node.children) {
-      result.push(...flattenTree(node.children, path));
+      result.push(...flattenTree(node.children, p));
     }
   }
   return result;
@@ -71,12 +118,10 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const activeProject = useProjectStore((s) => s.activeProject);
   const projectPath = activeProject?.path ?? '';
 
-  // Chat state per pane from store
   const paneState = useChatStore((s) => s.panes.get(paneId));
   const messages = paneState?.messages ?? [];
   const isGenerating = paneState?.isGenerating ?? false;
-    const fileTree = useChatStore((s) => s.fileTree);
-  console.log('[CCDesk] fileTree top-level:', fileTree.length, 'projectPath:', projectPath);
+  const fileTree = useChatStore((s) => s.fileTree);
 
   const [text, setText] = useState('');
   const [mentionQuery, setMentionQuery] = useState('');
@@ -86,29 +131,97 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const [slashQuery, setSlashQuery] = useState('');
   const [slashIndex, setSlashIndex] = useState(0);
   const [showModelPicker, setShowModelPicker] = useState(false);
+  const [dynamicCommands, setDynamicCommands] = useState<SlashCommand[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputWrapperRef = useRef<HTMLDivElement>(null);
 
-  // Flatten file tree for @ mentions
+  // ── Dynamic slash command loading ──
+
+  useEffect(() => {
+    if (!isElectron() || !projectPath) return;
+    claudeApi.listSlashCommands({ projectPath }).then((cmds) => {
+      setDynamicCommands(cmds as SlashCommand[]);
+    }).catch(() => {});
+  }, [projectPath]);
+
+  // Merge built-in + dynamic commands, deduplicated by name
+  const allCommands = useMemo(() => {
+    const seen = new Set<string>();
+    const merged: SlashCommand[] = [];
+    for (const cmd of BUILT_IN_COMMANDS) {
+      if (!seen.has(cmd.name)) {
+        seen.add(cmd.name);
+        merged.push(cmd);
+      }
+    }
+    for (const cmd of dynamicCommands) {
+      if (!seen.has(cmd.name)) {
+        seen.add(cmd.name);
+        merged.push(cmd);
+      }
+    }
+    return merged;
+  }, [dynamicCommands]);
+
+  // Group commands by source for display
+  const commandGroups = useMemo(() => {
+    const groups: { key: string; label: string; commands: SlashCommand[] }[] = [];
+
+    const builtIn = allCommands.filter(c => c.source === 'built-in');
+    if (builtIn.length > 0) groups.push({ key: 'built-in', label: 'Built-in', commands: builtIn });
+
+    const skills = allCommands.filter(c => c.source === 'skill');
+    if (skills.length > 0) groups.push({ key: 'skills', label: 'Skills', commands: skills });
+
+    const plugins = allCommands.filter(c => c.source === 'plugin');
+    if (plugins.length > 0) groups.push({ key: 'plugins', label: 'Plugins', commands: plugins });
+
+    const project = allCommands.filter(c => c.source === 'project');
+    if (project.length > 0) groups.push({ key: 'project', label: 'Project', commands: project });
+
+    return groups;
+  }, [allCommands]);
+
+  // ── @ Mention items (special contexts + files) ──
+
   const flatFiles = useMemo(() => flattenTree(fileTree), [fileTree]);
-  console.log('[CCDesk] flatFiles total:', flatFiles.length);
 
-  const filteredCommands = useMemo(() => {
-    if (!slashQuery) return ALL_SLASH;
-    const q = slashQuery.toLowerCase();
-    return ALL_SLASH.filter(c => c.name.toLowerCase().includes(q));
-  }, [slashQuery]);
-
-  const filteredFiles = useMemo(() => {
-    if (!mentionQuery) return flatFiles;
+  // Merge special contexts with files into a single mention list
+  const allMentionItems = useMemo(() => {
     const q = mentionQuery.toLowerCase();
-    return flatFiles
-      .filter(f => f.name.toLowerCase().includes(q) || f.path.toLowerCase().includes(q))
-;
+    // Filter special contexts
+    const filteredSpecial = mentionQuery
+      ? SPECIAL_CONTEXTS.filter(s => s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q))
+      : SPECIAL_CONTEXTS;
+    // Filter files
+    const filteredFiles = mentionQuery
+      ? flatFiles.filter(f => f.name.toLowerCase().includes(q) || f.path.toLowerCase().includes(q))
+      : flatFiles;
+    // Combine: special first, then files
+    return [
+      ...filteredSpecial.map(s => ({ type: 'special' as const, ...s })),
+      ...filteredFiles.map(f => ({ type: 'file' as const, name: f.name, path: f.path })),
+    ];
   }, [flatFiles, mentionQuery]);
 
-  // Auto-resize textarea
+  // ── Filtered commands ──
+
+  const filteredCommands = useMemo(() => {
+    if (!slashQuery) return allCommands;
+    const q = slashQuery.toLowerCase();
+    return allCommands.filter(c => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q));
+  }, [allCommands, slashQuery]);
+
+  // Filtered command groups for display
+  const filteredGroups = useMemo(() => {
+    return commandGroups
+      .map(g => ({ ...g, commands: g.commands.filter(c => filteredCommands.includes(c)) }))
+      .filter(g => g.commands.length > 0);
+  }, [commandGroups, filteredCommands]);
+
+  // ── Auto-resize textarea ──
+
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
@@ -116,27 +229,29 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     el.style.height = `${Math.min(Math.max(el.scrollHeight, 44), 200)}px`;
   }, [text]);
 
-  // Initialize pane session on mount
+  // ── Initialize / cleanup pane ──
+
   useEffect(() => {
     if (projectPath) {
       useChatStore.getState().initPane(paneId, projectPath);
     }
   }, [paneId, projectPath]);
 
-  // Clear pane session on unmount
   useEffect(() => {
     return () => {
       useChatStore.getState().clearPane(paneId);
     };
   }, [paneId]);
 
-  // Scroll to bottom on new messages and during streaming
+  // ── Scroll to bottom ──
+
   const lastMsg = messages[messages.length - 1];
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length, lastMsg?.content?.length, lastMsg?.isStreaming]);
 
-  // Close mention dropdown on outside click
+  // ── Close dropdowns on outside click ──
+
   useEffect(() => {
     if (!showMention && !showSlash && !showModelPicker) return;
     const handler = (e: MouseEvent) => {
@@ -150,11 +265,13 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     return () => document.removeEventListener('mousedown', handler);
   }, [showMention, showSlash, showModelPicker]);
 
+  // ── Handlers ──
+
   const handleFocus = useCallback(() => {
     if (!isActive) setActivePane(tabId, paneId);
   }, [isActive, tabId, paneId, setActivePane]);
 
-  const handleMentionSelect = useCallback((file: FileNode) => {
+  const handleMentionSelect = useCallback((item: typeof allMentionItems[0]) => {
     if (!textareaRef.current) return;
     const textarea = textareaRef.current;
     const cursorPos = textarea.selectionStart;
@@ -162,7 +279,14 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     const atMatch = textBeforeCursor.match(/@\S*$/);
     if (!atMatch) return;
 
-    const before = text.slice(0, atMatch.index) + `@${file.path} `;
+    let insert: string;
+    if (item.type === 'special') {
+      insert = item.name + ' ';
+    } else {
+      insert = `@${item.path} `;
+    }
+
+    const before = text.slice(0, atMatch.index) + insert;
     const after = text.slice(cursorPos);
     const newPos = before.length;
     setText(before + after);
@@ -178,9 +302,8 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const handleSend = useCallback(() => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    // Check if it's a slash command
     if (trimmed.startsWith('/') && !trimmed.includes(' ')) {
-      const cmd = ALL_SLASH.find(c => c.name === trimmed);
+      const cmd = allCommands.find(c => c.name === trimmed);
       if (cmd) { handleSlashSelect(cmd); return; }
     }
     setText('');
@@ -188,13 +311,12 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     setShowSlash(false);
     if (textareaRef.current) textareaRef.current.style.height = '44px';
     useChatStore.getState().sendMessage(paneId, trimmed);
-  }, [text, paneId]);
+  }, [text, paneId, allCommands]);
 
   const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
     setText(newText);
 
-    // Detect @ mentions
     const cursorPos = e.target.selectionStart;
     const textBeforeCursor = newText.slice(0, cursorPos);
     const atMatch = textBeforeCursor.match(/@(\S*)$/);
@@ -203,12 +325,11 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       setShowMention(true);
       setMentionIndex(0);
       setShowSlash(false);
-      console.log('[CCDesk] @ mention detected:', atMatch[1], 'files:', flatFiles.length);
     } else {
       setShowMention(false);
       setMentionQuery('');
     }
-    // Detect / commands
+
     const slashMatch = newText.match(/\/(\S*)$/);
     if (slashMatch && !atMatch) {
       setSlashQuery(slashMatch[1]);
@@ -218,66 +339,69 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       setShowSlash(false);
       setSlashQuery('');
     }
-  }, [flatFiles]);
+  }, []);
 
-  const handleSlashSelect = useCallback((cmd: typeof ALL_SLASH[0]) => {
+  const handleSlashSelect = useCallback((cmd: SlashCommand) => {
     setShowSlash(false);
     const name = cmd.name;
     const store = useChatStore.getState();
 
-    if (name === '/clear') {
-      store.clearPane(paneId);
-      store.initPane(paneId, store.projectPath);
-      setText('');
-      return;
-    }
-    if (name === '/model') {
-      setShowModelPicker(true);
-      setText('');
-      return;
-    }
-    if (name === '/config') {
-      window.dispatchEvent(new CustomEvent('ccdesk:open-settings'));
-      setText('');
-      return;
-    }
-    if (name === '/cost') {
-      const usage = paneState?.tokenUsage ?? { input: 0, output: 0 };
-      store.addSystemMessage(paneId, [
-        '```',
-        'Token 使用统计',
-        '━━━━━━━━━━━━',
-        '输入 tokens: ' + usage.input,
-        '输出 tokens: ' + usage.output,
-        '总计: ' + (usage.input + usage.output),
-        '```',
-      ].join('\n'));
-      setText('');
-      return;
-    }
-    if (name === '/status') {
-      const p = store.panes.get(paneId);
-      const lines = [
-        '```',
-        'Claude Code Desktop 状态',
-        '━━━━━━━━━━━━',
-        '模型: ' + (store.currentModel || 'claude-sonnet-4-6'),
-        '状态: ' + (p?.isGenerating ? '生成中' : '空闲'),
-        '消息数: ' + (p?.messages?.length ?? 0),
-        '项目: ' + (store.projectPath || '未设置'),
-        '```',
-      ];
-      store.addSystemMessage(paneId, lines.join('\n'));
-      setText('');
-      return;
-    }
-    if (name === '/compact') {
-      store.sendMessage(paneId, '/compact');
-      setText('');
-      return;
+    // Built-in commands: local handling
+    if (cmd.source === 'built-in') {
+      if (name === '/clear') {
+        store.clearPane(paneId);
+        store.initPane(paneId, store.projectPath);
+        setText('');
+        return;
+      }
+      if (name === '/model') {
+        setShowModelPicker(true);
+        setText('');
+        return;
+      }
+      if (name === '/config') {
+        window.dispatchEvent(new CustomEvent('ccdesk:open-settings'));
+        setText('');
+        return;
+      }
+      if (name === '/cost') {
+        const usage = paneState?.tokenUsage ?? { input: 0, output: 0 };
+        store.addSystemMessage(paneId, [
+          '```',
+          'Token 使用统计',
+          '━━━━━━━━━━━━',
+          '输入 tokens: ' + usage.input,
+          '输出 tokens: ' + usage.output,
+          '总计: ' + (usage.input + usage.output),
+          '```',
+        ].join('\n'));
+        setText('');
+        return;
+      }
+      if (name === '/status') {
+        const p = store.panes.get(paneId);
+        const lines = [
+          '```',
+          'Claude Code Desktop 状态',
+          '━━━━━━━━━━━━',
+          '模型: ' + (store.currentModel || 'claude-sonnet-4-6'),
+          '状态: ' + (p?.isGenerating ? '生成中' : '空闲'),
+          '消息数: ' + (p?.messages?.length ?? 0),
+          '项目: ' + (store.projectPath || '未设置'),
+          '```',
+        ];
+        store.addSystemMessage(paneId, lines.join('\n'));
+        setText('');
+        return;
+      }
+      if (name === '/compact') {
+        store.sendMessage(paneId, '/compact');
+        setText('');
+        return;
+      }
     }
 
-    // CLI commands — send to Claude process
+    // All other commands (built-in fallback, skill, plugin, project) → send to CLI
     setText('');
     store.sendMessage(paneId, name);
   }, [paneId, paneState]);
@@ -305,12 +429,11 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       if (e.key === 'Escape') { e.preventDefault(); setShowSlash(false); setShowModelPicker(false); return; }
     }
     // Handle mention dropdown navigation
-    if (showMention && filteredFiles.length > 0) {
+    if (showMention && allMentionItems.length > 0) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        const next = (mentionIndex + 1) % filteredFiles.length;
+        const next = (mentionIndex + 1) % allMentionItems.length;
         setMentionIndex(next);
-        // Scroll into view
         const list = document.querySelector('[data-mention-list]');
         const active = list?.children[next] as HTMLElement;
         active?.scrollIntoView({ block: 'nearest' });
@@ -318,7 +441,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       }
       if (e.key === 'ArrowUp') {
         e.preventDefault();
-        const prev = (mentionIndex - 1 + filteredFiles.length) % filteredFiles.length;
+        const prev = (mentionIndex - 1 + allMentionItems.length) % allMentionItems.length;
         setMentionIndex(prev);
         const list = document.querySelector('[data-mention-list]');
         const active = list?.children[prev] as HTMLElement;
@@ -327,7 +450,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       }
       if (e.key === 'Enter' || e.key === 'Tab') {
         e.preventDefault();
-        handleMentionSelect(filteredFiles[mentionIndex]);
+        handleMentionSelect(allMentionItems[mentionIndex]);
         return;
       }
       if (e.key === 'Escape') {
@@ -341,7 +464,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       e.preventDefault();
       handleSend();
     }
-  }, [showSlash, filteredCommands, slashIndex, handleSlashSelect, showMention, filteredFiles, mentionIndex, handleMentionSelect, handleSend]);
+  }, [showSlash, filteredCommands, slashIndex, handleSlashSelect, showMention, allMentionItems, mentionIndex, handleMentionSelect, handleSend]);
 
   const handleStop = useCallback(() => {
     useChatStore.getState().stopGeneration(paneId);
@@ -349,10 +472,8 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
 
   const handleModelSelect = useCallback((modelId: string) => {
     setShowModelPicker(false);
-    // Update chat store model
     const state = useChatStore.getState();
     state.currentModel = modelId;
-    // Persist to settings
     useSettingsStore.getState().updateSetting('defaultModel', modelId);
     useChatStore.getState().addSystemMessage(paneId, '已切换模型: ' + modelId);
   }, [paneId]);
@@ -379,7 +500,6 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
         filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] }],
       });
       if (files.length > 0) {
-        // For now, insert as file reference (future: base64 embed)
         const names = files.map(f => f.split('/').pop() || f).join(', ');
         setText(prev => prev ? prev + ` [图片: ${names}]` : `[图片: ${names}]`);
         textareaRef.current?.focus();
@@ -403,8 +523,6 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const statusClass = `paneStatus${status.charAt(0).toUpperCase()}${status.slice(1)}`;
   const isSinglePane = (tab?.panes.size ?? 0) <= 1;
   const canSend = text.trim().length > 0 && !isGenerating;
-
-  // Token display (reserved for future use)
 
   return (
     <div
@@ -462,38 +580,57 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
         {/* Input — Stitch design: all-in-one rounded box */}
         <div className={styles.paneInput}>
           <div className={styles.paneInputOuter} ref={inputWrapperRef}>
-            {/* @ Mention dropdown — positioned above, outside rounded wrapper to avoid clipping */}
-            {showMention && filteredFiles.length > 0 && (
+            {/* @ Mention dropdown — special contexts + files */}
+            {showMention && allMentionItems.length > 0 && (
               <div className={styles.mentionDropdown}>
                 <div className={styles.mentionDropdownList} data-mention-list>
-                  {filteredFiles.map((file, idx) => (
-                    <div
-                      key={file.path}
-                      className={`${styles.mentionItem} ${idx === mentionIndex ? styles.mentionItemActive : ''}`}
-                      onClick={() => handleMentionSelect(file)}
-                      onMouseEnter={() => setMentionIndex(idx)}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: 18 }}>description</span>
-                      <div className={styles.mentionInfo}>
-                        <span className={styles.mentionName}>{file.name}</span>
-                        <span className={styles.mentionPath}>{file.path}</span>
+                  {allMentionItems.map((item, idx) => {
+                    const isActive = idx === mentionIndex;
+                    if (item.type === 'special') {
+                      return (
+                        <div
+                          key={item.name}
+                          className={`${styles.mentionItem} ${isActive ? styles.mentionItemActive : ''}`}
+                          onClick={() => handleMentionSelect(item)}
+                          onMouseEnter={() => setMentionIndex(idx)}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{item.icon}</span>
+                          <div className={styles.mentionInfo}>
+                            <span className={styles.mentionName}>{item.name}</span>
+                            <span className={styles.mentionDesc}>{item.description}</span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    const fileIcon = getFileIcon(item.name);
+                    return (
+                      <div
+                        key={item.path}
+                        className={`${styles.mentionItem} ${isActive ? styles.mentionItemActive : ''}`}
+                        onClick={() => handleMentionSelect(item)}
+                        onMouseEnter={() => setMentionIndex(idx)}
+                      >
+                        <span className={`material-symbols-outlined ${fileIcon.colorClass}`} style={{ fontSize: 18 }}>{fileIcon.icon}</span>
+                        <div className={styles.mentionInfo}>
+                          <span className={styles.mentionName}>{item.name}</span>
+                          <span className={styles.mentionPath}>{item.path}</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {/* / Slash command dropdown — glass panel, grouped */}
-            {showSlash && filteredCommands.length > 0 && (
+            {showSlash && filteredGroups.length > 0 && (
               <div className={styles.slashDropdown}>
                 <div className={styles.slashDropdownScroll}>
-                  {/* Common Commands group */}
-                  {filteredCommands.filter(c => COMMON_COMMANDS.some(cc => cc.name === c.name)).length > 0 && (
-                    <>
-                      <div className={styles.slashGroup}>Common Commands</div>
+                  {filteredGroups.map((group) => (
+                    <div key={group.key}>
+                      <div className={styles.slashGroup}>{group.label}</div>
                       <div className={styles.slashGroupItems}>
-                        {filteredCommands.filter(c => COMMON_COMMANDS.some(cc => cc.name === c.name)).map((cmd) => {
+                        {group.commands.map((cmd) => {
                           const globalIdx = filteredCommands.indexOf(cmd);
                           return (
                             <div
@@ -502,30 +639,6 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                               className={`${styles.slashItem} ${globalIdx === slashIndex ? styles.slashItemActive : ''}`}
                               onClick={() => handleSlashSelect(cmd)}
                               onMouseEnter={() => setSlashIndex(globalIdx)}
-                            >
-                              <span className={styles.slashName}>{cmd.name}</span>
-                              <span className={styles.slashDesc}>{cmd.description}</span>
-                              {globalIdx === slashIndex && <span className={styles.slashBadge}>Select</span>}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </>
-                  )}
-                  {/* All Commands group */}
-                  {filteredCommands.filter(c => !COMMON_COMMANDS.some(cc => cc.name === c.name)).length > 0 && (
-                    <>
-                      <div className={styles.slashGroup}>All Commands</div>
-                      <div className={styles.slashGroupItems}>
-                        {filteredCommands.filter(c => !COMMON_COMMANDS.some(cc => cc.name === c.name)).map((cmd) => {
-                          const globalIdx = filteredCommands.indexOf(cmd);
-                          return (
-                            <div
-                              key={cmd.name}
-                              className={`${styles.slashItem} ${globalIdx === slashIndex ? styles.slashItemActive : ''}`}
-                              onClick={() => handleSlashSelect(cmd)}
-                              onMouseEnter={() => setSlashIndex(globalIdx)}
-                              data-slash-item={globalIdx}
                             >
                               <span className={styles.slashName}>{cmd.name}</span>
                               <span className={styles.slashDesc}>{cmd.description}</span>
@@ -534,8 +647,8 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                           );
                         })}
                       </div>
-                    </>
-                  )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

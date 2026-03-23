@@ -683,6 +683,113 @@ function registerIpcHandlers() {
       key, JSON.stringify(value), JSON.stringify(value)
     );
   });
+
+  // ── Slash Commands Discovery ──
+
+  interface SlashCommand {
+    name: string;
+    description: string;
+    source: 'built-in' | 'plugin' | 'skill' | 'project';
+    pluginName?: string;
+  }
+
+  ipcMain.handle('list-slash-commands', (_event, { projectPath }: { projectPath: string }): SlashCommand[] => {
+    const commands: SlashCommand[] = [];
+    const home = process.env.HOME || process.env.USERPROFILE || '';
+    if (!home) return commands;
+
+    // Parse YAML-like frontmatter from markdown files
+    function parseFrontmatter(content: string): { name?: string; description?: string } {
+      const match = content.match(/^---\s*\n([\s\S]*?)\n---/);
+      if (!match) return {};
+      const front: Record<string, string> = {};
+      for (const line of match[1].split('\n')) {
+        const idx = line.indexOf(':');
+        if (idx > 0) {
+          const key = line.slice(0, idx).trim();
+          const val = line.slice(idx + 1).trim().replace(/^["']|["']$/g, '');
+          front[key] = val;
+        }
+      }
+      return { name: front.name, description: front.description };
+    }
+
+    // 1. Plugin commands from ~/.claude/plugins/marketplaces/*/plugins/*/commands/*.md
+    const marketplacesDir = path.join(home, '.claude', 'plugins', 'marketplaces');
+    if (fs.existsSync(marketplacesDir)) {
+      try {
+        for (const marketplace of fs.readdirSync(marketplacesDir)) {
+          const mpPath = path.join(marketplacesDir, marketplace, 'plugins');
+          if (!fs.existsSync(mpPath)) continue;
+          const plugins = fs.readdirSync(mpPath);
+          for (const plugin of plugins) {
+            const cmdDir = path.join(mpPath, plugin, 'commands');
+            if (!fs.existsSync(cmdDir)) continue;
+            for (const file of fs.readdirSync(cmdDir)) {
+              if (!file.endsWith('.md')) continue;
+              const cmdName = '/plugin:' + plugin + ':' + file.replace(/\.md$/, '');
+              try {
+                const content = fs.readFileSync(path.join(cmdDir, file), 'utf-8');
+                const fm = parseFrontmatter(content);
+                commands.push({
+                  name: cmdName,
+                  description: fm.description || file.replace(/\.md$/, ''),
+                  source: 'plugin',
+                  pluginName: plugin,
+                });
+              } catch {}
+            }
+          }
+        }
+      } catch {}
+    }
+
+    // 2. Skills from ~/.claude/plugins/marketplaces/omc/skills/*/SKILL.md
+    const skillsDir = path.join(marketplacesDir, 'omc', 'skills');
+    if (fs.existsSync(skillsDir)) {
+      try {
+        for (const skillDir of fs.readdirSync(skillsDir)) {
+          const skillFile = path.join(skillsDir, skillDir, 'SKILL.md');
+          if (!fs.existsSync(skillFile)) continue;
+          try {
+            const content = fs.readFileSync(skillFile, 'utf-8');
+            const fm = parseFrontmatter(content);
+            const name = fm.name || skillDir;
+            commands.push({
+              name: '/' + name,
+              description: fm.description || name,
+              source: 'skill',
+              pluginName: 'omc',
+            });
+          } catch {}
+        }
+      } catch {}
+    }
+
+    // 3. Project commands from {projectPath}/.claude/commands/*.md
+    if (projectPath) {
+      const projectCmdDir = path.join(projectPath, '.claude', 'commands');
+      if (fs.existsSync(projectCmdDir)) {
+        try {
+          for (const file of fs.readdirSync(projectCmdDir)) {
+            if (!file.endsWith('.md')) continue;
+            const cmdName = '/' + file.replace(/\.md$/, '');
+            try {
+              const content = fs.readFileSync(path.join(projectCmdDir, file), 'utf-8');
+              const fm = parseFrontmatter(content);
+              commands.push({
+                name: cmdName,
+                description: fm.description || file.replace(/\.md$/, ''),
+                source: 'project',
+              });
+            } catch {}
+          }
+        } catch {}
+      }
+    }
+
+    return commands;
+  });
 }
 
 // ── App lifecycle ──
