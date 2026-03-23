@@ -157,6 +157,9 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
         {/* Compact input */}
         <div className={styles.paneInput}>
           <div className={styles.paneInputWrapper}>
+            <button className={styles.paneAttachBtn} title="附件">
+              <span className="material-symbols-outlined">attach_file</span>
+            </button>
             <input
               className={styles.paneInputField}
               value={text}

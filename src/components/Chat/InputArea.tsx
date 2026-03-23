@@ -63,7 +63,7 @@ function InputArea() {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = `${Math.min(Math.max(el.scrollHeight, 44), 200)}px`;
+    el.style.height = `${Math.min(Math.max(el.scrollHeight, 36), 200)}px`;
   }, [text]);
 
   useEffect(() => {
@@ -88,7 +88,7 @@ function InputArea() {
     sendMessage(text.trim());
     setText('');
     if (textareaRef.current) {
-      textareaRef.current.style.height = '44px';
+      textareaRef.current.style.height = '36px';
     }
   }, [canSend, text, sendMessage]);
 
@@ -184,6 +184,10 @@ function InputArea() {
   return (
     <div className={styles.inputArea}>
       <div className={styles.inputWrapper} ref={dropdownRef}>
+        {/* Attach button — left of textarea */}
+        <button className={styles.attachBtn} title="附件">
+          <span className="material-symbols-outlined">attach_file</span>
+        </button>
         <textarea
           ref={textareaRef}
           className={styles.inputTextarea}
@@ -194,6 +198,22 @@ function InputArea() {
           spellCheck={false}
           rows={1}
         />
+
+        {/* Send / Stop button — right of textarea */}
+        {isGenerating ? (
+          <button className={styles.stopBtn} onClick={stopGeneration} title="停止生成">
+            <span className="material-symbols-outlined">stop_circle</span>
+          </button>
+        ) : (
+          <button
+            className={`${styles.sendBtn} ${canSend ? styles.sendBtnActive : ''}`}
+            onClick={handleSend}
+            disabled={!canSend}
+            title="发送 (⌘+Enter)"
+          >
+            <span className="material-symbols-outlined">arrow_upward</span>
+          </button>
+        )}
 
         {/* Dropdowns */}
         {showDropdown && (
@@ -230,37 +250,12 @@ function InputArea() {
             ))}
           </div>
         )}
-
-        {/* Action toolbar — left: attach/terminal, right: send */}
-        <div className={styles.inputActions}>
-          <div className={styles.inputActionsLeft}>
-            <button className={styles.attachBtn} title="附件">
-              <span className="material-symbols-outlined">attach_file</span>
-            </button>
-            <button className={styles.attachBtn} title="终端">
-              <span className="material-symbols-outlined">terminal</span>
-            </button>
-          </div>
-          {isGenerating ? (
-            <button className={styles.stopBtn} onClick={stopGeneration} title="停止生成">
-              <span className="material-symbols-outlined">stop_circle</span>
-            </button>
-          ) : (
-            <button
-              className={`${styles.sendBtn} ${canSend ? styles.sendBtnActive : ''}`}
-              onClick={handleSend}
-              disabled={!canSend}
-              title="发送 (⌘+Enter)"
-            >
-              <span className="material-symbols-outlined">arrow_upward</span>
-            </button>
-          )}
-        </div>
       </div>
 
-      {/* Footer — centered hint */}
+      {/* Footer — shortcut hint left, token info right */}
       <div className={styles.inputFooter}>
-        <span className={styles.footerHint}>Claude Code 正在预览阶段 · 使用 {'\u2318'}+K 快速唤起命令</span>
+        <span className={styles.footerHint}>{'\u2318'}+K 唤起命令</span>
+        <span className={styles.footerHint}>200K tokens</span>
       </div>
     </div>
   );
