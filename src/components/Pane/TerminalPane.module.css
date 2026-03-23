@@ -141,6 +141,13 @@
   background: var(--bg-primary);
 }
 
+/* Outer positioning context for dropdowns — no overflow clipping */
+.paneInputOuter {
+  max-width: min(896px, 92%);
+  margin: 0 auto;
+  position: relative;
+}
+
 /* Main input wrapper: rounded-[24px], bg-surface-container-lowest */
 .paneInputWrapper {
   display: flex;
@@ -286,6 +293,7 @@
 .mentionDropdown {
   position: absolute;
   bottom: calc(100% + 8px);
+  /* positioned relative to .paneInputOuter */
   left: 0;
   right: 0;
   background: var(--bg-elevated);

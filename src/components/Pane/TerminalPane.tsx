@@ -363,8 +363,8 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
 
         {/* Input — Stitch design: all-in-one rounded box */}
         <div className={styles.paneInput}>
-          <div className={styles.paneInputWrapper} ref={inputWrapperRef}>
-            {/* @ Mention dropdown — positioned above, full width */}
+          <div className={styles.paneInputOuter} ref={inputWrapperRef}>
+            {/* @ Mention dropdown — positioned above, outside rounded wrapper to avoid clipping */}
             {showMention && filteredFiles.length > 0 && (
               <div className={styles.mentionDropdown}>
                 <div className={styles.mentionDropdownList}>
@@ -440,42 +440,44 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               </div>
             )}
 
-            {/* Textarea */}
-            <textarea
-              ref={textareaRef}
-              className={styles.paneInputField}
-              value={text}
-              onChange={handleTextChange}
-              onKeyDown={handleKeyDown}
-              placeholder="给 Claude 发送消息或询问代码问题..."
-              spellCheck={false}
-              rows={2}
-            />
+            <div className={styles.paneInputWrapper}>
+              {/* Textarea */}
+              <textarea
+                ref={textareaRef}
+                className={styles.paneInputField}
+                value={text}
+                onChange={handleTextChange}
+                onKeyDown={handleKeyDown}
+                placeholder="给 Claude 发送消息或询问代码问题..."
+                spellCheck={false}
+                rows={2}
+              />
 
-            {/* Bottom row: attach + terminal | send */}
-            <div className={styles.paneInputActions}>
-              <div className={styles.paneInputActionsLeft}>
-                <button className={styles.actionToolBtn} title="附加文件" onClick={handleAttachFile}>
-                  <span className="material-symbols-outlined">attach_file</span>
-                </button>
-                <button className={styles.actionToolBtn} title="附加图片" onClick={handleAttachImage}>
-                  <span className="material-symbols-outlined">image</span>
-                </button>
+              {/* Bottom row: attach + image | send */}
+              <div className={styles.paneInputActions}>
+                <div className={styles.paneInputActionsLeft}>
+                  <button className={styles.actionToolBtn} title="附加文件" onClick={handleAttachFile}>
+                    <span className="material-symbols-outlined">attach_file</span>
+                  </button>
+                  <button className={styles.actionToolBtn} title="附加图片" onClick={handleAttachImage}>
+                    <span className="material-symbols-outlined">image</span>
+                  </button>
+                </div>
+                {isGenerating ? (
+                  <button className={styles.paneSendBtn} onClick={handleStop} title="停止生成">
+                    <span className="material-symbols-outlined">stop_circle</span>
+                  </button>
+                ) : (
+                  <button
+                    className={`${styles.paneSendBtn} ${canSend ? styles.paneSendBtnActive : ''}`}
+                    onClick={handleSend}
+                    disabled={!canSend}
+                    title="发送 (⌘Enter)"
+                  >
+                    <span className="material-symbols-outlined">arrow_upward</span>
+                  </button>
+                )}
               </div>
-              {isGenerating ? (
-                <button className={styles.paneSendBtn} onClick={handleStop} title="停止生成">
-                  <span className="material-symbols-outlined">stop_circle</span>
-                </button>
-              ) : (
-                <button
-                  className={`${styles.paneSendBtn} ${canSend ? styles.paneSendBtnActive : ''}`}
-                  onClick={handleSend}
-                  disabled={!canSend}
-                  title="发送 (⌘Enter)"
-                >
-                  <span className="material-symbols-outlined">arrow_upward</span>
-                </button>
-              )}
             </div>
           </div>
           {/* Bottom hint */}
