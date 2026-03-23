@@ -93,11 +93,11 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   }, [slashQuery]);
 
   const filteredFiles = useMemo(() => {
-    if (!mentionQuery) return flatFiles.slice(0, 20);
+    if (!mentionQuery) return flatFiles;
     const q = mentionQuery.toLowerCase();
     return flatFiles
       .filter(f => f.name.toLowerCase().includes(q) || f.path.toLowerCase().includes(q))
-      .slice(0, 20);
+;
   }, [flatFiles, mentionQuery]);
 
   // Auto-resize textarea
@@ -220,8 +220,22 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     // Handle slash command navigation
     if (showSlash && filteredCommands.length > 0) {
-      if (e.key === 'ArrowDown') { e.preventDefault(); setSlashIndex(i => (i + 1) % filteredCommands.length); return; }
-      if (e.key === 'ArrowUp') { e.preventDefault(); setSlashIndex(i => (i - 1 + filteredCommands.length) % filteredCommands.length); return; }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const next = (slashIndex + 1) % filteredCommands.length;
+        setSlashIndex(next);
+        const el = document.querySelector(`[data-slash-item="${next}"]`) as HTMLElement;
+        el?.scrollIntoView({ block: 'nearest' });
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prev = (slashIndex - 1 + filteredCommands.length) % filteredCommands.length;
+        setSlashIndex(prev);
+        const el = document.querySelector(`[data-slash-item="${prev}"]`) as HTMLElement;
+        el?.scrollIntoView({ block: 'nearest' });
+        return;
+      }
       if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); handleSlashSelect(filteredCommands[slashIndex]); return; }
       if (e.key === 'Escape') { e.preventDefault(); setShowSlash(false); return; }
     }
@@ -229,12 +243,21 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     if (showMention && filteredFiles.length > 0) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setMentionIndex(i => (i + 1) % filteredFiles.length);
+        const next = (mentionIndex + 1) % filteredFiles.length;
+        setMentionIndex(next);
+        // Scroll into view
+        const list = document.querySelector('[data-mention-list]');
+        const active = list?.children[next] as HTMLElement;
+        active?.scrollIntoView({ block: 'nearest' });
         return;
       }
       if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setMentionIndex(i => (i - 1 + filteredFiles.length) % filteredFiles.length);
+        const prev = (mentionIndex - 1 + filteredFiles.length) % filteredFiles.length;
+        setMentionIndex(prev);
+        const list = document.querySelector('[data-mention-list]');
+        const active = list?.children[prev] as HTMLElement;
+        active?.scrollIntoView({ block: 'nearest' });
         return;
       }
       if (e.key === 'Enter' || e.key === 'Tab') {
@@ -367,7 +390,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
             {/* @ Mention dropdown — positioned above, outside rounded wrapper to avoid clipping */}
             {showMention && filteredFiles.length > 0 && (
               <div className={styles.mentionDropdown}>
-                <div className={styles.mentionDropdownList}>
+                <div className={styles.mentionDropdownList} data-mention-list>
                   {filteredFiles.map((file, idx) => (
                     <div
                       key={file.path}
@@ -400,6 +423,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                           return (
                             <div
                               key={cmd.name}
+                              data-slash-item={globalIdx}
                               className={`${styles.slashItem} ${globalIdx === slashIndex ? styles.slashItemActive : ''}`}
                               onClick={() => handleSlashSelect(cmd)}
                               onMouseEnter={() => setSlashIndex(globalIdx)}
@@ -426,6 +450,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                               className={`${styles.slashItem} ${globalIdx === slashIndex ? styles.slashItemActive : ''}`}
                               onClick={() => handleSlashSelect(cmd)}
                               onMouseEnter={() => setSlashIndex(globalIdx)}
+                              data-slash-item={globalIdx}
                             >
                               <span className={styles.slashName}>{cmd.name}</span>
                               <span className={styles.slashDesc}>{cmd.description}</span>
