@@ -6,6 +6,24 @@ import { MessageBubble } from '@/components/Chat/MessageBubble';
 import type { FileNode } from '@/types/chat';
 import styles from './TerminalPane.module.css';
 
+// Claude Code slash commands
+const SLASH_COMMANDS = [
+  { name: '/clear', description: '清除对话历史' },
+  { name: '/compact', description: '压缩对话上下文' },
+  { name: '/config', description: '查看/修改配置' },
+  { name: '/cost', description: '查看 token 使用量' },
+  { name: '/doctor', description: '检查 Claude Code 健康状态' },
+  { name: '/help', description: '显示帮助信息' },
+  { name: '/init', description: '初始化 Claude Code 项目' },
+  { name: '/login', description: '登录 Anthropic 账户' },
+  { name: '/logout', description: '登出 Anthropic 账户' },
+  { name: '/model', description: '切换模型' },
+  { name: '/permissions', description: '管理权限' },
+  { name: '/review', description: '代码审查' },
+  { name: '/status', description: '查看状态' },
+  { name: '/vim', description: '切换 vim 模式' },
+];
+
 interface TerminalPaneProps {
   tabId: string;
   paneId: string;
@@ -48,6 +66,9 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionIndex, setMentionIndex] = useState(0);
   const [showMention, setShowMention] = useState(false);
+  const [showSlash, setShowSlash] = useState(false);
+  const [slashQuery, setSlashQuery] = useState('');
+  const [slashIndex, setSlashIndex] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputWrapperRef = useRef<HTMLDivElement>(null);
@@ -55,6 +76,12 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   // Flatten file tree for @ mentions
   const flatFiles = useMemo(() => flattenTree(fileTree), [fileTree]);
   console.log('[CCDesk] flatFiles total:', flatFiles.length);
+
+  const filteredCommands = useMemo(() => {
+    if (!slashQuery) return SLASH_COMMANDS;
+    const q = slashQuery.toLowerCase();
+    return SLASH_COMMANDS.filter(c => c.name.toLowerCase().includes(q));
+  }, [slashQuery]);
 
   const filteredFiles = useMemo(() => {
     if (!mentionQuery) return flatFiles.slice(0, 20);
@@ -86,10 +113,11 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     };
   }, [paneId]);
 
-  // Scroll to bottom on new messages
+  // Scroll to bottom on new messages and during streaming
+  const lastMsg = messages[messages.length - 1];
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages.length]);
+  }, [messages.length, lastMsg?.content?.length, lastMsg?.isStreaming]);
 
   // Close mention dropdown on outside click
   useEffect(() => {
@@ -131,8 +159,14 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const handleSend = useCallback(() => {
     const trimmed = text.trim();
     if (!trimmed) return;
+    // Check if it's a slash command
+    if (trimmed.startsWith('/') && !trimmed.includes(' ')) {
+      const cmd = SLASH_COMMANDS.find(c => c.name === trimmed);
+      if (cmd) { handleSlashSelect(cmd); return; }
+    }
     setText('');
     setShowMention(false);
+    setShowSlash(false);
     if (textareaRef.current) textareaRef.current.style.height = '44px';
     useChatStore.getState().sendMessage(paneId, trimmed);
   }, [text, paneId]);
@@ -149,14 +183,39 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       setMentionQuery(atMatch[1]);
       setShowMention(true);
       setMentionIndex(0);
+      setShowSlash(false);
       console.log('[CCDesk] @ mention detected:', atMatch[1], 'files:', flatFiles.length);
     } else {
       setShowMention(false);
       setMentionQuery('');
     }
+    // Detect / commands
+    const slashMatch = newText.match(/\/(\S*)$/);
+    if (slashMatch && !atMatch) {
+      setSlashQuery(slashMatch[1]);
+      setShowSlash(true);
+      setSlashIndex(0);
+    } else {
+      setShowSlash(false);
+      setSlashQuery('');
+    }
   }, [flatFiles]);
 
+  const handleSlashSelect = useCallback((cmd: typeof SLASH_COMMANDS[0]) => {
+    setText('');
+    setShowSlash(false);
+    // For now, send the command as a message (Claude CLI will handle it)
+    useChatStore.getState().sendMessage(paneId, cmd.name);
+  }, [paneId]);
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Handle slash command navigation
+    if (showSlash && filteredCommands.length > 0) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setSlashIndex(i => (i + 1) % filteredCommands.length); return; }
+      if (e.key === 'ArrowUp') { e.preventDefault(); setSlashIndex(i => (i - 1 + filteredCommands.length) % filteredCommands.length); return; }
+      if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); handleSlashSelect(filteredCommands[slashIndex]); return; }
+      if (e.key === 'Escape') { e.preventDefault(); setShowSlash(false); return; }
+    }
     // Handle mention dropdown navigation
     if (showMention && filteredFiles.length > 0) {
       if (e.key === 'ArrowDown') {
@@ -185,7 +244,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       e.preventDefault();
       handleSend();
     }
-  }, [showMention, filteredFiles, mentionIndex, handleMentionSelect, handleSend]);
+  }, [showSlash, filteredCommands, slashIndex, handleSlashSelect, showMention, filteredFiles, mentionIndex, handleMentionSelect, handleSend]);
 
   const handleStop = useCallback(() => {
     useChatStore.getState().stopGeneration(paneId);
@@ -270,9 +329,6 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
         {/* Input */}
         <div className={styles.paneInput}>
           <div className={styles.paneInputWrapper} ref={inputWrapperRef}>
-            <button className={styles.paneAttachBtn} title="附件">
-              <span className="material-symbols-outlined">attach_file</span>
-            </button>
             <textarea
               ref={textareaRef}
               className={styles.paneInputField}
@@ -319,16 +375,37 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                 ))}
               </div>
             )}
+
+            {/* / Slash command dropdown */}
+            {showSlash && filteredCommands.length > 0 && (
+              <div className={styles.slashDropdown}>
+                {filteredCommands.map((cmd, idx) => (
+                  <div
+                    key={cmd.name}
+                    className={`${styles.slashItem} ${idx === slashIndex ? styles.slashItemActive : ''}`}
+                    onClick={() => handleSlashSelect(cmd)}
+                    onMouseEnter={() => setSlashIndex(idx)}
+                  >
+                    <span className={styles.slashName}>{cmd.name}</span>
+                    <span className={styles.slashDesc}>{cmd.description}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          {/* Footer */}
+          {/* Footer — tool buttons + shortcuts + tokens */}
           <div className={styles.paneInputFooter}>
             <div className={styles.paneFooterLeft}>
-              <span className={styles.paneFooterHint}>
-                <span className="material-symbols-outlined">keyboard_command_key</span> L 搜索代码
-              </span>
-              <span className={styles.paneFooterHint}>
-                <span className="material-symbols-outlined">keyboard_command_key</span> K 快速修复
-              </span>
+              <button className={styles.footerToolBtn} title="附加文件">
+                <span className="material-symbols-outlined">attach_file</span>
+              </button>
+              <button className={styles.footerToolBtn} title="附加图片">
+                <span className="material-symbols-outlined">image</span>
+              </button>
+            </div>
+            <div className={styles.paneFooterCenter}>
+              <span className={styles.paneFooterHint}>⌘L 搜索</span>
+              <span className={styles.paneFooterHint}>⌘K 修复</span>
             </div>
             <span className={styles.paneFooterHint}>{tokensDisplay}</span>
           </div>
