@@ -40,8 +40,10 @@
 }
 
 [data-theme="dark"] .aiAvatar .material-symbols-outlined {
-  color: white;
-  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+  color: #ffffff;
+  font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
+  -webkit-text-fill-color: #ffffff;
+  text-shadow: none;
 }
 
 /* User Avatar — rounded-full + orange border */
