@@ -42,6 +42,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const isGenerating = paneState?.isGenerating ?? false;
   const tokenUsage = paneState?.tokenUsage ?? { input: 0, output: 0 };
   const fileTree = useChatStore((s) => s.fileTree);
+  console.log('[CCDesk] fileTree:', fileTree.length, 'projectPath:', projectPath);
 
   const [text, setText] = useState('');
   const [mentionQuery, setMentionQuery] = useState('');
@@ -146,11 +147,12 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       setMentionQuery(atMatch[1]);
       setShowMention(true);
       setMentionIndex(0);
+      console.log('[CCDesk] @ mention detected:', atMatch[1], 'files:', flatFiles.length);
     } else {
       setShowMention(false);
       setMentionQuery('');
     }
-  }, []);
+  }, [flatFiles]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     // Handle mention dropdown navigation
