@@ -7,8 +7,13 @@ import { claudeApi, isElectron } from '@/lib/claude-api';
 import type { FileNode } from '@/types/chat';
 import styles from './TerminalPane.module.css';
 
-// Claude Code slash commands
-const SLASH_COMMANDS = [
+// Claude Code slash commands — grouped per Stitch design spec
+const COMMON_COMMANDS = [
+  { name: '/edit', description: '修改或创建工作区文件' },
+  { name: '/explain', description: '获取代码或逻辑的详细解读' },
+];
+
+const ALL_COMMANDS = [
   { name: '/clear', description: '清除对话历史' },
   { name: '/compact', description: '压缩对话上下文' },
   { name: '/config', description: '查看/修改配置' },
@@ -22,8 +27,12 @@ const SLASH_COMMANDS = [
   { name: '/permissions', description: '管理权限' },
   { name: '/review', description: '代码审查' },
   { name: '/status', description: '查看状态' },
+  { name: '/test', description: '为选定函数生成单元测试' },
+  { name: '/bug', description: '报告 CLI 行为中的 bug' },
   { name: '/vim', description: '切换 vim 模式' },
 ];
+
+const ALL_SLASH = [...COMMON_COMMANDS, ...ALL_COMMANDS];
 
 interface TerminalPaneProps {
   tabId: string;
@@ -59,8 +68,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const paneState = useChatStore((s) => s.panes.get(paneId));
   const messages = paneState?.messages ?? [];
   const isGenerating = paneState?.isGenerating ?? false;
-  const tokenUsage = paneState?.tokenUsage ?? { input: 0, output: 0 };
-  const fileTree = useChatStore((s) => s.fileTree);
+    const fileTree = useChatStore((s) => s.fileTree);
   console.log('[CCDesk] fileTree top-level:', fileTree.length, 'projectPath:', projectPath);
 
   const [text, setText] = useState('');
@@ -79,9 +87,9 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   console.log('[CCDesk] flatFiles total:', flatFiles.length);
 
   const filteredCommands = useMemo(() => {
-    if (!slashQuery) return SLASH_COMMANDS;
+    if (!slashQuery) return ALL_SLASH;
     const q = slashQuery.toLowerCase();
-    return SLASH_COMMANDS.filter(c => c.name.toLowerCase().includes(q));
+    return ALL_SLASH.filter(c => c.name.toLowerCase().includes(q));
   }, [slashQuery]);
 
   const filteredFiles = useMemo(() => {
@@ -162,7 +170,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     if (!trimmed) return;
     // Check if it's a slash command
     if (trimmed.startsWith('/') && !trimmed.includes(' ')) {
-      const cmd = SLASH_COMMANDS.find(c => c.name === trimmed);
+      const cmd = ALL_SLASH.find(c => c.name === trimmed);
       if (cmd) { handleSlashSelect(cmd); return; }
     }
     setText('');
@@ -202,7 +210,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     }
   }, [flatFiles]);
 
-  const handleSlashSelect = useCallback((cmd: typeof SLASH_COMMANDS[0]) => {
+  const handleSlashSelect = useCallback((cmd: typeof ALL_SLASH[0]) => {
     setText('');
     setShowSlash(false);
     // For now, send the command as a message (Claude CLI will handle it)
@@ -298,11 +306,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const isSinglePane = (tab?.panes.size ?? 0) <= 1;
   const canSend = text.trim().length > 0 && !isGenerating;
 
-  // Token display
-  const tokensLeft = 200000 - (tokenUsage.input + tokenUsage.output);
-  const tokensDisplay = tokensLeft > 1000
-    ? `${Math.round(tokensLeft / 1000)}K tokens left`
-    : `${tokensLeft} tokens left`;
+  // Token display (reserved for future use)
 
   return (
     <div
@@ -357,9 +361,86 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
           </div>
         </div>
 
-        {/* Input */}
+        {/* Input — Stitch design: all-in-one rounded box */}
         <div className={styles.paneInput}>
           <div className={styles.paneInputWrapper} ref={inputWrapperRef}>
+            {/* @ Mention dropdown — positioned above, full width */}
+            {showMention && filteredFiles.length > 0 && (
+              <div className={styles.mentionDropdown}>
+                <div className={styles.mentionDropdownList}>
+                  {filteredFiles.map((file, idx) => (
+                    <div
+                      key={file.path}
+                      className={`${styles.mentionItem} ${idx === mentionIndex ? styles.mentionItemActive : ''}`}
+                      onClick={() => handleMentionSelect(file)}
+                      onMouseEnter={() => setMentionIndex(idx)}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 18 }}>description</span>
+                      <div className={styles.mentionInfo}>
+                        <span className={styles.mentionName}>{file.name}</span>
+                        <span className={styles.mentionPath}>{file.path}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* / Slash command dropdown — glass panel, grouped */}
+            {showSlash && filteredCommands.length > 0 && (
+              <div className={styles.slashDropdown}>
+                <div className={styles.slashDropdownScroll}>
+                  {/* Common Commands group */}
+                  {filteredCommands.filter(c => COMMON_COMMANDS.some(cc => cc.name === c.name)).length > 0 && (
+                    <>
+                      <div className={styles.slashGroup}>Common Commands</div>
+                      <div className={styles.slashGroupItems}>
+                        {filteredCommands.filter(c => COMMON_COMMANDS.some(cc => cc.name === c.name)).map((cmd) => {
+                          const globalIdx = filteredCommands.indexOf(cmd);
+                          return (
+                            <div
+                              key={cmd.name}
+                              className={`${styles.slashItem} ${globalIdx === slashIndex ? styles.slashItemActive : ''}`}
+                              onClick={() => handleSlashSelect(cmd)}
+                              onMouseEnter={() => setSlashIndex(globalIdx)}
+                            >
+                              <span className={styles.slashName}>{cmd.name}</span>
+                              <span className={styles.slashDesc}>{cmd.description}</span>
+                              {globalIdx === slashIndex && <span className={styles.slashBadge}>Select</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                  {/* All Commands group */}
+                  {filteredCommands.filter(c => !COMMON_COMMANDS.some(cc => cc.name === c.name)).length > 0 && (
+                    <>
+                      <div className={styles.slashGroup}>All Commands</div>
+                      <div className={styles.slashGroupItems}>
+                        {filteredCommands.filter(c => !COMMON_COMMANDS.some(cc => cc.name === c.name)).map((cmd) => {
+                          const globalIdx = filteredCommands.indexOf(cmd);
+                          return (
+                            <div
+                              key={cmd.name}
+                              className={`${styles.slashItem} ${globalIdx === slashIndex ? styles.slashItemActive : ''}`}
+                              onClick={() => handleSlashSelect(cmd)}
+                              onMouseEnter={() => setSlashIndex(globalIdx)}
+                            >
+                              <span className={styles.slashName}>{cmd.name}</span>
+                              <span className={styles.slashDesc}>{cmd.description}</span>
+                              {globalIdx === slashIndex && <span className={styles.slashBadge}>Tab</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Textarea */}
             <textarea
               ref={textareaRef}
               className={styles.paneInputField}
@@ -368,77 +449,38 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               onKeyDown={handleKeyDown}
               placeholder="给 Claude 发送消息或询问代码问题..."
               spellCheck={false}
-              rows={1}
+              rows={2}
             />
-            {isGenerating ? (
-              <button
-                className={styles.paneSendBtn}
-                onClick={handleStop}
-                title="停止生成"
-              >
-                <span className="material-symbols-outlined">stop_circle</span>
-              </button>
-            ) : (
-              <button
-                className={`${styles.paneSendBtn} ${canSend ? styles.paneSendBtnActive : ''}`}
-                onClick={handleSend}
-                disabled={!canSend}
-                title="发送 (⌘Enter)"
-              >
-                <span className="material-symbols-outlined">arrow_upward</span>
-              </button>
-            )}
 
-            {/* @ Mention dropdown */}
-            {showMention && filteredFiles.length > 0 && (
-              <div className={styles.mentionDropdown}>
-                {filteredFiles.map((file, idx) => (
-                  <div
-                    key={file.path}
-                    className={`${styles.mentionItem} ${idx === mentionIndex ? styles.mentionItemActive : ''}`}
-                    onClick={() => handleMentionSelect(file)}
-                    onMouseEnter={() => setMentionIndex(idx)}
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: 14, marginRight: 6 }}>description</span>
-                    <span className={styles.mentionName}>{file.name}</span>
-                    <span className={styles.mentionPath}>{file.path}</span>
-                  </div>
-                ))}
+            {/* Bottom row: attach + terminal | send */}
+            <div className={styles.paneInputActions}>
+              <div className={styles.paneInputActionsLeft}>
+                <button className={styles.actionToolBtn} title="附加文件" onClick={handleAttachFile}>
+                  <span className="material-symbols-outlined">attach_file</span>
+                </button>
+                <button className={styles.actionToolBtn} title="附加图片" onClick={handleAttachImage}>
+                  <span className="material-symbols-outlined">image</span>
+                </button>
               </div>
-            )}
-
-            {/* / Slash command dropdown */}
-            {showSlash && filteredCommands.length > 0 && (
-              <div className={styles.slashDropdown}>
-                {filteredCommands.map((cmd, idx) => (
-                  <div
-                    key={cmd.name}
-                    className={`${styles.slashItem} ${idx === slashIndex ? styles.slashItemActive : ''}`}
-                    onClick={() => handleSlashSelect(cmd)}
-                    onMouseEnter={() => setSlashIndex(idx)}
-                  >
-                    <span className={styles.slashName}>{cmd.name}</span>
-                    <span className={styles.slashDesc}>{cmd.description}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+              {isGenerating ? (
+                <button className={styles.paneSendBtn} onClick={handleStop} title="停止生成">
+                  <span className="material-symbols-outlined">stop_circle</span>
+                </button>
+              ) : (
+                <button
+                  className={`${styles.paneSendBtn} ${canSend ? styles.paneSendBtnActive : ''}`}
+                  onClick={handleSend}
+                  disabled={!canSend}
+                  title="发送 (⌘Enter)"
+                >
+                  <span className="material-symbols-outlined">arrow_upward</span>
+                </button>
+              )}
+            </div>
           </div>
-          {/* Footer — tool buttons + shortcuts + tokens */}
-          <div className={styles.paneInputFooter}>
-            <div className={styles.paneFooterLeft}>
-              <button className={styles.footerToolBtn} title="附加文件" onClick={handleAttachFile}>
-                <span className="material-symbols-outlined">attach_file</span>
-              </button>
-              <button className={styles.footerToolBtn} title="附加图片" onClick={handleAttachImage}>
-                <span className="material-symbols-outlined">image</span>
-              </button>
-            </div>
-            <div className={styles.paneFooterCenter}>
-              <span className={styles.paneFooterHint}>⌘L 搜索</span>
-              <span className={styles.paneFooterHint}>⌘K 修复</span>
-            </div>
-            <span className={styles.paneFooterHint}>{tokensDisplay}</span>
+          {/* Bottom hint */}
+          <div className={styles.paneInputHint}>
+            Claude Code 正在预览阶段 · 使用 ⌘+K 快速唤起命令
           </div>
         </div>
       </div>
