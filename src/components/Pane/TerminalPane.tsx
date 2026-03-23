@@ -43,20 +43,6 @@ const AVAILABLE_MODELS = [
   { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5' },
 ];
 
-// ── @ Mention types ──
-
-interface SpecialContext {
-  name: string;
-  icon: string;
-  description: string;
-}
-
-const SPECIAL_CONTEXTS: SpecialContext[] = [
-  { name: '@git', icon: 'git_diff', description: 'Git diff context' },
-  { name: '@tree', icon: 'folder', description: 'File tree' },
-  { name: '@url', icon: 'link', description: 'URL content' },
-];
-
 // File extension → Material Symbols icon
 function getFileIcon(filename: string): { icon: string; colorClass: string } {
   const ext = filename.split('.').pop()?.toLowerCase() ?? '';
@@ -122,6 +108,8 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const messages = paneState?.messages ?? [];
   const isGenerating = paneState?.isGenerating ?? false;
   const fileTree = useChatStore((s) => s.fileTree);
+  const tokenUsage = paneState?.tokenUsage ?? { input: 0, output: 0 };
+  const currentModel = useChatStore((s) => s.currentModel) || 'claude-sonnet-4-6';
 
   const [text, setText] = useState('');
   const [mentionQuery, setMentionQuery] = useState('');
@@ -187,22 +175,14 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
 
   const flatFiles = useMemo(() => flattenTree(fileTree), [fileTree]);
 
-  // Merge special contexts with files into a single mention list
+  // Mention items — files only
   const allMentionItems = useMemo(() => {
     const q = mentionQuery.toLowerCase();
-    // Filter special contexts
-    const filteredSpecial = mentionQuery
-      ? SPECIAL_CONTEXTS.filter(s => s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q))
-      : SPECIAL_CONTEXTS;
-    // Filter files
     const filteredFiles = mentionQuery
       ? flatFiles.filter(f => f.name.toLowerCase().includes(q) || f.path.toLowerCase().includes(q))
       : flatFiles;
-    // Combine: special first, then files
-    return [
-      ...filteredSpecial.map(s => ({ type: 'special' as const, ...s })),
-      ...filteredFiles.map(f => ({ type: 'file' as const, name: f.name, path: f.path })),
-    ];
+    // Files only (special contexts like @git, @tree, @url are handled by Claude CLI directly)
+    return filteredFiles.map(f => ({ type: 'file' as const, name: f.name, path: f.path }));
   }, [flatFiles, mentionQuery]);
 
   // ── Filtered commands ──
@@ -279,12 +259,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     const atMatch = textBeforeCursor.match(/@\S*$/);
     if (!atMatch) return;
 
-    let insert: string;
-    if (item.type === 'special') {
-      insert = item.name + ' ';
-    } else {
-      insert = `@${item.path} `;
-    }
+    const insert = `@${item.path} `;
 
     const before = text.slice(0, atMatch.index) + insert;
     const after = text.slice(cursorPos);
@@ -586,22 +561,6 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                 <div className={styles.mentionDropdownList} data-mention-list>
                   {allMentionItems.map((item, idx) => {
                     const isActive = idx === mentionIndex;
-                    if (item.type === 'special') {
-                      return (
-                        <div
-                          key={item.name}
-                          className={`${styles.mentionItem} ${isActive ? styles.mentionItemActive : ''}`}
-                          onClick={() => handleMentionSelect(item)}
-                          onMouseEnter={() => setMentionIndex(idx)}
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{item.icon}</span>
-                          <div className={styles.mentionInfo}>
-                            <span className={styles.mentionName}>{item.name}</span>
-                            <span className={styles.mentionDesc}>{item.description}</span>
-                          </div>
-                        </div>
-                      );
-                    }
                     const fileIcon = getFileIcon(item.name);
                     return (
                       <div
@@ -714,9 +673,13 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               </div>
             </div>
           </div>
-          {/* Bottom hint */}
+          {/* Bottom hint — model + tokens */}
           <div className={styles.paneInputHint}>
-            Claude Code 正在预览阶段 · 使用 ⌘+K 快速唤起命令
+            <span>{currentModel.replace('claude-', '').replace(/-\d{8}$/, '')}</span>
+            <span>·</span>
+            <span>{tokenUsage.input > 1000 ? Math.round(tokenUsage.input / 1000) + 'K' : tokenUsage.input} in / {tokenUsage.output > 1000 ? Math.round(tokenUsage.output / 1000) + 'K' : tokenUsage.output} out</span>
+            <span>·</span>
+            <span>{200000 - tokenUsage.input - tokenUsage.output > 0 ? Math.round((200000 - tokenUsage.input - tokenUsage.output) / 1000) + 'K' : 0} remaining</span>
           </div>
         </div>
       </div>
