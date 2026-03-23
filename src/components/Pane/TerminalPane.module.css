@@ -288,3 +288,53 @@
 .paneFooterHint .material-symbols-outlined {
   font-size: 12px;
 }
+
+/* @ Mention dropdown */
+.mentionDropdown {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--bg-input);
+  border: 1px solid var(--border-ghost);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  padding: 4px;
+  z-index: 10;
+}
+
+.mentionItem {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 100ms;
+}
+
+.mentionItem:hover,
+.mentionItemActive {
+  background: var(--accent-muted);
+}
+
+.mentionName {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-right: 8px;
+}
+
+.mentionPath {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mentionItemActive .mentionPath {
+  color: var(--accent);
+}

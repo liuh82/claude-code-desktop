@@ -107,16 +107,19 @@ function startListening() {
   const unsubStderr = claudeApi.onClaudeStderr((data: string) => {
     console.warn('[CCDesk stderr]', data);
   });
-  const unsubExit = claudeApi.onClaudeExit((info) => {
-    const paneId = sessionIdToPaneId.get(info.sessionId);
-    if (paneId) {
-      finalizeAssistantForPane(paneId);
-      useChatStore.setState((s) => {
-        const next = new Map(s.panes);
-        const pane = next.get(paneId);
-        if (pane) next.set(paneId, { ...pane, isGenerating: false });
-        return { panes: next };
-      });
+  const unsubExit = claudeApi.onClaudeExit((_info) => {
+    // Finalize ALL generating panes (defensive - in case sessionId mapping failed)
+    const state = useChatStore.getState();
+    for (const [paneId, pane] of state.panes) {
+      if (pane.isGenerating) {
+        finalizeAssistantForPane(paneId);
+        useChatStore.setState((s) => {
+          const next = new Map(s.panes);
+          const p = next.get(paneId);
+          if (p) next.set(paneId, { ...p, isGenerating: false });
+          return { panes: next };
+        });
+      }
     }
   });
   const unsubError = claudeApi.onClaudeError((info) => {

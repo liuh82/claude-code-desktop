@@ -18,8 +18,8 @@
 .toolCallHeader {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px;
+  gap: 8px;
+  padding: 10px 12px;
   background: rgba(0, 91, 192, 0.03);
   cursor: pointer;
   user-select: none;
@@ -39,8 +39,8 @@
 }
 
 .toolIcon {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -141,10 +141,10 @@
 }
 
 .toolCallBody {
-  padding: 16px;
+  padding: 10px 12px;
   background: var(--bg-secondary);
   font-size: var(--font-size-sm);
-  max-height: 200px;
+  max-height: 120px;
   overflow-y: auto;
   border-top: 1px solid var(--border-divider);
 }

@@ -1,14 +1,30 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useTabStore } from '@/stores/useTabStore';
 import { useChatStore } from '@/stores/useChatStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { MessageBubble } from '@/components/Chat/MessageBubble';
+import type { FileNode } from '@/types/chat';
 import styles from './TerminalPane.module.css';
 
 interface TerminalPaneProps {
   tabId: string;
   paneId: string;
   isActive: boolean;
+}
+
+// Flatten file tree for search
+function flattenTree(nodes: FileNode[], prefix = ''): FileNode[] {
+  const result: FileNode[] = [];
+  for (const node of nodes) {
+    const path = prefix ? `${prefix}/${node.name}` : node.name;
+    if (node.type === 'file') {
+      result.push({ ...node, path });
+    }
+    if (node.children) {
+      result.push(...flattenTree(node.children, path));
+    }
+  }
+  return result;
 }
 
 function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
@@ -25,10 +41,25 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const messages = paneState?.messages ?? [];
   const isGenerating = paneState?.isGenerating ?? false;
   const tokenUsage = paneState?.tokenUsage ?? { input: 0, output: 0 };
+  const fileTree = useChatStore((s) => s.fileTree);
 
   const [text, setText] = useState('');
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionIndex, setMentionIndex] = useState(0);
+  const [showMention, setShowMention] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputWrapperRef = useRef<HTMLDivElement>(null);
+
+  // Flatten file tree for @ mentions
+  const flatFiles = useMemo(() => flattenTree(fileTree), [fileTree]);
+  const filteredFiles = useMemo(() => {
+    if (!mentionQuery) return flatFiles.slice(0, 8);
+    const q = mentionQuery.toLowerCase();
+    return flatFiles
+      .filter(f => f.name.toLowerCase().includes(q) || f.path.toLowerCase().includes(q))
+      .slice(0, 8);
+  }, [flatFiles, mentionQuery]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -57,24 +88,100 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
+  // Close mention dropdown on outside click
+  useEffect(() => {
+    if (!showMention) return;
+    const handler = (e: MouseEvent) => {
+      if (inputWrapperRef.current && !inputWrapperRef.current.contains(e.target as Node)) {
+        setShowMention(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showMention]);
+
   const handleFocus = useCallback(() => {
     if (!isActive) setActivePane(tabId, paneId);
   }, [isActive, tabId, paneId, setActivePane]);
+
+  const handleMentionSelect = useCallback((file: FileNode) => {
+    if (!textareaRef.current) return;
+    const textarea = textareaRef.current;
+    const cursorPos = textarea.selectionStart;
+    const textBeforeCursor = text.slice(0, cursorPos);
+    const atMatch = textBeforeCursor.match(/@\S*$/);
+    if (!atMatch) return;
+
+    const before = text.slice(0, atMatch.index) + `@${file.path} `;
+    const after = text.slice(cursorPos);
+    const newPos = before.length;
+    setText(before + after);
+    setShowMention(false);
+    setMentionQuery('');
+    setMentionIndex(0);
+    setTimeout(() => {
+      textarea.setSelectionRange(newPos, newPos);
+      textarea.focus();
+    }, 0);
+  }, [text]);
 
   const handleSend = useCallback(() => {
     const trimmed = text.trim();
     if (!trimmed) return;
     setText('');
+    setShowMention(false);
     if (textareaRef.current) textareaRef.current.style.height = '44px';
     useChatStore.getState().sendMessage(paneId, trimmed);
   }, [text, paneId]);
 
+  const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    setText(newText);
+
+    // Detect @ mentions
+    const cursorPos = e.target.selectionStart;
+    const textBeforeCursor = newText.slice(0, cursorPos);
+    const atMatch = textBeforeCursor.match(/@(\S*)$/);
+    if (atMatch) {
+      setMentionQuery(atMatch[1]);
+      setShowMention(true);
+      setMentionIndex(0);
+    } else {
+      setShowMention(false);
+      setMentionQuery('');
+    }
+  }, []);
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Handle mention dropdown navigation
+    if (showMention && filteredFiles.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setMentionIndex(i => (i + 1) % filteredFiles.length);
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setMentionIndex(i => (i - 1 + filteredFiles.length) % filteredFiles.length);
+        return;
+      }
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        handleMentionSelect(filteredFiles[mentionIndex]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowMention(false);
+        return;
+      }
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-  }, [handleSend]);
+  }, [showMention, filteredFiles, mentionIndex, handleMentionSelect, handleSend]);
 
   const handleStop = useCallback(() => {
     useChatStore.getState().stopGeneration(paneId);
@@ -158,7 +265,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
 
         {/* Input */}
         <div className={styles.paneInput}>
-          <div className={styles.paneInputWrapper}>
+          <div className={styles.paneInputWrapper} ref={inputWrapperRef}>
             <button className={styles.paneAttachBtn} title="附件">
               <span className="material-symbols-outlined">attach_file</span>
             </button>
@@ -166,7 +273,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               ref={textareaRef}
               className={styles.paneInputField}
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={handleTextChange}
               onKeyDown={handleKeyDown}
               placeholder="给 Claude 发送消息或询问代码问题..."
               spellCheck={false}
@@ -189,6 +296,24 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               >
                 <span className="material-symbols-outlined">arrow_upward</span>
               </button>
+            )}
+
+            {/* @ Mention dropdown */}
+            {showMention && filteredFiles.length > 0 && (
+              <div className={styles.mentionDropdown}>
+                {filteredFiles.map((file, idx) => (
+                  <div
+                    key={file.path}
+                    className={`${styles.mentionItem} ${idx === mentionIndex ? styles.mentionItemActive : ''}`}
+                    onClick={() => handleMentionSelect(file)}
+                    onMouseEnter={() => setMentionIndex(idx)}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 14, marginRight: 6 }}>description</span>
+                    <span className={styles.mentionName}>{file.name}</span>
+                    <span className={styles.mentionPath}>{file.path}</span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
           {/* Footer */}
