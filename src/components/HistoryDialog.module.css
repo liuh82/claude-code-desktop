@@ -1,0 +1,111 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.dialog {
+  width: 480px;
+  max-width: 90vw;
+  max-height: 70vh;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-ghost);
+  border-radius: 14px;
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-ghost);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.closeBtn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.closeBtn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.sessionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 100ms;
+  text-align: left;
+}
+
+.sessionItem:hover {
+  background: var(--accent-muted);
+}
+
+.sessionLeft {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.sessionTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionMeta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}

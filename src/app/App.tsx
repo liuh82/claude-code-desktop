@@ -14,6 +14,7 @@ import { ResizeHandle } from '@/components/ResizeHandle';
 import { ProjectSelector } from '@/components/ProjectSelector';
 import { CommandPalette, type CommandItem } from '@/components/CommandPalette';
 import { SettingsDialog } from '@/components/SettingsDialog';
+import { HistoryDialog } from '@/components/HistoryDialog';
 // import { TabBar } from '@/components/Pane/TabBar';
 import { PaneContainer } from '@/components/Pane/PaneContainer';
 import type { LayoutNode } from '@/types/pane';
@@ -48,6 +49,7 @@ function AppContent() {
 
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(() => readBool(SIDEBAR_KEY, true));
   const [toolPanelOpen, setToolPanelOpen] = useState(() => readBool(TOOLPANEL_KEY, false));
   const [toolPanelWidth, setToolPanelWidth] = useState(() => readNum(TOOLPANEL_WIDTH_KEY, 288));
@@ -180,6 +182,7 @@ function AppContent() {
       onOpenSettings: () => setSettingsOpen(true),
       onOpenProject: handleOpenProject,
       onCommandPalette: () => setCommandPaletteOpen(true),
+      onOpenHistory: () => setHistoryOpen(true),
       onStopGeneration: () => {
         if (activePaneId) stopGeneration(activePaneId);
       },
@@ -262,6 +265,11 @@ function AppContent() {
       </div>
 
       <CommandPalette isOpen={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} commands={commands} />
+      <HistoryDialog
+        isOpen={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        onSelectSession={(id) => console.log('Load session:', id)}
+      />
       <SettingsDialog isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );

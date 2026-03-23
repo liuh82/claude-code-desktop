@@ -38,6 +38,7 @@ const api = {
 
   // Dialog
   openDirectoryDialog: () => ipcRenderer.invoke('open-directory-dialog'),
+  openFileDialog: (opts?: any) => ipcRenderer.invoke('open-file-dialog', opts) as Promise<string[]>,
   openInExternal: (url: string) => ipcRenderer.invoke('open-in-external', url),
 
   // Config

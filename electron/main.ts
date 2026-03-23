@@ -640,6 +640,20 @@ function registerIpcHandlers() {
     ).all();
   });
 
+  // ── File Picker ──
+
+  ipcMain.handle('open-file-dialog', async (_event, opts?: { filters?: Array<{ name: string; extensions: string[] }> }) => {
+    if (!mainWindow) return null;
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openFile', 'multiSelections'],
+      filters: opts?.filters || [
+        { name: 'All Files', extensions: ['*'] },
+      ],
+    });
+    if (result.canceled || result.filePaths.length === 0) return [];
+    return result.filePaths;
+  });
+
   // ── Dialog ──
 
   ipcMain.handle('open-directory-dialog', async () => {

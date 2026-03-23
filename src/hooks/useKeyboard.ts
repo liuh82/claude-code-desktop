@@ -2,6 +2,7 @@ import { useEffect, useCallback } from 'react';
 
 export interface KeyboardActions {
   onNewChat?: () => void;
+  onOpenHistory?: () => void;
   onToggleSidebar?: () => void;
   onToggleToolPanel?: () => void;
   onOpenSettings?: () => void;
@@ -69,6 +70,13 @@ export function useKeyboardShortcuts(actions: KeyboardActions) {
       if (key === 'f' && shift) {
         e.preventDefault();
         actions.onToggleToolPanel?.();
+        return;
+      }
+
+      // Cmd/Ctrl+H — history
+      if (key === 'h' && !shift) {
+        e.preventDefault();
+        actions.onOpenHistory?.();
         return;
       }
 

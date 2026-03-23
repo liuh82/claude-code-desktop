@@ -3,6 +3,7 @@ import { useTabStore } from '@/stores/useTabStore';
 import { useChatStore } from '@/stores/useChatStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { MessageBubble } from '@/components/Chat/MessageBubble';
+import { claudeApi, isElectron } from '@/lib/claude-api';
 import type { FileNode } from '@/types/chat';
 import styles from './TerminalPane.module.css';
 
@@ -250,6 +251,36 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     useChatStore.getState().stopGeneration(paneId);
   }, [paneId]);
 
+  const handleAttachFile = useCallback(async () => {
+    if (!isElectron()) return;
+    try {
+      const files = await claudeApi.openFileDialog();
+      if (files.length > 0) {
+        const fileRefs = files.map(f => {
+          const name = f.split('/').pop() || f;
+          return `@${name}`;
+        }).join(' ');
+        setText(prev => prev ? prev + ' ' + fileRefs : fileRefs);
+        textareaRef.current?.focus();
+      }
+    } catch {}
+  }, []);
+
+  const handleAttachImage = useCallback(async () => {
+    if (!isElectron()) return;
+    try {
+      const files = await claudeApi.openFileDialog({
+        filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] }],
+      });
+      if (files.length > 0) {
+        // For now, insert as file reference (future: base64 embed)
+        const names = files.map(f => f.split('/').pop() || f).join(', ');
+        setText(prev => prev ? prev + ` [图片: ${names}]` : `[图片: ${names}]`);
+        textareaRef.current?.focus();
+      }
+    } catch {}
+  }, []);
+
   const handleSplitHorizontal = useCallback(() => {
     splitPane(tabId, paneId, 'horizontal');
   }, [tabId, paneId, splitPane]);
@@ -396,10 +427,10 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
           {/* Footer — tool buttons + shortcuts + tokens */}
           <div className={styles.paneInputFooter}>
             <div className={styles.paneFooterLeft}>
-              <button className={styles.footerToolBtn} title="附加文件">
+              <button className={styles.footerToolBtn} title="附加文件" onClick={handleAttachFile}>
                 <span className="material-symbols-outlined">attach_file</span>
               </button>
-              <button className={styles.footerToolBtn} title="附加图片">
+              <button className={styles.footerToolBtn} title="附加图片" onClick={handleAttachImage}>
                 <span className="material-symbols-outlined">image</span>
               </button>
             </div>

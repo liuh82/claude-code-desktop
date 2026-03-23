@@ -19,10 +19,8 @@ const CC_BUILTIN_MODELS = [
 ];
 
 const NAV_ITEMS = [
-  { id: 'editor', icon: 'code', label: '编辑器' },
-  { id: 'search', icon: 'search', label: '搜索' },
+  { id: 'search', icon: 'search', label: '搜索 (⌘K)' },
   { id: 'history', icon: 'history', label: '历史记录' },
-  { id: 'extensions', icon: 'extension', label: '扩展' },
 ] as const;
 
 const BOTTOM_ITEMS = [
@@ -36,9 +34,10 @@ interface SidebarProps {
   onClose: () => void;
   onOpenSettings: () => void;
   onToggleTheme: () => void;
+  onOpenHistory?: () => void;
 }
 
-function Sidebar({ projectPath: _projectPath, onNewChat: _onNewChat, onOpenSettings, onToggleTheme, style }: SidebarProps & { style?: React.CSSProperties }) {
+function Sidebar({ projectPath: _projectPath, onNewChat: _onNewChat, onOpenSettings, onToggleTheme, onOpenHistory, style }: SidebarProps & { style?: React.CSSProperties }) {
   const { settings, updateSetting } = useSettingsStore();
   const currentModel = useChatStore((s) => s.currentModel) || settings.defaultModel;
   const [activeNav] = useState<string>('editor');
@@ -69,6 +68,12 @@ function Sidebar({ projectPath: _projectPath, onNewChat: _onNewChat, onOpenSetti
   const handleNavClick = useCallback((id: string) => {
     if (id === 'settings') { onOpenSettings(); return; }
     if (id === 'theme') { onToggleTheme(); return; }
+    if (id === 'history') { onOpenHistory?.(); return; }
+    if (id === 'search') {
+      // Open command palette
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
+      return;
+    }
   }, [onOpenSettings, onToggleTheme]);
 
   return (
