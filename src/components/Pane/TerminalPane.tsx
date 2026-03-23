@@ -177,6 +177,18 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               <span className="material-symbols-outlined">arrow_upward</span>
             </button>
           </div>
+          {/* Footer — shortcut hints */}
+          <div className={styles.paneInputFooter}>
+            <div className={styles.paneFooterLeft}>
+              <span className={styles.paneFooterHint}>
+                <span className="material-symbols-outlined">keyboard_command_key</span> L 搜索代码
+              </span>
+              <span className={styles.paneFooterHint}>
+                <span className="material-symbols-outlined">keyboard_command_key</span> K 快速修复
+              </span>
+            </div>
+            <span className={styles.paneFooterHint}>4096 tokens left</span>
+          </div>
         </div>
       </div>
     </div>

@@ -257,3 +257,32 @@
 [data-theme="dark"] .paneSendBtnActive:hover {
   box-shadow: 0 6px 20px -2px rgba(255, 185, 95, 0.30);
 }
+
+/* Input footer — shortcut hints + token info */
+.paneInputFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 896px;
+  margin: 8px auto 0;
+  padding: 0 8px;
+}
+
+.paneFooterLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.paneFooterHint {
+  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0.50;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.paneFooterHint .material-symbols-outlined {
+  font-size: 12px;
+}
