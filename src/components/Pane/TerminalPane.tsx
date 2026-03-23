@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useTabStore } from '@/stores/useTabStore';
 import { useChatStore } from '@/stores/useChatStore';
 import { useProjectStore } from '@/stores/useProjectStore';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 import { MessageBubble } from '@/components/Chat/MessageBubble';
 import { claudeApi, isElectron } from '@/lib/claude-api';
 import type { FileNode } from '@/types/chat';
@@ -33,6 +34,12 @@ const ALL_COMMANDS = [
 ];
 
 const ALL_SLASH = [...COMMON_COMMANDS, ...ALL_COMMANDS];
+
+const AVAILABLE_MODELS = [
+  { id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6' },
+  { id: 'claude-opus-4-6', label: 'Claude Opus 4.6' },
+  { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5' },
+];
 
 interface TerminalPaneProps {
   tabId: string;
@@ -78,6 +85,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const [showSlash, setShowSlash] = useState(false);
   const [slashQuery, setSlashQuery] = useState('');
   const [slashIndex, setSlashIndex] = useState(0);
+  const [showModelPicker, setShowModelPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputWrapperRef = useRef<HTMLDivElement>(null);
@@ -130,15 +138,17 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
 
   // Close mention dropdown on outside click
   useEffect(() => {
-    if (!showMention) return;
+    if (!showMention && !showSlash && !showModelPicker) return;
     const handler = (e: MouseEvent) => {
       if (inputWrapperRef.current && !inputWrapperRef.current.contains(e.target as Node)) {
         setShowMention(false);
+        setShowSlash(false);
+        setShowModelPicker(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [showMention]);
+  }, [showMention, showSlash, showModelPicker]);
 
   const handleFocus = useCallback(() => {
     if (!isActive) setActivePane(tabId, paneId);
@@ -211,11 +221,66 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   }, [flatFiles]);
 
   const handleSlashSelect = useCallback((cmd: typeof ALL_SLASH[0]) => {
-    setText('');
     setShowSlash(false);
-    // For now, send the command as a message (Claude CLI will handle it)
-    useChatStore.getState().sendMessage(paneId, cmd.name);
-  }, [paneId]);
+    const name = cmd.name;
+    const store = useChatStore.getState();
+
+    if (name === '/clear') {
+      store.clearPane(paneId);
+      store.initPane(paneId, store.projectPath);
+      setText('');
+      return;
+    }
+    if (name === '/model') {
+      setShowModelPicker(true);
+      setText('');
+      return;
+    }
+    if (name === '/config') {
+      window.dispatchEvent(new CustomEvent('ccdesk:open-settings'));
+      setText('');
+      return;
+    }
+    if (name === '/cost') {
+      const usage = paneState?.tokenUsage ?? { input: 0, output: 0 };
+      store.addSystemMessage(paneId, [
+        '```',
+        'Token 使用统计',
+        '━━━━━━━━━━━━',
+        '输入 tokens: ' + usage.input,
+        '输出 tokens: ' + usage.output,
+        '总计: ' + (usage.input + usage.output),
+        '```',
+      ].join('\n'));
+      setText('');
+      return;
+    }
+    if (name === '/status') {
+      const p = store.panes.get(paneId);
+      const lines = [
+        '```',
+        'Claude Code Desktop 状态',
+        '━━━━━━━━━━━━',
+        '模型: ' + (store.currentModel || 'claude-sonnet-4-6'),
+        '状态: ' + (p?.isGenerating ? '生成中' : '空闲'),
+        '消息数: ' + (p?.messages?.length ?? 0),
+        '项目: ' + (store.projectPath || '未设置'),
+        '```',
+      ];
+      store.addSystemMessage(paneId, lines.join('\n'));
+      setText('');
+      return;
+    }
+    if (name === '/compact') {
+      store.sendMessage(paneId, '/compact');
+      setText('');
+      return;
+    }
+
+    // CLI commands — send to Claude process
+    setText('');
+    store.sendMessage(paneId, name);
+  }, [paneId, paneState]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     // Handle slash command navigation
@@ -237,7 +302,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
         return;
       }
       if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); handleSlashSelect(filteredCommands[slashIndex]); return; }
-      if (e.key === 'Escape') { e.preventDefault(); setShowSlash(false); return; }
+      if (e.key === 'Escape') { e.preventDefault(); setShowSlash(false); setShowModelPicker(false); return; }
     }
     // Handle mention dropdown navigation
     if (showMention && filteredFiles.length > 0) {
@@ -280,6 +345,16 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
 
   const handleStop = useCallback(() => {
     useChatStore.getState().stopGeneration(paneId);
+  }, [paneId]);
+
+  const handleModelSelect = useCallback((modelId: string) => {
+    setShowModelPicker(false);
+    // Update chat store model
+    const state = useChatStore.getState();
+    state.currentModel = modelId;
+    // Persist to settings
+    useSettingsStore.getState().updateSetting('defaultModel', modelId);
+    useChatStore.getState().addSystemMessage(paneId, '已切换模型: ' + modelId);
   }, [paneId]);
 
   const handleAttachFile = useCallback(async () => {
@@ -466,6 +541,27 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
             )}
 
             <div className={styles.paneInputWrapper}>
+              {/* Model picker dropdown */}
+              {showModelPicker && (
+                <div className={styles.modelPickerDropdown}>
+                  <div className={styles.modelPickerList}>
+                    {AVAILABLE_MODELS.map((m) => (
+                      <div
+                        key={m.id}
+                        className={`${styles.modelPickerItem} ${useChatStore.getState().currentModel === m.id ? styles.modelPickerItemActive : ''}`}
+                        onClick={() => handleModelSelect(m.id)}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>model_training</span>
+                        <div>
+                          <div className={styles.modelPickerName}>{m.label}</div>
+                          <div className={styles.modelPickerId}>{m.id}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Textarea */}
               <textarea
                 ref={textareaRef}

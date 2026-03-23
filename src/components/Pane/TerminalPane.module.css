@@ -482,3 +482,57 @@
 [data-theme="light"] .slashBadge {
   border-color: rgba(0, 91, 192, 0.20);
 }
+
+/* ═══ Model picker dropdown ═══ */
+.modelPickerDropdown {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-ghost);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 30;
+}
+
+.modelPickerList {
+  padding: 4px 0;
+}
+
+.modelPickerItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 100ms;
+}
+
+.modelPickerItem:hover,
+.modelPickerItemActive {
+  background: rgba(0, 91, 192, 0.10);
+}
+
+.modelPickerItem .material-symbols-outlined {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.modelPickerName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modelPickerId {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.modelPickerItemActive .modelPickerId {
+  color: var(--accent);
+  opacity: 0.70;
+}

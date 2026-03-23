@@ -362,6 +362,7 @@ interface ChatState {
   sendMessage: (paneId: string, text: string) => Promise<void>;
   stopGeneration: (paneId: string) => void;
   clearPane: (paneId: string) => void;
+  addSystemMessage: (paneId: string, content: string) => void;
 }
 
 export const useChatStore = create<ChatState>()((set, get) => ({
@@ -540,6 +541,19 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         return { panes: new Map(s.panes).set(paneId, { ...pane, isGenerating: false }) };
       });
     }
+  },
+
+  addSystemMessage: (paneId: string, content: string) => {
+    const pane = get().panes.get(paneId);
+    if (!pane) return;
+    const msg: ChatMessage = {
+      id: `sys-${Date.now()}`,
+      role: 'assistant',
+      timestamp: Date.now(),
+      content,
+      isStreaming: false,
+    };
+    get().panes.set(paneId, { ...pane, messages: [...pane.messages, msg] });
   },
 
   clearPane: (paneId: string) => {
