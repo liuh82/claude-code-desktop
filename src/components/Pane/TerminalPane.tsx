@@ -166,7 +166,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={`Message in ${pane?.title || 'terminal'}...`}
+              placeholder="给 Claude 发送消息或询问代码问题..."
               spellCheck={false}
             />
             <button

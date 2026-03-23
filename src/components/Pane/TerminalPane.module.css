@@ -108,6 +108,7 @@
   overflow: hidden;
 }
 
+/* Messages area — design spec: px-6 py-6, max-w-4xl centered, space-y-8 */
 .paneMessages {
   flex: 1;
   overflow-y: auto;
@@ -136,7 +137,6 @@
   opacity: 0.5;
 }
 
-
 /* Attach button — left side of row */
 .paneAttachBtn {
   display: flex;
@@ -162,9 +162,9 @@
   background: var(--bg-elevated);
 }
 
-/* Pane input — aligned with InputArea design spec */
+/* Pane input — aligned with dark distinct panels design spec */
 .paneInput {
-  padding: 8px 24px 16px;
+  padding: 24px;
   flex-shrink: 0;
   background: var(--bg-primary);
 }
@@ -208,12 +208,14 @@
   color: var(--text-primary);
   min-width: 0;
   resize: none;
+  padding: 8px 4px;
 }
 
 .paneInputField::placeholder {
   color: var(--text-muted);
 }
 
+/* Send button — w-10 h-10 rounded-lg, design spec */
 .paneSendBtn {
   display: flex;
   align-items: center;

@@ -14,7 +14,7 @@ import { ResizeHandle } from '@/components/ResizeHandle';
 import { ProjectSelector } from '@/components/ProjectSelector';
 import { CommandPalette, type CommandItem } from '@/components/CommandPalette';
 import { SettingsDialog } from '@/components/SettingsDialog';
-import { TabBar } from '@/components/Pane/TabBar';
+// import { TabBar } from '@/components/Pane/TabBar';
 import { PaneContainer } from '@/components/Pane/PaneContainer';
 import type { LayoutNode } from '@/types/pane';
 import './App.css';
@@ -230,7 +230,7 @@ function AppContent() {
 
         {/* Main content area with tabs */}
         <div className="appMainContent">
-          <TabBar projectPath={projectPath} />
+          {/* <TabBar projectPath={projectPath} /> */}
           <ChatHeader />
           {activeTab ? (
             <PaneContainer
