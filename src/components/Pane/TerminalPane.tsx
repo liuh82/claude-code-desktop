@@ -99,6 +99,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
 
   const status = pane?.status || 'idle';
   const statusClass = `paneStatus${status.charAt(0).toUpperCase()}${status.slice(1)}`;
+  const isSinglePane = (tab?.panes.size ?? 0) <= 1;
   const canSend = text.trim().length > 0 && !isGenerating;
 
   return (
@@ -106,8 +107,8 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       className={`${styles.terminalPane} ${isActive ? styles.terminalPaneActive : ''}`}
       onClick={handleFocus}
     >
-      {/* Pane header */}
-      <div className={styles.paneHeader}>
+      {/* Pane header — only show when split */}
+      {!isSinglePane && <div className={styles.paneHeader}>
         <div className={styles.paneHeaderLeft}>
           <span className={`${styles.paneStatus} ${styles[statusClass]}`} />
           <span className={styles.paneTitle}>{pane?.title || 'Terminal'}</span>
@@ -135,7 +136,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
-      </div>
+      </div>}
 
       {/* Messages */}
       <div className={styles.paneBody}>
