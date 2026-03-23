@@ -29,6 +29,15 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const messages = paneChats.get(paneId) || [];
   const isGenerating = paneGenerating.get(paneId) || false;
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(Math.max(el.scrollHeight, 36), 200)}px`;
+  }, [text]);
 
   // Initialize pane chat if not exists
   useEffect(() => {
@@ -61,6 +70,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     paneChats.set(paneId, [...current, userMsg]);
     paneGenerating.set(paneId, true);
     setText('');
+    if (textareaRef.current) textareaRef.current.style.height = '36px';
 
     // Mock response (will be replaced with real CLI bridge)
     setTimeout(() => {
@@ -161,13 +171,15 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
             <button className={styles.paneAttachBtn} title="附件">
               <span className="material-symbols-outlined">attach_file</span>
             </button>
-            <input
+            <textarea
+              ref={textareaRef}
               className={styles.paneInputField}
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="给 Claude 发送消息或询问代码问题..."
               spellCheck={false}
+              rows={1}
             />
             <button
               className={`${styles.paneSendBtn} ${canSend ? styles.paneSendBtnActive : ''}`}
