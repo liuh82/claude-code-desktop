@@ -1,4 +1,4 @@
-/* ═══ InputArea — Design spec, 768px centered ═══ */
+/* ═══ InputArea — Design spec (dark distinct panels), 896px centered ═══ */
 
 .inputArea {
   padding: 24px;
@@ -12,7 +12,10 @@
 
 .inputWrapper {
   position: relative;
-  max-width: 768px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 896px;
   margin: 0 auto;
   background: var(--bg-input);
   border: 1px solid rgba(169, 180, 185, 0.30);
@@ -32,10 +35,10 @@
   box-shadow: 0 0 0 4px rgba(173, 198, 255, 0.10);
 }
 
-/* Textarea — inside container, compact padding */
+/* Textarea — flex-1 inside row layout */
 .inputTextarea {
-  width: 100%;
-  min-height: 44px !important;
+  flex: 1;
+  min-height: 36px !important;
   max-height: 200px;
   padding: 8px 4px;
   background: transparent;
@@ -54,22 +57,7 @@
   color: var(--text-muted);
 }
 
-/* Action toolbar — below textarea, separated by thin border */
-.inputActions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(169, 180, 185, 0.10);
-}
-
-.inputActionsLeft {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
+/* Attach button — left side of row */
 .attachBtn {
   display: flex;
   align-items: center;
@@ -95,13 +83,14 @@
   background: var(--bg-elevated);
 }
 
-/* Send button — brand-orange */
+/* Send button — brand-orange, 40x40 */
 .sendBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
   border-radius: 12px;
   background: var(--brand-orange);
   border: none;
@@ -137,8 +126,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
   border-radius: 12px;
   background: var(--error);
   border: none;
@@ -151,13 +141,14 @@
   opacity: 0.9;
 }
 
-/* Footer — centered hint text */
+/* Footer — shortcut hint left, token info right */
 .inputFooter {
   display: flex;
   align-items: center;
-  justify-content: center;
-  max-width: 768px;
-  margin: 12px auto 0;
+  justify-content: space-between;
+  max-width: 896px;
+  margin: 8px auto 0;
+  padding: 0 8px;
 }
 
 .footerHint {
