@@ -1,7 +1,6 @@
 /* ═══ TerminalPane — Stitch-aligned design ═══ */
 
 .terminalPane {
-  container-type: size;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -141,7 +140,7 @@
 /* ═══ Input area — Stitch design: all-in-one rounded box ═══ */
 
 .paneInput {
-  padding: clamp(8px, 2vh, 24px);
+  padding: 12px;
   flex-shrink: 0;
   background: var(--bg-primary);
 }
@@ -164,8 +163,8 @@
   border: 1px solid var(--border-ghost);
   border-radius: 24px;
   box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.06), 0 2px 8px -1px rgba(0, 0, 0, 0.04);
-  padding: 12px;
-  min-height: clamp(56px, 8vh, 100px);
+  padding: 8px 12px;
+  min-height: 64px;
   position: relative;
   transition: border-color 150ms, box-shadow 150ms;
 }
@@ -373,8 +372,8 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  margin-top: clamp(4px, 1vh, 12px);
-  padding: clamp(2px, 0.5vh, 8px) 12px;
+  margin-top: 6px;
+  padding: 4px 12px;
   font-size: 11px;
   line-height: 1.6;
   color: var(--text-muted);
@@ -396,23 +395,7 @@
 }
 
 
-/* ── Compact input for small panes (container height query) ── */
-@container (height < 400px) {
-  .paneInput {
-    padding: 8px;
-  }
-  .paneInputWrapper {
-    min-height: 48px;
-    border-radius: 16px;
-    padding: 8px;
-  }
-  .paneInputHint {
-    display: none;
-  }
-  .paneMessages {
-    padding: 16px;
-  }
-}
+
 
 /* ═══ @ Mention dropdown — Stitch file_mention_light design ═══ */
 
