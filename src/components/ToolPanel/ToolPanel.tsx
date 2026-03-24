@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useChatStore } from '@/stores/useChatStore';
 import { useTabStore } from '@/stores/useTabStore';
 import { FileTree } from './FileTree';
@@ -51,6 +51,17 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
   const messageCount = pane?.messages.length ?? 0;
   const inputTokens = pane?.tokenUsage.input ?? 0;
   const outputTokens = pane?.tokenUsage.output ?? 0;
+  const paneCount = useChatStore((s) => s.panes.size);
+
+  const [currentTime, setCurrentTime] = useState(
+    () => new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  );
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }));
+    }, 60000);
+    return () => clearInterval(id);
+  }, []);
 
   // Compute added/removed lines from diff data
   const codeChanges = useMemo(() => {
@@ -144,6 +155,8 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
           <span>{fileCount} 文件</span>
           <span className={styles.statusSeparator}>·</span>
           <span>{messageCount} 调用</span>
+          <span className={styles.statusSeparator}>·</span>
+          <span>{paneCount} 面板</span>
         </div>
         <div className={styles.toolPanelStatusRow}>
           <span>{formatTokens(inputTokens)} in</span>
@@ -151,6 +164,8 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
           <span>{formatTokens(outputTokens)} out</span>
           <span className={styles.statusSeparator}>·</span>
           <span>+{codeChanges.added} / -{codeChanges.removed}</span>
+          <span className={styles.statusSeparator}>·</span>
+          <span>{currentTime}</span>
         </div>
       </div>
     </aside>

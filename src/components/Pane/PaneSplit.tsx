@@ -83,7 +83,7 @@ function PaneSplit({ direction, children, ratios, onRatioChange }: PaneSplitProp
           <div
             key={`pane-${index}`}
             className={styles.paneSlot}
-            style={{ flexBasis: `${ratios[index] * 100}%`, flexGrow: 0 }}
+            style={{ flex: `${ratios[index]} 1 0%` }}
           >
             {child}
           </div>,
