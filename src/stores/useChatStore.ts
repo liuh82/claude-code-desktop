@@ -685,6 +685,7 @@ interface ChatState {
   diffFiles: DiffFile[];
   projectPath: string;
   currentModel: string;
+  pendingFileMention: string | null;  // file path to @-mention
 
   setProjectPath: (path: string) => void;
   setCurrentModel: (model: string) => void;
@@ -698,6 +699,8 @@ interface ChatState {
   addSystemMessage: (paneId: string, content: string) => void;
   restoreMessages: (paneId: string, dbMessages: DbMessage[]) => void;
   getProjectSessions: (projectPath: string) => Promise<DbSession[]>;
+  triggerFileMention: (filePath: string) => void;
+  consumeFileMention: () => string | null;
 }
 
 export const useChatStore = create<ChatState>()((set, get) => ({
@@ -706,6 +709,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   currentModel: '',
   diffFiles: [],
   projectPath: '',
+  pendingFileMention: null,
 
   setProjectPath: (path: string) => {
     set({ projectPath: path });
@@ -952,6 +956,16 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         panes: new Map(s.panes).set(paneId, { ...pane, messages }),
       };
     });
+  },
+
+  triggerFileMention: (filePath: string) => {
+    set({ pendingFileMention: filePath });
+  },
+
+  consumeFileMention: () => {
+    const path = get().pendingFileMention;
+    if (path) set({ pendingFileMention: null });
+    return path;
   },
 
   getProjectSessions: async (projectPath: string) => {

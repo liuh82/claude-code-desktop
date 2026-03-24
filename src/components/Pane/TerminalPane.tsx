@@ -247,6 +247,22 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     return () => document.removeEventListener('mousedown', handler);
   }, [showMention, showSlash, showModelPicker]);
 
+  // ── Consume file mention from ToolPanel click ──
+  useEffect(() => {
+    const filePath = useChatStore.getState().consumeFileMention();
+    if (!filePath || !textareaRef.current) return;
+    const textarea = textareaRef.current;
+    const insert = `@${filePath} `;
+    const pos = textarea.selectionStart;
+    const before = text.slice(0, pos) + insert;
+    const after = text.slice(pos);
+    setText(before + after);
+    setTimeout(() => {
+      textarea.setSelectionRange(before.length, before.length);
+      textarea.focus();
+    }, 0);
+  }, [useChatStore.getState().pendingFileMention]);
+
   // ── Handlers ──
 
   const handleFocus = useCallback(() => {

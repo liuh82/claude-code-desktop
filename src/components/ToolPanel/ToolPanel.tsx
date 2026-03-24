@@ -31,7 +31,8 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
   const activeDiffFile = diffFiles.length > 0 ? diffFiles[0].filePath : '';
   const [activeTab, setActiveTab] = useState<'files' | 'diff'>('files');
 
-  const handleFileClick = useCallback((_node: FileNode) => {
+  const handleFileClick = useCallback((node: FileNode) => {
+    useChatStore.getState().triggerFileMention(node.path);
     // Phase 3: open file in editor
   }, []);
 
