@@ -1,6 +1,7 @@
 /* ═══ TerminalPane — Stitch-aligned design ═══ */
 
 .terminalPane {
+  container-type: size;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -105,7 +106,7 @@
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .paneMessages {
@@ -140,9 +141,6 @@
 /* ═══ Input area — Stitch design: all-in-one rounded box ═══ */
 
 .paneInput {
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
   padding: clamp(8px, 2vh, 24px);
   flex-shrink: 0;
   background: var(--bg-primary);
@@ -395,6 +393,25 @@
   height: 3px;
   border-radius: 50%;
   background: var(--text-muted);
+}
+
+
+/* ── Compact input for small panes (container height query) ── */
+@container (height < 400px) {
+  .paneInput {
+    padding: 8px;
+  }
+  .paneInputWrapper {
+    min-height: 48px;
+    border-radius: 16px;
+    padding: 8px;
+  }
+  .paneInputHint {
+    display: none;
+  }
+  .paneMessages {
+    padding: 16px;
+  }
 }
 
 /* ═══ @ Mention dropdown — Stitch file_mention_light design ═══ */
