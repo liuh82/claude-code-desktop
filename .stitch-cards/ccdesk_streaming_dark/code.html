@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CCDesk - Obsidian Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary": "#490080",
+                        "outline-variant": "#414755",
+                        "background": "#131314",
+                        "outline": "#8b90a0",
+                        "primary-fixed-dim": "#adc6ff",
+                        "primary-fixed": "#d8e2ff",
+                        "on-tertiary": "#472a00",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "secondary-fixed": "#f0dbff",
+                        "surface-container-lowest": "#0e0e0f",
+                        "surface-container-highest": "#353436",
+                        "on-tertiary-fixed": "#2a1700",
+                        "primary-container": "#4b8eff",
+                        "on-primary-fixed-variant": "#004493",
+                        "on-primary-container": "#00285c",
+                        "on-primary": "#002e69",
+                        "tertiary-fixed": "#ffddb8",
+                        "inverse-surface": "#e5e2e3",
+                        "inverse-primary": "#005bc1",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-dim": "#131314",
+                        "secondary-fixed-dim": "#ddb7ff",
+                        "on-secondary-container": "#d6a9ff",
+                        "surface-bright": "#39393a",
+                        "surface-tint": "#adc6ff",
+                        "on-background": "#e5e2e3",
+                        "primary": "#adc6ff",
+                        "secondary-container": "#6f00be",
+                        "tertiary": "#ffb95f",
+                        "error": "#ffb4ab",
+                        "on-secondary-fixed-variant": "#6900b3",
+                        "surface-container": "#201f20",
+                        "tertiary-container": "#ca8100",
+                        "on-error": "#690005",
+                        "on-surface": "#e5e2e3",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#1c1b1c",
+                        "on-tertiary-container": "#3e2400",
+                        "on-primary-fixed": "#001a41",
+                        "secondary": "#ddb7ff",
+                        "surface": "#131314",
+                        "on-surface-variant": "#c1c6d7",
+                        "inverse-on-surface": "#313031",
+                        "surface-container-high": "#2a2a2b",
+                        "surface-variant": "#353436",
+                        "on-secondary-fixed": "#2c0051"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 1;
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2a2a2b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #353436; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body overflow-hidden selection:bg-primary/30">
+<div class="flex h-screen w-full overflow-hidden">
+<!-- COLUMN 1: SideNavBar (Rail) -->
+<nav class="h-screen w-16 flex flex-col items-center py-4 border-r border-zinc-800/50 bg-zinc-900/50 backdrop-blur-xl fixed left-0 top-0 z-50 shadow-2xl">
+<!-- Logo Area -->
+<div class="mb-8">
+<div class="w-10 h-10 bg-tertiary rounded flex items-center justify-center shadow-lg shadow-tertiary/20 group cursor-pointer transition-transform active:scale-90">
+<span class="material-symbols-outlined text-on-tertiary-container font-bold" data-icon="terminal">terminal</span>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<div class="flex flex-col gap-4 items-center w-full">
+<!-- Explorer (Active) -->
+<div class="text-orange-500 border-l-2 border-orange-500 bg-zinc-800/50 w-full flex justify-center py-3 scale-95 active:scale-90 transition-all duration-150 cursor-pointer" title="Explorer">
+<span class="material-symbols-outlined" data-icon="folder">folder</span>
+</div>
+<!-- Search -->
+<div class="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/80 transition-all duration-150 w-full flex justify-center py-3 scale-95 active:scale-90 cursor-pointer" title="Search">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</div>
+<!-- Source Control -->
+<div class="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/80 transition-all duration-150 w-full flex justify-center py-3 scale-95 active:scale-90 cursor-pointer" title="Source Control">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+</div>
+<!-- Extensions -->
+<div class="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/80 transition-all duration-150 w-full flex justify-center py-3 scale-95 active:scale-90 cursor-pointer" title="Extensions">
+<span class="material-symbols-outlined" data-icon="extension">extension</span>
+</div>
+<!-- Chat -->
+<div class="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/80 transition-all duration-150 w-full flex justify-center py-3 scale-95 active:scale-90 cursor-pointer" title="Chat">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+</div>
+</div>
+<!-- Footer Icons -->
+<div class="mt-auto flex flex-col gap-4 items-center w-full pb-4">
+<div class="text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-zinc-700/50">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="professional developer avatar with minimalist style dark background soft cyan lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAH1p1mi4qfvGqFDpyZR-wKS3GJ80OKymqMRM4yaundqQOWMt1w83bSv1fyF4RQZPqU9htWVSln-o6bF-JyMOLPAdeU2FjVGhAyxSqLN60rS2zCCX_PUFsCSV_a3CigDx1wVqX0kXCi9qORKumTeB2pncXQbrSICnMGdVIwTL2s82ixw8Nwkb_1zS7-doVoYNzhcja0jmAHa7rpfvHw7erFBvFnCPt2vLHvSHJEJu_uXcTHX7XVgCHB_tXGPjKo-BzWBaP5P1e_8jMk"/>
+</div>
+</div>
+</nav>
+<!-- MAIN CONTENT WRAPPER (To offset the fixed rail) -->
+<div class="ml-16 flex w-full h-full">
+<!-- COLUMN 2: Chat Area -->
+<main class="flex-1 flex flex-col bg-surface-container-low relative">
+<!-- Chat Header -->
+<header class="h-12 flex items-center px-6 bg-surface-container border-b border-outline-variant/10">
+<div class="flex items-center gap-2">
+<span class="text-primary font-mono text-sm font-semibold tracking-tight">cc_terminal_v1</span>
+<span class="text-outline text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded bg-surface-container-highest">Live</span>
+</div>
+<div class="ml-auto flex items-center gap-4 text-outline">
+<span class="material-symbols-outlined text-sm cursor-pointer hover:text-on-surface" data-icon="history">history</span>
+<span class="material-symbols-outlined text-sm cursor-pointer hover:text-on-surface" data-icon="more_vert">more_vert</span>
+</div>
+</header>
+<!-- Message List -->
+<section class="flex-1 overflow-y-auto p-6 flex flex-col gap-8">
+<!-- User Message -->
+<div class="flex flex-col gap-2 max-w-3xl">
+<div class="flex items-center gap-2">
+<span class="text-[11px] font-mono font-bold text-outline uppercase tracking-wider">User</span>
+<span class="w-1 h-1 rounded-full bg-outline/30"></span>
+<span class="text-[10px] text-outline/50">14:20</span>
+</div>
+<p class="text-[14px] leading-relaxed text-on-surface/90 font-mono">
+                            Add a new feature to the landing page. We need a grid of feature cards. 
+                            Use the colors from the design system and update the theme.config.
+                        </p>
+</div>
+<!-- AI Message 1 -->
+<div class="flex flex-col gap-3 max-w-4xl">
+<div class="flex items-center gap-2">
+<span class="text-[11px] font-mono font-bold text-primary uppercase tracking-wider">Claude Code</span>
+<span class="w-1 h-1 rounded-full bg-primary/30"></span>
+<span class="text-[10px] text-outline/50">14:21</span>
+</div>
+<div class="bg-surface-container rounded-lg p-4 shadow-sm border border-outline-variant/5">
+<p class="text-[14px] leading-relaxed text-on-surface/80 font-mono mb-4">
+                                Understood. I will begin by analyzing the current landing page component and the theme configuration.
+                            </p>
+<!-- COMPACT TOOL CALLS AREA -->
+<div class="flex flex-col gap-1.5 border-l border-primary/20 pl-4 my-4">
+<!-- State 3: RUNNING -->
+<div class="flex items-center gap-2 text-[12px] font-mono group">
+<span class="material-symbols-outlined text-[16px] text-primary animate-pulse" data-icon="search">search</span>
+<span class="text-primary font-bold">LS</span>
+<span class="text-outline/70">src/components/landing/</span>
+<span class="ml-auto text-[10px] text-primary/40 italic">In progress...</span>
+</div>
+<!-- State 4: COMPLETED -->
+<div class="flex items-center gap-2 text-[12px] font-mono group">
+<span class="material-symbols-outlined text-[16px] text-green-400" data-icon="check_circle">check_circle</span>
+<span class="text-green-400 font-bold">READ</span>
+<span class="text-outline/70">theme.config.json</span>
+<span class="ml-auto text-[10px] text-outline/40">120ms</span>
+</div>
+<!-- Sequential Compact Lines -->
+<div class="flex items-center gap-2 text-[12px] font-mono group">
+<span class="material-symbols-outlined text-[16px] text-green-400" data-icon="check_circle">check_circle</span>
+<span class="text-green-400 font-bold">EDIT</span>
+<span class="text-outline/70">src/theme/colors.ts</span>
+<span class="ml-auto text-[10px] text-outline/40">45ms</span>
+</div>
+<div class="flex items-center gap-2 text-[12px] font-mono group">
+<span class="material-symbols-outlined text-[16px] text-green-400" data-icon="check_circle">check_circle</span>
+<span class="text-green-400 font-bold">CREATE</span>
+<span class="text-outline/70">src/components/FeatureGrid.tsx</span>
+<span class="ml-auto text-[10px] text-outline/40">312ms</span>
+</div>
+</div>
+<p class="text-[13px] text-on-surface/70 font-mono">
+                                FeatureGrid.tsx has been created with a 3-column responsive layout. 
+                                Applying theme updates now.
+                            </p>
+</div>
+</div>
+<!-- AI Message 2 (Final Response) -->
+<div class="flex flex-col gap-3 max-w-3xl">
+<div class="flex items-center gap-2">
+<span class="text-[11px] font-mono font-bold text-primary uppercase tracking-wider">Claude Code</span>
+</div>
+<div class="bg-surface-container rounded-lg p-4 shadow-sm border border-outline-variant/5">
+<p class="text-[14px] leading-relaxed text-on-surface/80 font-mono">
+                                Tasks completed. You can view the changes in the diff panel to the right. 
+                                I've integrated the <span class="text-tertiary">#ffb95f</span> accent into the new CTA buttons.
+                            </p>
+</div>
+</div>
+</section>
+<!-- Input Box -->
+<div class="p-6 pt-2 bg-surface-container-low">
+<div class="max-w-4xl mx-auto relative">
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/10 p-2 focus-within:border-primary/50 transition-colors shadow-inner group">
+<textarea class="w-full bg-transparent border-none focus:ring-0 text-on-surface font-mono text-sm resize-none placeholder:text-outline/30 h-24 p-2" placeholder="Command Claude Code... (e.g., 'Refactor the auth middleware')"></textarea>
+<div class="flex items-center justify-between px-2 pb-1">
+<div class="flex items-center gap-3 text-outline/40">
+<span class="material-symbols-outlined text-lg cursor-pointer hover:text-outline transition-colors" data-icon="attach_file">attach_file</span>
+<span class="material-symbols-outlined text-lg cursor-pointer hover:text-outline transition-colors" data-icon="image">image</span>
+<div class="h-4 w-px bg-outline-variant/20 mx-1"></div>
+<span class="text-[10px] font-mono">UTF-8</span>
+</div>
+<button class="bg-tertiary text-on-tertiary-container font-bold px-4 py-1.5 rounded-lg flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-tertiary/10">
+<span class="text-xs uppercase tracking-tighter">Execute</span>
+<span class="material-symbols-outlined text-sm" data-icon="send">send</span>
+</button>
+</div>
+</div>
+<!-- Keyboard hint -->
+<div class="absolute -bottom-6 right-2">
+<span class="text-[10px] text-outline/30 font-mono italic">Press ⌘ + Enter to send</span>
+</div>
+</div>
+</div>
+</main>
+<!-- COLUMN 3: Context / File Tree & Diff -->
+<aside class="w-80 bg-zinc-950 flex flex-col border-l border-zinc-800/30 overflow-hidden">
+<!-- Project Section -->
+<div class="p-4 border-b border-zinc-800/30">
+<div class="flex items-center justify-between mb-4">
+<div class="flex flex-col">
+<span class="text-blue-400 font-semibold uppercase tracking-widest text-[10px]">PROJECT_FILES</span>
+<span class="text-zinc-500 font-mono text-[10px]">~/dev/chat-app</span>
+</div>
+<span class="material-symbols-outlined text-zinc-500 text-sm" data-icon="sync">sync</span>
+</div>
+<!-- File Tree -->
+<div class="flex flex-col gap-1 font-mono text-[12px]">
+<div class="flex items-center gap-2 text-zinc-400 p-1.5 hover:bg-zinc-800/40 rounded transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-sm text-zinc-600 group-hover:text-zinc-300" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+<span class="material-symbols-outlined text-sm text-yellow-600/70" data-icon="folder_open">folder_open</span>
+<span>src</span>
+</div>
+<div class="ml-4 flex flex-col gap-1">
+<div class="flex items-center gap-2 text-zinc-400 p-1.5 hover:bg-zinc-800/40 rounded transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-sm text-zinc-600" data-icon="keyboard_arrow_right">keyboard_arrow_right</span>
+<span class="material-symbols-outlined text-sm text-blue-500/50" data-icon="folder">folder</span>
+<span>components</span>
+</div>
+<div class="ml-4 flex items-center gap-2 bg-blue-500/10 text-blue-300 border-l-2 border-blue-500 p-1.5 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="description">description</span>
+<span>FeatureGrid.tsx</span>
+</div>
+<div class="ml-4 flex items-center gap-2 text-zinc-400 p-1.5 hover:bg-zinc-800/40 rounded transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-sm text-zinc-500" data-icon="description">description</span>
+<span>main.ts</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-zinc-400 p-1.5 hover:bg-zinc-800/40 rounded transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-sm text-zinc-600" data-icon="keyboard_arrow_right">keyboard_arrow_right</span>
+<span class="material-symbols-outlined text-sm text-blue-400/50" data-icon="javascript">javascript</span>
+<span>package.json</span>
+</div>
+<div class="flex items-center gap-2 text-zinc-400 p-1.5 hover:bg-zinc-800/40 rounded transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-sm text-zinc-600" data-icon="keyboard_arrow_right">keyboard_arrow_right</span>
+<span class="material-symbols-outlined text-sm text-purple-400/50" data-icon="style">style</span>
+<span>theme.config</span>
+</div>
+</div>
+</div>
+<!-- Diff View Area -->
+<div class="flex-1 flex flex-col bg-zinc-900/20 overflow-hidden">
+<div class="flex items-center px-4 h-10 border-b border-zinc-800/30 bg-zinc-950">
+<span class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Active Diff</span>
+</div>
+<div class="p-3 font-mono text-[11px] leading-tight overflow-y-auto">
+<div class="bg-surface-container-lowest rounded p-2 mb-2 border border-outline-variant/5">
+<div class="text-zinc-500 mb-1 opacity-50">@@ -12,4 +12,12 @@</div>
+<div class="flex gap-2 text-zinc-400">
+<span>12</span>
+<span>export const Landing = () =&gt; {</span>
+</div>
+<div class="flex gap-2 text-red-400/80 bg-red-400/10">
+<span>13</span>
+<span>-   return &lt;div&gt;Old Content&lt;/div&gt;;</span>
+</div>
+<div class="flex gap-2 text-green-400/80 bg-green-400/10">
+<span>13</span>
+<span>+   return (</span>
+</div>
+<div class="flex gap-2 text-green-400/80 bg-green-400/10">
+<span>14</span>
+<span>+     &lt;section className="grid grid-cols-3 gap-8"&gt;</span>
+</div>
+<div class="flex gap-2 text-green-400/80 bg-green-400/10">
+<span>15</span>
+<span>+       {features.map(f =&gt; &lt;FeatureCard key={f.id} /&gt;)}</span>
+</div>
+<div class="flex gap-2 text-green-400/80 bg-green-400/10">
+<span>16</span>
+<span>+     &lt;/section&gt;</span>
+</div>
+<div class="flex gap-2 text-green-400/80 bg-green-400/10">
+<span>17</span>
+<span>+   );</span>
+</div>
+</div>
+<div class="mt-4">
+<img alt="Code Architecture" class="w-full rounded opacity-40 grayscale group-hover:grayscale-0 transition-all cursor-crosshair" data-alt="abstract digital visual of code architecture deep charcoal background glowing blue and orange thin lines tactile glass texture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnGvsdDE9_ooxRRHo_JjwAX_xOfJ01FjbCZda8y-IFXhY5SBRbFhKllp-04-rvgqGtFu2b8JjMPu5_DNRk_qrKaZOkYGHQtVYtgB8xzEgOIRL9ednK-V9gSVd-Gzq5KFRlT6AxAhub91Ew2PPA5XQ03OVrxqijfEYEzGFn1iG8LcI6Ugv2dWkwqNZDsNt-80Ysy8Jl0YswdiBJnM-ip1nbNoUcXPnuuDEJYlDLj9-x6fmRLONg_XXjz-HphdbEieAPpT96j4Wwl0A2"/>
+</div>
+</div>
+</div>
+<!-- Footer Stats -->
+<footer class="h-10 px-4 border-t border-zinc-800/30 bg-zinc-950 flex items-center justify-between text-[10px] text-zinc-600 font-mono">
+<div class="flex gap-3">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> Main</span>
+<span>UTF-8</span>
+</div>
+<div class="flex gap-3">
+<span class="hover:text-zinc-400 transition-colors cursor-pointer">Terminal</span>
+<span class="hover:text-zinc-400 transition-colors cursor-pointer">Output</span>
+</div>
+</footer>
+</aside>
+</div>
+</div>
+</body></html>

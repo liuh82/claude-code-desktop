@@ -1,7 +1,7 @@
 export interface ToolCall {
   id: string;
   name: string;
-  status: 'pending' | 'running' | 'completed' | 'error';
+  status: 'pending' | 'running' | 'completed' | 'error' | 'pending_permission';
   input: Record<string, unknown>;
   output?: string;
   duration?: number;

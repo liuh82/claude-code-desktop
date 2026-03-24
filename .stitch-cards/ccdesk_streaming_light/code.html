@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CCDesk - Precision Workspace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains+Mono', monospace; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
+        }
+        /* Custom Scrollbar for the Digital Atelier feel */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d9e4ea; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a9b4b9; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-dim": "#cfdce3",
+                        "secondary-fixed-dim": "#ccd5e1",
+                        "primary-dim": "#004fa9",
+                        "surface-container-highest": "#d9e4ea",
+                        "tertiary-fixed": "#b6e3ff",
+                        "inverse-primary": "#4a8eff",
+                        "on-primary-fixed-variant": "#0058bb",
+                        "on-primary-container": "#004fa8",
+                        "on-primary": "#f7f7ff",
+                        "tertiary-fixed-dim": "#a8d5f0",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#dae3ef",
+                        "primary-fixed": "#d8e2ff",
+                        "on-error-container": "#752121",
+                        "secondary-dim": "#4b545e",
+                        "surface-container-high": "#e1e9ee",
+                        "on-secondary-fixed": "#37404a",
+                        "surface-variant": "#d9e4ea",
+                        "secondary": "#57606a",
+                        "on-tertiary-container": "#25536a",
+                        "surface-container": "#e8eff3",
+                        "on-background": "#2a3439",
+                        "secondary-container": "#dae3ef",
+                        "surface-bright": "#f8f9fb",
+                        "on-tertiary-fixed-variant": "#305d75",
+                        "on-secondary-container": "#4a535c",
+                        "surface-tint": "#005bc0",
+                        "primary-container": "#d8e2ff",
+                        "on-tertiary-fixed": "#0b4057",
+                        "inverse-surface": "#0b0f10",
+                        "tertiary-dim": "#2a586f",
+                        "outline-variant": "#a9b4b9",
+                        "background": "#f8f9fb",
+                        "on-secondary": "#f6f9ff",
+                        "on-tertiary": "#f4faff",
+                        "outline": "#717c82",
+                        "primary-fixed-dim": "#c2d4ff",
+                        "inverse-on-surface": "#9a9d9f",
+                        "error-dim": "#4e0309",
+                        "on-primary-fixed": "#003d85",
+                        "surface": "#f8f9fb",
+                        "on-surface-variant": "#566166",
+                        "on-error": "#fff7f6",
+                        "tertiary-container": "#b6e3ff",
+                        "surface-container-low": "#f0f4f7",
+                        "on-surface": "#2a3439",
+                        "error-container": "#fe8983",
+                        "primary": "#005bc0",
+                        "on-secondary-fixed-variant": "#535c66",
+                        "tertiary": "#37647c",
+                        "error": "#9f403d",
+                        "brand-orange": "#D97706"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Left column: Slim Sidebar (SideNavBar) -->
+<nav class="fixed left-0 top-0 h-full z-50 flex flex-col py-4 bg-slate-100 dark:bg-slate-900 h-screen w-16 flex flex-col items-center border-r-0 font-sans text-sm tracking-tight Inter">
+<!-- Brand Logo (Orange Chip) -->
+<div class="mb-8 w-8 h-8 bg-orange-600 dark:bg-orange-500 rounded flex items-center justify-center text-white font-bold tracking-tighter text-xs">
+                CC
+            </div>
+<div class="flex flex-col gap-6 items-center w-full">
+<!-- Explorer (Active) -->
+<button class="w-full flex justify-center py-2 border-l-2 border-blue-600 dark:border-blue-400 text-blue-700 dark:text-blue-300 font-semibold hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer Active: scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+</button>
+<!-- Search -->
+<button class="w-full flex justify-center py-2 text-slate-500 dark:text-slate-400 opacity-70 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer Active: scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<!-- Source Control -->
+<button class="w-full flex justify-center py-2 text-slate-500 dark:text-slate-400 opacity-70 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer Active: scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+</button>
+<!-- Extensions -->
+<button class="w-full flex justify-center py-2 text-slate-500 dark:text-slate-400 opacity-70 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer Active: scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="extension">extension</span>
+</button>
+</div>
+<div class="mt-auto flex flex-col items-center gap-4 w-full">
+<button class="w-full flex justify-center py-2 text-slate-500 dark:text-slate-400 opacity-70 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer Active: scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-highest">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="professional male portrait avatar with neutral background and soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASSjB_x7ZwmUhcAWPTiu93Fo_WAkAT7kEWaGDahqiI4uVKlcP3YOtJyNKkYYggWyb7rk-dAY_-3xbEIZ4OT66kFQWYP1psxtgtYoxeMj1zAQG0i6v9GQySMoVjZQRL8nqJcMDJs1ske-rFEv_TipLq1_QP7l05ryk0GR_afEpywvuh0iNMKuC1xgLBGR8H-vLBsEv2mUYJtw3CXuKsFX30v_eMUQX9gdNboprWiDgClxr9-960i4yXdzxb0AX70LVc8NySw2sg3FEI"/>
+</div>
+</div>
+</nav>
+<!-- Spacer for Fixed Sidebar -->
+<div class="w-16 flex-shrink-0"></div>
+<!-- Middle column: Chat Area (Primary Stage) -->
+<main class="flex-1 flex flex-col bg-surface-container-lowest relative">
+<!-- Chat Header (Subtle) -->
+<header class="px-8 py-4 flex items-center justify-between">
+<h1 class="text-sm font-semibold tracking-tight text-on-surface-variant mono">cc_session_042.log</h1>
+<div class="flex items-center gap-4 text-xs font-medium text-outline">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> Connected</span>
+<span class="mono">v1.0.4</span>
+</div>
+</header>
+<!-- Message Thread -->
+<div class="flex-1 overflow-y-auto px-8 space-y-8 pb-32">
+<!-- User Message -->
+<div class="max-w-3xl ml-auto text-right">
+<p class="text-on-surface text-sm leading-relaxed bg-surface-container rounded-xl px-4 py-3 inline-block">
+                        Refactor the authentication hook to use the new session provider and fix the memory leak in the dashboard.
+                    </p>
+</div>
+<!-- AI Response & Tool Flow -->
+<div class="max-w-3xl space-y-4">
+<div class="flex items-center gap-2 mb-2">
+<span class="text-[10px] font-extrabold uppercase tracking-widest text-brand-orange bg-orange-50 px-1.5 py-0.5 rounded">Claude Code</span>
+</div>
+<p class="text-sm text-on-surface leading-relaxed">
+                        I'll start by analyzing the current implementation of <span class="mono text-primary px-1 bg-primary-container/20 rounded">useAuth.ts</span> and searching for references in the dashboard components.
+                    </p>
+<!-- COMPLETED Tool Call -->
+<div class="flex items-center gap-3 py-1 border-l-2 border-transparent transition-all">
+<span class="material-symbols-outlined text-green-500 text-sm" data-icon="check_circle">check_circle</span>
+<div class="flex flex-1 items-center justify-between text-xs mono text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="font-bold text-on-surface">READ_FILE</span>
+<span class="opacity-60">src/hooks/useAuth.ts</span>
+</div>
+<span class="text-[10px] text-outline">120ms</span>
+</div>
+</div>
+<!-- RUNNING Tool Call -->
+<div class="flex items-center gap-3 py-1 border-l-2 border-blue-600 bg-blue-50/30 -ml-1 pl-1">
+<span class="material-symbols-outlined text-blue-600 text-sm animate-pulse" data-icon="progress_activity">progress_activity</span>
+<div class="flex flex-1 items-center justify-between text-xs mono text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="font-bold text-primary">GREP_SEARCH</span>
+<span class="opacity-60">"AuthContext" src/components/dashboard/</span>
+</div>
+<span class="text-[10px] text-blue-600 animate-pulse">RUNNING</span>
+</div>
+</div>
+<!-- Sequential Tool Lines -->
+<div class="space-y-1 pt-2 opacity-80">
+<div class="flex items-center gap-3 py-0.5 text-xs mono text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="list_alt">list_alt</span>
+<span class="font-bold">LIST_FILES</span>
+<span class="opacity-60">src/providers/</span>
+</div>
+<div class="flex items-center gap-3 py-0.5 text-xs mono text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="find_in_page">find_in_page</span>
+<span class="font-bold">SEARCH</span>
+<span class="opacity-60">"useEffect" in DashboardStats.tsx</span>
+</div>
+</div>
+<p class="text-sm text-on-surface pt-4">
+                        Found the leak. It appears the <span class="mono text-error">setInterval</span> in the dashboard isn't being cleared when the user logs out. Applying the fix now.
+                    </p>
+</div>
+</div>
+<!-- Input Box Fixed Bottom -->
+<div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/90 to-transparent">
+<div class="max-w-4xl mx-auto relative flex items-center bg-surface-container-lowest border border-outline-variant/20 shadow-2xl shadow-slate-200/50 rounded-xl p-1 group focus-within:ring-2 ring-primary-fixed/50 transition-all">
+<input class="w-full bg-transparent border-none focus:ring-0 text-sm py-3 px-4 placeholder:text-outline/60 mono" placeholder="Ask Claude to code..." type="text"/>
+<button class="bg-brand-orange text-white p-2 rounded-lg hover:brightness-110 transition-all active:scale-95 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_upward">arrow_upward</span>
+</button>
+</div>
+<div class="max-w-4xl mx-auto mt-2 flex gap-4 px-2">
+<span class="text-[10px] text-outline font-medium flex items-center gap-1 uppercase tracking-tighter"><span class="material-symbols-outlined text-[12px]" data-icon="bolt">bolt</span> turbo mode</span>
+<span class="text-[10px] text-outline font-medium flex items-center gap-1 uppercase tracking-tighter"><span class="material-symbols-outlined text-[12px]" data-icon="history">history</span> context: 4.2k tokens</span>
+</div>
+</div>
+</main>
+<!-- Right column: File Tree & Diff View -->
+<aside class="w-80 h-full bg-surface-container border-l-0 flex flex-col">
+<!-- Project Explorer Header -->
+<div class="p-4 border-b border-outline-variant/10 flex items-center justify-between">
+<div>
+<h2 class="text-[10px] font-extrabold uppercase tracking-widest text-on-surface-variant">Project Explorer</h2>
+<p class="text-[10px] text-outline mono">workspace-main</p>
+</div>
+<button class="p-1 hover:bg-surface-container-high rounded transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+<!-- File Tree -->
+<div class="flex-1 overflow-y-auto py-2">
+<div class="space-y-0.5">
+<!-- Folder -->
+<div class="flex items-center gap-2 px-4 py-1.5 hover:bg-surface-container-high cursor-pointer group">
+<span class="material-symbols-outlined text-sm text-outline group-hover:text-primary transition-colors" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+<span class="material-symbols-outlined text-sm text-tertiary-dim" data-icon="folder" data-weight="fill" style="font-variation-settings: 'FILL' 1;">folder</span>
+<span class="text-xs font-medium text-on-surface-variant">src/components</span>
+</div>
+<!-- Sub-folder (Active) -->
+<div class="flex items-center gap-2 px-8 py-1.5 bg-primary-container/20 text-blue-700 font-medium cursor-pointer">
+<span class="material-symbols-outlined text-sm" data-icon="keyboard_arrow_right">keyboard_arrow_right</span>
+<span class="material-symbols-outlined text-sm" data-icon="folder" data-weight="fill" style="font-variation-settings: 'FILL' 1;">folder</span>
+<span class="text-xs">dashboard</span>
+</div>
+<!-- Files -->
+<div class="flex items-center gap-2 px-12 py-1 hover:bg-surface-container-high cursor-pointer group">
+<span class="material-symbols-outlined text-sm text-blue-500" data-icon="description">description</span>
+<span class="text-xs text-on-surface-variant mono">DashboardStats.tsx</span>
+<span class="ml-auto w-1.5 h-1.5 rounded-full bg-brand-orange"></span>
+</div>
+<div class="flex items-center gap-2 px-12 py-1 hover:bg-surface-container-high cursor-pointer group opacity-60">
+<span class="material-symbols-outlined text-sm text-blue-400" data-icon="description">description</span>
+<span class="text-xs text-on-surface-variant mono">ChartHeader.tsx</span>
+</div>
+</div>
+<!-- Diff Preview Card -->
+<div class="m-4 mt-8 bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-outline-variant/10">
+<div class="flex items-center justify-between mb-3">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse"></span>
+                            Staged Changes
+                        </span>
+<span class="text-[9px] mono text-outline bg-surface-container px-1 rounded">M</span>
+</div>
+<div class="text-[10px] mono space-y-1">
+<div class="text-error bg-error/5 -mx-2 px-2 line-through">- clearInterval(this.timer);</div>
+<div class="text-primary bg-primary/5 -mx-2 px-2">+ if (this.timer) {</div>
+<div class="text-primary bg-primary/5 -mx-2 px-2">+   window.clearInterval(this.timer);</div>
+<div class="text-primary bg-primary/5 -mx-2 px-2">+ }</div>
+</div>
+<button class="w-full mt-4 py-2 bg-primary text-on-primary text-[10px] font-bold rounded uppercase tracking-widest hover:brightness-110 transition-all">
+                        Apply Fix
+                    </button>
+</div>
+</div>
+<!-- Stats/Footer of Sidebar -->
+<div class="p-4 bg-surface-container-high flex flex-col gap-2">
+<div class="flex justify-between items-center text-[10px] mono text-outline">
+<span>BRANCH</span>
+<span class="text-on-surface-variant font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="account_tree">account_tree</span>
+                        feat/auth-leak
+                    </span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1 overflow-hidden">
+<div class="bg-primary h-full w-2/3"></div>
+</div>
+</div>
+</aside>
+</div>
+</body></html>

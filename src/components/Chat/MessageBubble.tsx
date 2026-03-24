@@ -1,13 +1,30 @@
-import type { ChatMessage } from '@/types/chat';
+import type { ChatMessage, ToolCall } from '@/types/chat';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ToolCallBlock } from './ToolCallBlock';
+import { PermissionBlock } from './PermissionBlock';
 import styles from './MessageBubble.module.css';
 
 interface MessageBubbleProps {
   message: ChatMessage;
+  onPermissionAllow?: (toolCall: ToolCall) => void;
+  onPermissionDeny?: (toolCall: ToolCall) => void;
 }
 
-function MessageBubble({ message }: MessageBubbleProps) {
+function getPermissionInfo(toolCall: ToolCall): { toolName: string; toolIcon: string; target: string; isDangerous?: boolean } {
+  const name = toolCall.name;
+  if (name === 'ReadFile' || name === 'Read') {
+    return { toolName: 'READ', toolIcon: 'description', target: String(toolCall.input.file_path || '') };
+  }
+  if (name === 'WriteFile' || name === 'Write' || name === 'Edit') {
+    return { toolName: 'WRITE', toolIcon: 'edit_note', target: String(toolCall.input.file_path || ''), isDangerous: false };
+  }
+  if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') {
+    return { toolName: 'EXEC', toolIcon: 'terminal', target: String(toolCall.input.command || ''), isDangerous: true };
+  }
+  return { toolName: name.toUpperCase(), toolIcon: 'security', target: '', isDangerous: false };
+}
+
+function MessageBubble({ message, onPermissionAllow, onPermissionDeny }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const roleLabel = isUser ? '你' : 'Claude Code';
   const timeStr = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -37,9 +54,23 @@ function MessageBubble({ message }: MessageBubbleProps) {
           <>
             {message.toolCalls && message.toolCalls.length > 0 && (
               <div className={styles.toolCallList}>
-                {message.toolCalls.map((tc) => (
-                  <ToolCallBlock key={tc.id} toolCall={tc} />
-                ))}
+                {message.toolCalls.map((tc) => {
+                  if (tc.status === 'pending_permission') {
+                    const info = getPermissionInfo(tc);
+                    return (
+                      <PermissionBlock
+                        key={tc.id}
+                        toolName={info.toolName}
+                        toolIcon={info.toolIcon}
+                        target={info.target}
+                        isDangerous={info.isDangerous}
+                        onAllow={() => onPermissionAllow?.(tc)}
+                        onDeny={() => onPermissionDeny?.(tc)}
+                      />
+                    );
+                  }
+                  return <ToolCallBlock key={tc.id} toolCall={tc} />;
+                })}
               </div>
             )}
             {message.content && (

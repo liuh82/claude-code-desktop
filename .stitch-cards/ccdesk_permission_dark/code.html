@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CCDesk - Obsidian Pro Interface</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-surface-variant": "#c1c6d7",
+            "surface": "#131314",
+            "secondary": "#ddb7ff",
+            "on-tertiary-fixed": "#2a1700",
+            "on-secondary-container": "#d6a9ff",
+            "surface-variant": "#353436",
+            "surface-container-high": "#2a2a2b",
+            "inverse-surface": "#e5e2e3",
+            "secondary-fixed-dim": "#ddb7ff",
+            "on-secondary-fixed-variant": "#6900b3",
+            "tertiary-fixed": "#ffddb8",
+            "secondary-container": "#6f00be",
+            "on-primary-fixed": "#001a41",
+            "on-error": "#690005",
+            "error": "#ffb4ab",
+            "primary-fixed": "#d8e2ff",
+            "on-tertiary-container": "#3e2400",
+            "surface-dim": "#131314",
+            "surface-container-highest": "#353436",
+            "tertiary": "#ffb95f",
+            "on-primary-container": "#00285c",
+            "primary-container": "#4b8eff",
+            "primary-fixed-dim": "#adc6ff",
+            "on-tertiary": "#472a00",
+            "on-error-container": "#ffdad6",
+            "tertiary-fixed-dim": "#ffb95f",
+            "on-secondary": "#490080",
+            "inverse-on-surface": "#313031",
+            "inverse-primary": "#005bc1",
+            "outline-variant": "#414755",
+            "on-background": "#e5e2e3",
+            "on-surface": "#e5e2e3",
+            "surface-container-low": "#1c1b1c",
+            "outline": "#8b90a0",
+            "on-secondary-fixed": "#2c0051",
+            "error-container": "#93000a",
+            "background": "#131314",
+            "on-primary": "#002e69",
+            "surface-container-lowest": "#0e0e0f",
+            "secondary-fixed": "#f0dbff",
+            "surface-bright": "#39393a",
+            "tertiary-container": "#ca8100",
+            "surface-container": "#201f20",
+            "on-tertiary-fixed-variant": "#653e00",
+            "surface-tint": "#adc6ff",
+            "on-primary-fixed-variant": "#004493",
+            "primary": "#adc6ff"
+          },
+          fontFamily: {
+            "headline": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"],
+            "mono": ["JetBrains Mono"]
+          },
+          borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+        },
+      },
+    }
+  </script>
+<style>
+    body { background-color: #1a1b1e; color: #e1e4e8; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #353436; border-radius: 10px; }
+    .glass-panel { backdrop-filter: blur(20px); background: rgba(42, 42, 43, 0.8); }
+  </style>
+</head>
+<body class="font-body antialiased selection:bg-primary/30">
+<div class="flex h-screen overflow-hidden">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 bottom-0 z-50 flex flex-col items-center py-4 bg-[#201f20] h-full w-[4.5rem] border-r border-outline-variant/10 font-['Inter'] antialiased text-sm tracking-tight shadow-none">
+<div class="mb-8">
+<div class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-high border border-outline-variant/20">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">terminal</span>
+</div>
+</div>
+<nav class="flex flex-col gap-4 w-full">
+<!-- Chat Active Tab -->
+<a class="flex flex-col items-center justify-center relative before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#adc6ff] before:rounded-r-full text-[#adc6ff] bg-[#2a2a2b] py-3 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="text-[10px] mt-1 font-medium">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#949494] hover:text-[#e5e2e3] py-3 hover:bg-[#2a2a2b] transition-colors duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+<span class="text-[10px] mt-1">Files</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#949494] hover:text-[#e5e2e3] py-3 hover:bg-[#2a2a2b] transition-colors duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="text-[10px] mt-1">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#949494] hover:text-[#e5e2e3] py-3 hover:bg-[#2a2a2b] transition-colors duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="text-[10px] mt-1">History</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-4 w-full items-center">
+<a class="flex flex-col items-center justify-center text-[#949494] hover:text-[#e5e2e3] py-3 hover:bg-[#2a2a2b] transition-colors duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</a>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/30">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="close-up professional headshot of a developer in dark studio lighting with soft blue backlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4QJJcDw_WodytRX3EKszDWU1jPpfBh5UNWTn8Uq6uhjGZh4h-alxJRou3bKakpc68qYnN4tI3JF2Dpjrb4cs6CiLOUK67C2rwVGsaPaw0TwmY2jOYfRHjWxVX1RDNPzO6CIxhiJtBtUav6zR45acmE-0cSDtuEGyEHiX_UYPIEPueu1PRMX5Zj80akJQOr05o9AzmcuIlRRil-uEpORiQNq9l9utM6MtUFzlxQwtxQPYxvP2o1CJ01HB9OaZNocA_J1RM81bJCaYP"/>
+</div>
+</div>
+</aside>
+<!-- Content Area Wrapper -->
+<main class="flex-1 flex ml-[4.5rem]">
+<!-- Middle Column: Chat Stream -->
+<section class="flex-1 flex flex-col bg-[#1a1b1e] border-r border-outline-variant/10 relative">
+<!-- Header -->
+<header class="h-14 flex items-center justify-between px-6 bg-[#1a1b1e]/50 backdrop-blur-md sticky top-0 z-10">
+<div class="flex items-center gap-3">
+<span class="text-tertiary font-bold tracking-tighter text-lg">CCDesk</span>
+<span class="h-1 w-1 rounded-full bg-outline-variant"></span>
+<span class="text-xs font-mono text-outline">v0.12.4-stable</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</button>
+<button class="bg-surface-container-high px-3 py-1.5 rounded text-xs font-medium border border-outline-variant/20 hover:bg-surface-container-highest transition-colors">
+              New Session
+            </button>
+</div>
+</header>
+<!-- Chat History -->
+<div class="flex-1 overflow-y-auto custom-scrollbar px-6 py-8 space-y-8 max-w-4xl mx-auto w-full">
+<!-- AI Message -->
+<div class="flex gap-4">
+<div class="w-8 h-8 rounded bg-tertiary/10 flex items-center justify-center flex-shrink-0 border border-tertiary/20">
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="flex-1 space-y-4">
+<div class="text-sm leading-relaxed text-[#e1e4e8]/80">
+                I've analyzed the repository. To proceed with the end-to-end testing suite setup, I need to install the Playwright dependencies. 
+              </div>
+<!-- Blue Accented Tool Call Log -->
+<div class="bg-primary/5 border-l-2 border-primary-container p-4 rounded-r-lg font-mono text-xs">
+<div class="flex items-center justify-between mb-2">
+<span class="text-primary font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">terminal</span>
+                    PROPOSED ACTION
+                  </span>
+<span class="text-outline text-[10px]">package.json modification</span>
+</div>
+<div class="text-primary-fixed-dim">
+                  $ npm install --save-dev playwright
+                </div>
+</div>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex gap-4">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center flex-shrink-0 border border-outline-variant/20 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional profile avatar of a young tech professional with warm directional lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnUGP1za9des9YG-ic3ftwZ3mfIDejlQ66Ghz-w3ZOMY9OrpM3Km3sGbT1wahJ7CXpaeDkkscnEBMX2oAGqQM7U8_hro_erqpf6b3vPQgZLqMMkgWxhlsj55kkpnLY5eWKqgxa_uAY9yDfRZ28zCBIhcHxoIA8gpE1WgF_E0ggdcx8vi0mYPXLEJPM3E921HmZFt32QZCxiIqD-APAOH_JLEQxzj9275vRF6UAx4yxuthFr1gOkmRPC6rcjxXS2LDrr-5TZ6_2QV-T"/>
+</div>
+<div class="flex-1">
+<div class="text-sm leading-relaxed text-[#e1e4e8]">
+                Go ahead and initiate the installation. Make sure to include the browser binaries as well.
+              </div>
+</div>
+</div>
+<!-- AI Thinking / Waiting State -->
+<div class="flex gap-4 opacity-70">
+<div class="w-8 h-8 rounded bg-tertiary/10 flex items-center justify-center flex-shrink-0 border border-tertiary/20">
+<span class="material-symbols-outlined text-tertiary text-sm animate-pulse" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="flex-1">
+<div class="h-4 bg-surface-container-high w-32 rounded animate-pulse"></div>
+</div>
+</div>
+</div>
+<!-- Floating Permission Request Modal -->
+<div class="absolute bottom-20 left-1/2 -translate-x-1/2 w-full max-w-sm z-40 px-4">
+<div class="bg-[#2c2d32] border border-white/10 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden p-4 backdrop-blur-xl">
+<div class="flex items-start gap-3 mb-4">
+<div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary !text-lg">security</span>
+</div>
+<div class="flex-1">
+<h3 class="font-semibold text-[#e1e4e8] text-sm">Command Execution</h3>
+<p class="text-xs text-outline mt-0.5 leading-tight">Claude is requesting permission to execute <span class="font-mono text-primary-fixed-dim bg-primary/10 px-1 rounded">npm install --save-dev playwright</span></p>
+</div>
+</div>
+<div class="space-y-2">
+<button class="w-full py-2 bg-primary hover:brightness-110 text-on-primary font-semibold text-sm rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center active:scale-[0.98]">
+          Allow
+        </button>
+<div class="flex gap-2">
+<button class="flex-1 py-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-medium text-xs rounded-lg transition-all border border-outline-variant/10">
+            Allow Always
+          </button>
+<button class="flex-1 py-2 bg-error/10 hover:bg-error/20 text-error font-medium text-xs rounded-lg transition-all border border-error/20">
+            Deny
+          </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Chat Input Area -->
+<footer class="p-6 bg-[#1a1b1e] relative">
+<div class="max-w-4xl mx-auto">
+<div class="bg-[#25262b] border border-outline-variant/20 rounded-xl flex items-end p-2 gap-2 focus-within:ring-1 focus-within:ring-primary/40 transition-shadow">
+<button class="p-2 text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<textarea class="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 custom-scrollbar resize-none text-[#e1e4e8]/70 placeholder:text-outline/50" placeholder="Message Claude..." rows="1"></textarea>
+<button class="bg-tertiary text-on-tertiary-fixed w-10 h-10 rounded-lg flex items-center justify-center transition-all active:scale-90 hover:brightness-110 shadow-[0_0_15px_rgba(255,185,95,0.2)]">
+<span class="material-symbols-outlined font-bold" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+<div class="mt-3 flex justify-center">
+<p class="text-[10px] text-outline/60 flex items-center gap-1">
+                Claude can make mistakes. Check important info.
+              </p>
+</div>
+</div>
+</footer>
+</section>
+<!-- Context Panel (Right Rail) -->
+<aside class="w-72 bg-[#1a1b1e] hidden lg:flex flex-col border-l border-outline-variant/10">
+<div class="p-5 border-b border-outline-variant/10">
+<h2 class="text-xs font-bold uppercase tracking-widest text-outline">Session Context</h2>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-6">
+<!-- Context Item -->
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold text-[#e1e4e8]">Active Project</span>
+<span class="material-symbols-outlined text-sm text-[#58a6ff]">hub</span>
+</div>
+<div class="bg-surface-container-low rounded-lg p-3 border border-outline-variant/10">
+<div class="text-[11px] font-mono text-[#58a6ff] truncate mb-1">obsidian-pro-desktop</div>
+<div class="text-[10px] text-outline">~/projects/obsidian-ui</div>
+</div>
+</div>
+<!-- Files Tree Preview -->
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold text-[#e1e4e8]">Related Files</span>
+<span class="text-[10px] text-[#58a6ff] hover:underline cursor-pointer">View All</span>
+</div>
+<ul class="space-y-1">
+<li class="flex items-center gap-2 text-xs py-1.5 px-2 hover:bg-surface-container-high rounded cursor-pointer text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-sm text-secondary">javascript</span>
+                playwright.config.ts
+              </li>
+<li class="flex items-center gap-2 text-xs py-1.5 px-2 hover:bg-surface-container-high rounded cursor-pointer text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-sm text-[#58a6ff]">data_object</span>
+                package.json
+              </li>
+<li class="flex items-center gap-2 text-xs py-1.5 px-2 hover:bg-surface-container-high rounded cursor-pointer text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-sm text-tertiary">folder</span>
+                tests/e2e/
+              </li>
+</ul>
+</div>
+<!-- Dependency Visualization -->
+<div class="pt-4 border-t border-outline-variant/10 space-y-3">
+<span class="text-xs font-semibold text-[#e1e4e8]">Build Status</span>
+<div class="h-20 w-full bg-surface-container-lowest rounded-lg border border-outline-variant/20 flex items-center justify-center overflow-hidden">
+<!-- Abstract "Build Graph" visualization -->
+<div class="flex gap-1 items-end h-8">
+<div class="w-1 bg-[#58a6ff]/20 h-4 rounded-full"></div>
+<div class="w-1 bg-[#58a6ff]/40 h-6 rounded-full"></div>
+<div class="w-1 bg-[#58a6ff] h-8 rounded-full"></div>
+<div class="w-1 bg-[#58a6ff]/30 h-5 rounded-full"></div>
+<div class="w-1 bg-[#58a6ff]/60 h-7 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 bg-surface-container-high/50 border-t border-outline-variant/10">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="text-[11px] font-medium text-on-surface-variant">Indexing Repository... 68%</span>
+</div>
+</div>
+</aside>
+</main>
+</div>
+</body></html>

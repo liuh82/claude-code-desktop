@@ -6,20 +6,14 @@ interface ToolCallBlockProps {
   toolCall: ToolCall;
 }
 
-function getToolIconClass(name: string): string {
-  if (name === 'ReadFile' || name === 'Read') return 'toolIconRead';
-  if (name === 'WriteFile' || name === 'Write' || name === 'Edit') return 'toolIconWrite';
-  if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') return 'toolIconExec';
-  if (name === 'SearchFiles' || name === 'Grep' || name === 'Glob') return 'toolIconSearch';
-  return 'toolIconDefault';
-}
-
-function getToolIcon(name: string): { icon: string; label: string } {
-  if (name === 'ReadFile' || name === 'Read') return { icon: 'description', label: '读取' };
-  if (name === 'WriteFile' || name === 'Write' || name === 'Edit') return { icon: 'edit_note', label: '写入' };
-  if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') return { icon: 'code', label: '执行' };
-  if (name === 'SearchFiles' || name === 'Grep' || name === 'Glob') return { icon: 'search', label: '搜索' };
-  return { icon: 'extension', label: name };
+function getToolLabel(name: string): string {
+  if (name === 'ReadFile' || name === 'Read') return 'READ';
+  if (name === 'WriteFile' || name === 'Write') return 'WRITE';
+  if (name === 'Edit') return 'EDIT';
+  if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') return 'EXEC';
+  if (name === 'SearchFiles' || name === 'Grep') return 'GREP';
+  if (name === 'Glob') return 'GLOB';
+  return name.toUpperCase().slice(0, 16);
 }
 
 function getShortSummary(toolCall: ToolCall): string {
@@ -31,49 +25,59 @@ function getShortSummary(toolCall: ToolCall): string {
   return '';
 }
 
+function getStatusIcon(status: ToolCall['status']): string {
+  if (status === 'completed') return 'check_circle';
+  if (status === 'running') return 'progress_activity';
+  if (status === 'error') return 'error';
+  if (status === 'pending_permission') return 'security';
+  return 'list_alt';
+}
+
+function getStatusClass(status: ToolCall['status']): string {
+  if (status === 'completed') return 'Completed';
+  if (status === 'running') return 'Running';
+  if (status === 'error') return 'Error';
+  return 'Pending';
+}
+
 function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
   const [expanded, setExpanded] = useState(false);
-  const { icon, label } = getToolIcon(toolCall.name);
+  const label = getToolLabel(toolCall.name);
   const summary = getShortSummary(toolCall);
-  const iconClass = getToolIconClass(toolCall.name);
+  const statusIcon = getStatusIcon(toolCall.status);
+  const statusCls = getStatusClass(toolCall.status);
 
   const toggleExpand = useCallback(() => {
     setExpanded((prev) => !prev);
   }, []);
 
   const durationStr = toolCall.duration
-    ? `${(toolCall.duration / 1000).toFixed(1)}s`
+    ? `${toolCall.duration < 1000 ? `${toolCall.duration}ms` : `${(toolCall.duration / 1000).toFixed(1)}s`}`
     : '';
 
-  const statusBadge = toolCall.status === 'running' ? (
-    <span className={`${styles.badge} ${styles.badgeRunning}`}>
-      <span className={styles.spinner} />
-      运行中
-    </span>
-  ) : toolCall.status === 'completed' ? (
-    <span className={`${styles.badge} ${styles.badgeCompleted}`}>
-      <span className={`${styles.badgeIcon} ${styles.badgeIconSuccess}`}>check_circle</span>
-      {durationStr}
-    </span>
-  ) : (
-    <span className={`${styles.badge} ${styles.badgeError}`}>
-      <span className={`${styles.badgeIcon} ${styles.badgeIconError}`}>error</span>
-      失败
-    </span>
-  );
+  const statusText = toolCall.status === 'running'
+    ? 'RUNNING'
+    : toolCall.status === 'pending_permission'
+    ? 'AWAITING APPROVAL'
+    : toolCall.status === 'error'
+    ? 'FAILED'
+    : durationStr;
 
   const inputStr = JSON.stringify(toolCall.input, null, 2);
 
   return (
-    <div className={`${styles.toolCall} ${toolCall.status === 'running' ? styles.toolCallRunning : ''}`}>
-      <div className={styles.toolCallHeader} onClick={toggleExpand}>
-        <span className={`${styles.toolIcon} ${styles[iconClass]}`}>
-          <span className="material-symbols-outlined">{icon}</span>
+    <div>
+      <div
+        className={`${styles.toolCall} ${styles[`toolCall${statusCls}`]}`}
+        onClick={toggleExpand}
+      >
+        <span className={`${styles.toolIcon} ${styles[`toolIcon${statusCls}`]}`}>
+          <span className="material-symbols-outlined">{statusIcon}</span>
         </span>
-        <span className={styles.toolLabel}>{label}</span>
-        {summary && <span className={styles.toolSummary}>{summary}</span>}
-        <span className={styles.toolStatusArea}>
-          {statusBadge}
+        <span className={`${styles.toolName} ${styles[`toolName${statusCls}`]}`}>{label}</span>
+        {summary && <span className={styles.toolPath}>{summary}</span>}
+        <span className={`${styles.toolStatus} ${styles[`toolStatus${statusCls}`]}`}>
+          {statusText}
         </span>
         <span className={`${styles.chevron} ${expanded ? styles.chevronOpen : ''}`}>
           <span className="material-symbols-outlined">chevron_right</span>
