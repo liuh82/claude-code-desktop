@@ -499,12 +499,24 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const status = pane?.status || 'idle';
   const statusClass = `paneStatus${status.charAt(0).toUpperCase()}${status.slice(1)}`;
   const isSinglePane = (tab?.panes.size ?? 0) <= 1;
+  const paneRef = useRef<HTMLDivElement>(null);
+  const [isNarrow, setIsNarrow] = useState(false);
+  useEffect(() => {
+    const el = paneRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => {
+      setIsNarrow(entries[0].contentRect.width < 500);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const canSend = text.trim().length > 0 && !isGenerating;
   const shortProjectName = paneProjectPath ? paneProjectPath.split('/').filter(Boolean).pop() || '' : '';
 
   return (
     <div
-      className={`${styles.terminalPane} ${isActive ? styles.terminalPaneActive : ''}`}
+      ref={paneRef}
+      className={`${styles.terminalPane} ${isActive ? styles.terminalPaneActive : ''} ${isNarrow ? styles.terminalPaneNarrow : ''}`}
       onClick={handleFocus}
     >
       {/* Pane header — only show when split */}

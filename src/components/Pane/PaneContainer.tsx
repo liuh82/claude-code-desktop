@@ -7,7 +7,7 @@ interface PaneContainerProps {
   layout: LayoutNode;
   tabId: string;
   activePaneId: string;
-  onRatioChange: (direction: 'horizontal' | 'vertical', index: number, ratios: number[]) => void;
+  onRatioChange: (direction: 'horizontal' | 'vertical', dividerIndex: number, ratios: number[]) => void;
 }
 
 function PaneContainer({ layout, tabId, activePaneId, onRatioChange }: PaneContainerProps) {
@@ -40,10 +40,14 @@ function SplitRenderer({
   split: LayoutSplit;
   tabId: string;
   activePaneId: string;
-  onRatioChange: (direction: 'horizontal' | 'vertical', index: number, ratios: number[]) => void;
+  onRatioChange: (direction: 'horizontal' | 'vertical', dividerIndex: number, ratios: number[]) => void;
 }) {
-  const handleRatioChange = (ratios: [number, number]) => {
-    onRatioChange(split.direction, 0, ratios);
+  const handleDividerDrag = (dividerIndex: number, newLeftRatio: number) => {
+    onRatioChange(split.direction, dividerIndex, split.ratios.map((r, i) => {
+      if (i === dividerIndex) return newLeftRatio;
+      if (i === dividerIndex + 1) return split.ratios[dividerIndex] + split.ratios[dividerIndex + 1] - newLeftRatio;
+      return r;
+    }));
   };
 
   const children: ReactNode[] = split.children.map((child, index) => (
@@ -59,10 +63,10 @@ function SplitRenderer({
   return (
     <PaneSplit
       direction={split.direction}
-      ratios={[split.ratios[0], split.ratios[1]]}
-      onRatioChange={handleRatioChange}
+      ratios={split.ratios}
+      onRatioChange={handleDividerDrag}
     >
-      {children as [ReactNode, ReactNode]}
+      {children}
     </PaneSplit>
   );
 }

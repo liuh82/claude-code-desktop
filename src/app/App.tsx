@@ -142,18 +142,18 @@ function AppContent() {
   }, []);
 
   // Pane ratio change handler
-  const handlePaneRatioChange = useCallback((_direction: 'horizontal' | 'vertical', _index: number, ratios: number[]) => {
+  const handlePaneRatioChange = useCallback((direction: 'horizontal' | 'vertical', _dividerIndex: number, newRatios: number[]) => {
     if (!activeTab) return;
     const tab = useTabStore.getState().tabs.get(activeTab.id);
     if (!tab) return;
 
     function updateRatiosInLayout(layout: LayoutNode): LayoutNode {
       if (layout.type === 'leaf') return layout;
-      return {
-        ...layout,
-        ratios: ratios.length === layout.ratios.length ? ratios : layout.ratios,
-        children: layout.children.map(updateRatiosInLayout),
-      };
+      // Only update the first split matching this direction
+      if (layout.direction === direction && layout.ratios.length === newRatios.length) {
+        return { ...layout, ratios: newRatios, children: layout.children.map(updateRatiosInLayout) };
+      }
+      return { ...layout, children: layout.children.map(updateRatiosInLayout) };
     }
 
     const newTabs = new Map(useTabStore.getState().tabs);

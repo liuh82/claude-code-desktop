@@ -165,6 +165,33 @@
   transition: border-color 150ms, box-shadow 150ms;
 }
 
+/* Narrow pane: input fills available space */
+.terminalPaneNarrow .paneInputWrapper {
+  max-width: 100%;
+  border-radius: 16px;
+  min-height: 80px;
+}
+
+.terminalPaneNarrow .paneInputOuter {
+  max-width: 100%;
+}
+
+.terminalPaneNarrow .paneMessages {
+  padding: 16px;
+}
+
+.terminalPaneNarrow .paneMessagesInner {
+  max-width: 100%;
+}
+
+.terminalPaneNarrow .paneInput {
+  padding: 16px;
+}
+
+.terminalPaneNarrow .paneInputHint {
+  display: none;
+}
+
 [data-theme="dark"] .paneInputWrapper {
   box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.3), 0 2px 8px -1px rgba(0, 0, 0, 0.2);
 }
@@ -204,6 +231,15 @@
   gap: 4px;
   margin-top: 4px;
   padding: 0 2px;
+  flex-wrap: wrap;
+}
+
+.terminalPaneNarrow .modeBtn span.modeBtnLabel {
+  display: none;
+}
+
+.terminalPaneNarrow .paneInputActions {
+  gap: 2px;
 }
 
 .paneInputActionsLeft {
