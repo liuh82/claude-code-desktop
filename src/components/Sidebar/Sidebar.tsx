@@ -20,6 +20,7 @@ const CC_BUILTIN_MODELS = [
 ];
 
 const NAV_ITEMS = [
+  { id: 'new-chat', icon: 'add', label: '新建对话' },
   { id: 'search', icon: 'search', label: '搜索 (⌘K)' },
   { id: 'history', icon: 'history', label: '历史记录' },
 ] as const;
@@ -38,9 +39,10 @@ interface SidebarProps {
   onOpenSettings: () => void;
   onToggleTheme: () => void;
   onOpenHistory?: () => void;
+  onSearch?: () => void;
 }
 
-function Sidebar({ projectPath: _projectPath, onNewChat: _onNewChat, onOpenSettings, onToggleTheme, onOpenHistory, style }: SidebarProps & { style?: React.CSSProperties }) {
+function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, onToggleTheme, onOpenHistory, onSearch, style }: SidebarProps & { style?: React.CSSProperties }) {
   const { settings, updateSetting } = useSettingsStore();
   const currentModel = useChatStore((s) => s.currentModel) || settings.defaultModel;
   const [activeNav] = useState<string>('editor');
@@ -69,13 +71,11 @@ function Sidebar({ projectPath: _projectPath, onNewChat: _onNewChat, onOpenSetti
   }, [claudeConfig]);
 
   const handleNavClick = useCallback((id: string) => {
+    if (id === 'new-chat') { onNewChat(); return; }
     if (id === 'settings') { onOpenSettings(); return; }
     if (id === 'theme') { onToggleTheme(); return; }
     if (id === 'history') { onOpenHistory?.(); return; }
-    if (id === 'search') {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
-      return;
-    }
+    if (id === 'search') { onSearch?.(); return; }
     if (id === 'split-h' || id === 'split-v') {
       const direction = id === 'split-h' ? 'horizontal' : 'vertical';
       const tabStore = useTabStore.getState();
@@ -85,7 +85,7 @@ function Sidebar({ projectPath: _projectPath, onNewChat: _onNewChat, onOpenSetti
       }
       return;
     }
-  }, [onOpenSettings, onToggleTheme]);
+  }, [onNewChat, onOpenSettings, onToggleTheme, onOpenHistory, onSearch]);
 
   return (
     <aside className={styles.sidebar} style={style}>

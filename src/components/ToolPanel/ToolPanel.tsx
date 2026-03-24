@@ -70,7 +70,7 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
   return (
     <aside className={styles.toolPanel} style={style}>
       <div className={styles.toolPanelHeader}>
-        <span className={styles.toolPanelTitle}>资源管理器</span>
+        <span className="material-symbols-outlined" style={{fontSize: 18, color: "var(--text-secondary)"}}>folder_managed</span>
         <div className={styles.toolPanelTabs}>
           <button
             className={`${styles.toolPanelTab} ${activeTab === 'files' ? styles.toolPanelTabActive : ''}`}

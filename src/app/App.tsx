@@ -230,6 +230,8 @@ function AppContent() {
               onClose={toggleSidebar}
               onOpenSettings={() => setSettingsOpen(true)}
               onToggleTheme={toggleTheme}
+              onOpenHistory={() => setHistoryOpen(true)}
+              onSearch={() => setCommandPaletteOpen(true)}
             />
           </>
         )}
