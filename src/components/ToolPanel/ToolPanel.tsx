@@ -35,7 +35,7 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
     // Phase 3: open file in editor
   }, []);
 
-  // Status bar — CC session data only
+  // CC session data
   const inputTokens = pane?.tokenUsage.input ?? 0;
   const outputTokens = pane?.tokenUsage.output ?? 0;
 
@@ -61,7 +61,8 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
   }, [inputTokens, outputTokens]);
 
   const codeChanges = useMemo(() => {
-    let added = 0, removed = 0;
+    let added = 0;
+    let removed = 0;
     for (const f of diffFiles) {
       for (const hunk of f.hunks) {
         for (const line of hunk.lines) {
