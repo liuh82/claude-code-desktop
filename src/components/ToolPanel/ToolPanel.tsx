@@ -140,15 +140,18 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
 
       {/* Status bar */}
       <div className={styles.toolPanelStatus}>
-        <span>{fileCount} 文件</span>
-        <span className={styles.statusSeparator}>·</span>
-        <span>{messageCount} 调用</span>
-        <span className={styles.statusSeparator}>·</span>
-        <span>{formatTokens(inputTokens)} in</span>
-        <span className={styles.statusSeparator}>/</span>
-        <span>{formatTokens(outputTokens)} out</span>
-        <span className={styles.statusSeparator}>·</span>
-        <span>+{codeChanges.added} / -{codeChanges.removed}</span>
+        <div className={styles.toolPanelStatusRow}>
+          <span>{fileCount} 文件</span>
+          <span className={styles.statusSeparator}>·</span>
+          <span>{messageCount} 调用</span>
+        </div>
+        <div className={styles.toolPanelStatusRow}>
+          <span>{formatTokens(inputTokens)} in</span>
+          <span className={styles.statusSeparator}>/</span>
+          <span>{formatTokens(outputTokens)} out</span>
+          <span className={styles.statusSeparator}>·</span>
+          <span>+{codeChanges.added} / -{codeChanges.removed}</span>
+        </div>
       </div>
     </aside>
   );
