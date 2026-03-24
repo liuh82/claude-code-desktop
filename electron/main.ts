@@ -297,14 +297,30 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
   proc.on('spawn', () => {
   });
 
+  // Save user message to DB
+  if (db) {
+    try {
+      const userMsgId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      db.prepare(
+        'INSERT OR IGNORE INTO messages (id, session_id, role, content, timestamp) VALUES (?, ?, ?, ?, ?)'
+      ).run(userMsgId, sessionId, 'user', message, new Date().toISOString());
+      db.prepare(
+        "UPDATE sessions SET message_count = message_count + 1, updated_at = ? WHERE id = ?"
+      ).run(new Date().toISOString(), sessionId);
+    } catch (err) {
+      console.error('[CCDesk] Failed to save user message:', err);
+    }
+  }
+
   // Send message via stdin (claude -p reads from stdin)
   if (proc.stdin) {
     proc.stdin.write(message);
     proc.stdin.end();
   }
 
-  // Buffer incomplete lines
+  // Buffer incomplete lines + assistant message accumulation for DB persistence
   let lineBuffer = '';
+  let currentAssistantContent = '';
 
   proc.stdout?.on('data', (data: Buffer) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -313,9 +329,37 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
       // Keep the last incomplete line in buffer
       lineBuffer = lines.pop() || '';
       for (const line of lines) {
-        if (line.trim()) {
-          mainWindow.webContents.send('claude-output', line, sessionId);
+        if (!line.trim()) continue;
+
+        // Parse to detect assistant messages for DB persistence
+        if (db) {
+          try {
+            const parsed = JSON.parse(line);
+            if (parsed.type === 'assistant' && parsed.message) {
+              const msg = parsed.message;
+              if (msg.content && Array.isArray(msg.content)) {
+                const textBlocks = msg.content.filter((b: any) => b.type === 'text');
+                const text = textBlocks.map((b: any) => b.text).join('');
+                currentAssistantContent = text;
+              }
+              // Finalize assistant message to DB when stop_reason present
+              if (msg.stop_reason && currentAssistantContent) {
+                try {
+                  const aMsgId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                  db.prepare(
+                    'INSERT OR IGNORE INTO messages (id, session_id, role, content, timestamp) VALUES (?, ?, ?, ?, ?)'
+                  ).run(aMsgId, sessionId, 'assistant', currentAssistantContent, new Date().toISOString());
+                  db.prepare(
+                    "UPDATE sessions SET message_count = message_count + 1, updated_at = ? WHERE id = ?"
+                  ).run(new Date().toISOString(), sessionId);
+                  currentAssistantContent = '';
+                } catch {}
+              }
+            }
+          } catch {}
         }
+
+        mainWindow.webContents.send('claude-output', line, sessionId);
       }
     }
   });
@@ -759,6 +803,74 @@ function registerIpcHandlers() {
     db.prepare("INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?").run(
       key, JSON.stringify(value), JSON.stringify(value)
     );
+  });
+
+  // ── Persistence: Messages ──
+
+  ipcMain.handle('load-messages', (_event, { sessionId }: { sessionId: string }) => {
+    if (!db) return [];
+    return db.prepare(
+      'SELECT id, role, content, timestamp FROM messages WHERE session_id = ? ORDER BY timestamp ASC'
+    ).all(sessionId);
+  });
+
+  ipcMain.handle('get-project-sessions', (_event, { projectPath }: { projectPath: string }) => {
+    if (!db) return [];
+    return db.prepare(
+      'SELECT s.id, s.title, s.status, s.created_at as createdAt, s.message_count as messageCount FROM sessions s WHERE s.project_path = ? ORDER BY s.updated_at DESC'
+    ).all(projectPath);
+  });
+
+  ipcMain.handle('get-session-messages', (_event, { sessionId }: { sessionId: string }) => {
+    if (!db) return [];
+    return db.prepare(
+      'SELECT id, role, content, timestamp FROM messages WHERE session_id = ? ORDER BY timestamp ASC'
+    ).all(sessionId);
+  });
+
+  ipcMain.handle('delete-session', (_event, { sessionId }: { sessionId: string }) => {
+    // Kill running process if any
+    const proc = sessions.get(sessionId);
+    if (proc) {
+      try { proc.kill('SIGTERM'); } catch {}
+      sessions.delete(sessionId);
+    }
+    sessionHistory.delete(sessionId);
+    sessionModels.delete(sessionId);
+    if (db) {
+      const deleteMessages = db.prepare('DELETE FROM messages WHERE session_id = ?');
+      const deleteSession = db.prepare('DELETE FROM sessions WHERE id = ?');
+      const tx = db.transaction(() => {
+        deleteMessages.run(sessionId);
+        deleteSession.run(sessionId);
+      });
+      tx();
+    }
+    return;
+  });
+
+  // ── Persistence: Tab State ──
+
+  ipcMain.handle('save-tab-state', (_event, { projectPath, tabData }: { projectPath: string; tabData: unknown }) => {
+    if (!db) return;
+    const now = new Date().toISOString();
+    const value = JSON.stringify(tabData);
+    db.prepare(
+      "INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)"
+    ).run(`tabs_${projectPath}`, value);
+  });
+
+  ipcMain.handle('load-tab-state', (_event, { projectPath }: { projectPath: string }) => {
+    if (!db) return null;
+    const row = db.prepare(
+      "SELECT value FROM app_settings WHERE key = ?"
+    ).get(`tabs_${projectPath}`) as { value?: string } | undefined;
+    if (!row?.value) return null;
+    try {
+      return JSON.parse(row.value);
+    } catch {
+      return null;
+    }
   });
 
   // ── Slash Commands Discovery ──

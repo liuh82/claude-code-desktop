@@ -2,6 +2,8 @@
  * Claude API wrapper — calls Electron IPC when in Electron, falls back to mock in browser.
  */
 
+import type { DbMessage, DbSession, SavedTabState } from '@/types/chat';
+
 interface ElectronAPI {
   getAppInfo: () => Promise<{ version: string; platform: string; arch: string }>;
   checkClaudeCli: () => Promise<{ path: string; version: string; available: boolean }>;
@@ -28,6 +30,13 @@ interface ElectronAPI {
   onClaudeStderr: (cb: (data: string, sessionId: string) => void) => () => void;
   onClaudeExit: (cb: (info: { sessionId: string; exitCode: number | null }) => void) => () => void;
   onClaudeError: (cb: (info: { sessionId: string; error: string }) => void) => () => void;
+  // Persistence
+  loadMessages: (args: { sessionId: string }) => Promise<DbMessage[]>;
+  getProjectSessions: (args: { projectPath: string }) => Promise<DbSession[]>;
+  getSessionMessages: (args: { sessionId: string }) => Promise<DbMessage[]>;
+  deleteSession: (args: { sessionId: string }) => Promise<void>;
+  saveTabState: (args: { projectPath: string; tabData: unknown }) => Promise<void>;
+  loadTabState: (args: { projectPath: string }) => Promise<SavedTabState | null>;
 }
 
 function getApi(): ElectronAPI | null {
@@ -65,4 +74,11 @@ export const claudeApi: ElectronAPI = {
   onClaudeStderr: (cb) => getApi()?.onClaudeStderr(cb) ?? (() => {}),
   onClaudeExit: (cb) => getApi()?.onClaudeExit(cb) ?? (() => {}),
   onClaudeError: (cb) => getApi()?.onClaudeError(cb) ?? (() => {}),
+  // Persistence fallbacks
+  loadMessages: (a) => getApi()?.loadMessages(a) ?? Promise.resolve([]),
+  getProjectSessions: (a) => getApi()?.getProjectSessions(a) ?? Promise.resolve([]),
+  getSessionMessages: (a) => getApi()?.getSessionMessages(a) ?? Promise.resolve([]),
+  deleteSession: (a) => getApi()?.deleteSession(a) ?? Promise.resolve(),
+  saveTabState: (a) => getApi()?.saveTabState(a) ?? Promise.resolve(),
+  loadTabState: (a) => getApi()?.loadTabState(a) ?? Promise.resolve(null),
 };

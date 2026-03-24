@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import type { Tab, Pane, LayoutNode } from '@/types/pane';
+import type { SavedTabState } from '@/types/chat';
+import { claudeApi, isElectron } from '@/lib/claude-api';
 import {
   createDefaultTab,
   generateTabId,
@@ -33,6 +35,8 @@ interface TabState {
   updatePaneRatio: (tabId: string, paneId: string, ratio: number) => void;
   setPaneProject: (paneId: string, projectPath: string) => void;
   getActiveTab: () => Tab | null;
+  restoreTabs: (projectPath: string) => Promise<void>;
+  saveTabs: (projectPath: string) => Promise<void>;
 }
 
 function updateLayoutRatio(
@@ -271,6 +275,76 @@ export const useTabStore = create<TabState>()((set, get) => ({
     const newProjectPaths = new Map(get().projectPaths);
     newProjectPaths.set(paneId, projectPath);
     set({ projectPaths: newProjectPaths });
+  },
+
+  restoreTabs: async (projectPath: string) => {
+    if (!isElectron()) return;
+
+    const saved = await claudeApi.loadTabState({ projectPath });
+    if (!saved) return;
+
+    // Reconstruct tabs from saved state
+    const newTabs = new Map<string, Tab>();
+    for (const tabData of saved.tabs) {
+      // Reconstruct panes Map from serialized array
+      const panes = new Map<string, Pane>();
+      for (const p of tabData.panes) {
+        panes.set(p.id, { ...p, tabId: tabData.id, status: p.status as Pane['status'] });
+      }
+
+      newTabs.set(tabData.id, {
+        id: tabData.id,
+        title: tabData.title,
+        activePaneId: tabData.activePaneId,
+        layout: tabData.layout as LayoutNode,
+        panes,
+        projectPath: tabData.projectPath || projectPath,
+        createdAt: tabData.createdAt,
+      });
+    }
+
+    const newProjectPaths = new Map<string, string>();
+    for (const entry of saved.projectPaths) {
+      newProjectPaths.set(entry.paneId, entry.projectPath);
+    }
+
+    set({
+      tabs: newTabs,
+      activeTabId: saved.activeTabId,
+      tabOrder: saved.tabOrder,
+      projectPaths: newProjectPaths,
+    });
+  },
+
+  saveTabs: async (projectPath: string) => {
+    if (!isElectron()) return;
+
+    const state = get();
+    if (state.tabs.size === 0) return;
+
+    // Serialize tabs (Map → Array for JSON)
+    const tabsArray = Array.from(state.tabs.values()).map((tab) => ({
+      id: tab.id,
+      title: tab.title,
+      activePaneId: tab.activePaneId,
+      layout: tab.layout,
+      panes: Array.from(tab.panes.values()),
+      projectPath: tab.projectPath,
+      createdAt: tab.createdAt,
+    }));
+
+    const projectPathsArray = Array.from(state.projectPaths.entries()).map(
+      ([paneId, path]) => ({ paneId, projectPath: path })
+    );
+
+    const tabData: SavedTabState = {
+      tabs: tabsArray,
+      activeTabId: state.activeTabId,
+      tabOrder: state.tabOrder,
+      projectPaths: projectPathsArray,
+    };
+
+    await claudeApi.saveTabState({ projectPath, tabData });
   },
 
   getActiveTab: () => {

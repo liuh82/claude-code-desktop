@@ -33,6 +33,22 @@ const api = {
   listClaudeSessions: (args: { projectPath: string }) =>
     ipcRenderer.invoke('list-claude-sessions', args),
 
+  // Persistence: Messages
+  loadMessages: (args: { sessionId: string }) =>
+    ipcRenderer.invoke('load-messages', args),
+  getProjectSessions: (args: { projectPath: string }) =>
+    ipcRenderer.invoke('get-project-sessions', args),
+  getSessionMessages: (args: { sessionId: string }) =>
+    ipcRenderer.invoke('get-session-messages', args),
+  deleteSession: (args: { sessionId: string }) =>
+    ipcRenderer.invoke('delete-session', args),
+
+  // Persistence: Tab State
+  saveTabState: (args: { projectPath: string; tabData: unknown }) =>
+    ipcRenderer.invoke('save-tab-state', args),
+  loadTabState: (args: { projectPath: string }) =>
+    ipcRenderer.invoke('load-tab-state', args),
+
   // Projects
   openProject: (args: { projectPath: string }) =>
     ipcRenderer.invoke('open-project', args),

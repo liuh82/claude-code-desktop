@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ChatMessage, ToolCall, FileNode, DiffFile, TokenUsage } from '@/types/chat';
+import type { ChatMessage, ToolCall, FileNode, DiffFile, TokenUsage, DbMessage, DbSession } from '@/types/chat';
 import { claudeApi, isElectron } from '@/lib/claude-api';
 import { parseClaudeLine, extractModel } from '@/lib/claude-parser';
 import type { ParsedAssistantMessage, ParsedResult } from '@/lib/claude-parser';
@@ -362,6 +362,8 @@ interface ChatState {
   stopGeneration: (paneId: string) => void;
   clearPane: (paneId: string) => void;
   addSystemMessage: (paneId: string, content: string) => void;
+  restoreMessages: (paneId: string, dbMessages: DbMessage[]) => void;
+  getProjectSessions: (projectPath: string) => Promise<DbSession[]>;
 }
 
 export const useChatStore = create<ChatState>()((set, get) => ({
@@ -423,6 +425,30 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         projectPath,
         model,
       });
+
+      // Try to restore messages from DB for this session
+      try {
+        const dbMessages = await claudeApi.loadMessages({ sessionId: session_id });
+        if (dbMessages && dbMessages.length > 0) {
+          const restoredMessages: ChatMessage[] = dbMessages.map((m) => ({
+            id: m.id,
+            role: m.role,
+            content: m.content,
+            timestamp: new Date(m.timestamp).getTime(),
+            isStreaming: false,
+          }));
+          set((s) => ({
+            panes: new Map(s.panes).set(paneId, {
+              ...emptyPaneState(),
+              sessionId: session_id,
+              currentModel: model || '',
+              messages: restoredMessages,
+            }),
+            projectPath,
+          }));
+          return;
+        }
+      } catch {}
 
       // Load file tree
       const tree = await claudeApi.readDirectory({ dirPath: projectPath, maxDepth: 5 });
@@ -565,6 +591,28 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     set((s) => ({
       panes: new Map(s.panes).set(paneId, emptyPaneState()),
     }));
+  },
+
+  restoreMessages: (paneId: string, dbMessages: DbMessage[]) => {
+    const messages: ChatMessage[] = dbMessages.map((m) => ({
+      id: m.id,
+      role: m.role,
+      content: m.content,
+      timestamp: new Date(m.timestamp).getTime(),
+      isStreaming: false,
+    }));
+    set((s) => {
+      const pane = s.panes.get(paneId);
+      if (!pane) return s;
+      return {
+        panes: new Map(s.panes).set(paneId, { ...pane, messages }),
+      };
+    });
+  },
+
+  getProjectSessions: async (projectPath: string) => {
+    if (!isElectron()) return [];
+    return claudeApi.getProjectSessions({ projectPath });
   },
 }));
 
