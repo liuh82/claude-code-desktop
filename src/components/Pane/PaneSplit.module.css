@@ -96,6 +96,8 @@
 
 /* Pane container (each side) */
 .paneSlot {
+  display: flex;
+  flex-direction: column;
   min-width: 80px;
   min-height: 60px;
   overflow: hidden;
