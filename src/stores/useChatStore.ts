@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { ChatMessage, ToolCall, FileNode, DiffFile, TokenUsage, DbMessage, DbSession } from '@/types/chat';
 import { claudeApi, isElectron } from '@/lib/claude-api';
 import { parseClaudeLine, extractModel } from '@/lib/claude-parser';
-import type { ParsedAssistantMessage, ParsedResult } from '@/lib/claude-parser';
+import type { ParsedAssistantMessage, ParsedResult, ParsedToolResult } from '@/lib/claude-parser';
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -88,8 +88,12 @@ let listenersStarted = false;
 // Map paneId → per-pane stream state
 const paneStreamingState = new Map<string, {
   assistantId: string | null;
+  /** The message.id from the Claude stream to detect new assistant turns */
+  streamMessageId: string | null;
   currentModel: string;
 }>();
+// Map paneId → Map<toolUseId, startTime> for duration calculation
+const paneToolStartTimes = new Map<string, Map<string, number>>();
 // Map sessionId → paneId (for IPC routing)
 const sessionIdToPaneId = new Map<string, string>();
 
@@ -169,7 +173,8 @@ function finalizeAssistantForPane(paneId: string) {
       }),
     };
   });
-  paneStreamingState.set(paneId, { assistantId: null, currentModel: streaming.currentModel });
+  paneStreamingState.set(paneId, { assistantId: null, streamMessageId: null, currentModel: streaming.currentModel });
+  paneToolStartTimes.delete(paneId);
 }
 
 function handleClaudeOutput(line: string, sessionId: string) {
@@ -179,16 +184,48 @@ function handleClaudeOutput(line: string, sessionId: string) {
   const parsed = parseClaudeLine(line);
   if (!parsed) return;
 
-  // User/tool results — track diffs only
+  // User/tool results — update tool call status + track diffs
   if (parsed.type === 'user') {
-    const tr = (parsed as any).tool_use_result;
-    if (tr && tr.filePath) {
+    const userParsed = parsed as ParsedToolResult;
+    // 1. Update tool call completion status via tool_use_result
+    const tr = userParsed.tool_use_result;
+    if (tr && tr.tool_use_id) {
+      const output = [tr.stdout, tr.stderr].filter(Boolean).join('\n') || undefined;
+      const toolStartTimes = paneToolStartTimes.get(paneId);
+      const startTime = toolStartTimes?.get(tr.tool_use_id);
+      const duration = startTime ? Date.now() - startTime : undefined;
+
+      useChatStore.setState((s) => {
+        const next = new Map(s.panes);
+        const pane = next.get(paneId);
+        if (!pane) return s;
+        return {
+          panes: new Map(s.panes).set(paneId, {
+            ...pane,
+            messages: pane.messages.map(m => {
+              if (!m.toolCalls) return m;
+              const updatedCalls = m.toolCalls.map(tc =>
+                tc.id === tr.tool_use_id
+                  ? { ...tc, status: tr.is_error ? 'error' as const : 'completed' as const, output, duration }
+                  : tc
+              );
+              return { ...m, toolCalls: updatedCalls };
+            }),
+          }),
+        };
+      });
+
+      // Clean up start time
+      toolStartTimes?.delete(tr.tool_use_id);
+    }
+
+    // 2. Track diffs (existing logic)
+    if (userParsed.filePath) {
       const state = useChatStore.getState();
-      const existingIdx = state.diffFiles.findIndex((d: any) => d.filePath === tr.filePath);
-      const status = tr.type === 'create' ? 'added' : tr.type === 'delete' ? 'deleted' : 'modified';
-      const diffFile: any = { filePath: tr.filePath, status, hunks: [] };
-      if (tr.structuredPatch && tr.structuredPatch.length > 0) {
-        diffFile.hunks = tr.structuredPatch.map((hunk: any) => ({
+      const existingIdx = state.diffFiles.findIndex((d: any) => d.filePath === userParsed.filePath);
+      const diffFile: any = { filePath: userParsed.filePath, status: 'modified' as const, hunks: [] };
+      if (userParsed.structuredPatch && userParsed.structuredPatch.length > 0) {
+        diffFile.hunks = userParsed.structuredPatch.map((hunk: any) => ({
           header: "@@ -" + hunk.oldStart + "," + hunk.oldLines + " +" + hunk.newStart + "," + hunk.newLines + " @@",
           lines: hunk.lines.map((l: string) => {
             if (l.startsWith("+")) return { type: "add", content: l.slice(1) };
@@ -219,7 +256,7 @@ function handleClaudeOutput(line: string, sessionId: string) {
     return;
   }
 
-  // Assistant — accumulate into streaming message
+  // Assistant — handle text (replace, not append) and tool_use (track start time)
   if (parsed.type === 'assistant' && parsed.message) {
     const msg = parsed as ParsedAssistantMessage;
 
@@ -232,6 +269,41 @@ function handleClaudeOutput(line: string, sessionId: string) {
       });
     }
 
+    // Detect new assistant turn by message.id
+    const streamMsgId = msg.message.id || null;
+    const streaming = paneStreamingState.get(paneId);
+
+    // New message.id means a new assistant turn — finalize previous
+    if (streamMsgId && streaming && streaming.streamMessageId && streamMsgId !== streaming.streamMessageId) {
+      if (streaming.assistantId) {
+        // Mark previous assistant message as done streaming
+        useChatStore.setState((s) => {
+          const pane = s.panes.get(paneId);
+          if (!pane) return s;
+          return {
+            panes: new Map(s.panes).set(paneId, {
+              ...pane,
+              messages: pane.messages.map(m =>
+                m.id === streaming.assistantId ? { ...m, isStreaming: false } : m
+              ),
+            }),
+          };
+        });
+      }
+      // Reset for new turn
+      paneToolStartTimes.delete(paneId);
+    }
+
+    // Update streamMessageId
+    if (streamMsgId) {
+      const current = paneStreamingState.get(paneId);
+      paneStreamingState.set(paneId, {
+        assistantId: current?.assistantId || null,
+        streamMessageId: streamMsgId,
+        currentModel: current?.currentModel || '',
+      });
+    }
+
     for (const block of msg.message.content) {
       if (block.type === 'text' && block.text) {
         useChatStore.setState((s) => {
@@ -239,50 +311,64 @@ function handleClaudeOutput(line: string, sessionId: string) {
           const pane = next.get(paneId);
           if (!pane || !pane.isGenerating) return s;
 
-          const streaming = paneStreamingState.get(paneId);
-          const assistantId = streaming?.assistantId || generateId();
-          const assistantMsg: ChatMessage = {
-            id: assistantId,
-            role: 'assistant',
-            content: block.text,
-            toolCalls: [],
-            timestamp: Date.now(),
-            isStreaming: true,
-            model: pane.currentModel || undefined,
-          };
+          const currentStreaming = paneStreamingState.get(paneId);
+          const aid = currentStreaming?.assistantId || generateId();
 
-          if (!streaming?.assistantId) {
+          if (!currentStreaming?.assistantId) {
+            // First block — create new assistant message, REPLACE content
+            const assistantMsg: ChatMessage = {
+              id: aid,
+              role: 'assistant',
+              content: block.text,
+              toolCalls: [],
+              timestamp: Date.now(),
+              isStreaming: true,
+              model: pane.currentModel || undefined,
+            };
             next.set(paneId, { ...pane, messages: [...pane.messages, assistantMsg] });
-            paneStreamingState.set(paneId, { assistantId, currentModel: pane.currentModel });
+            paneStreamingState.set(paneId, {
+              assistantId: aid,
+              streamMessageId: currentStreaming?.streamMessageId || streamMsgId,
+              currentModel: pane.currentModel,
+            });
           } else {
+            // Same message — REPLACE content (stream gives complete text each time)
             next.set(paneId, {
               ...pane,
               messages: pane.messages.map(m =>
-                m.id === assistantId ? { ...m, content: m.content + block.text } : m
+                m.id === aid ? { ...m, content: block.text } : m
               ),
             });
           }
           return { panes: next };
         });
       } else if (block.type === 'tool_use') {
+        const now = Date.now();
         const toolCall: ToolCall = {
           id: block.id,
           name: block.name,
           status: 'running',
           input: block.input,
+          startTime: now,
         };
+
+        // Record start time for duration calc
+        if (!paneToolStartTimes.has(paneId)) {
+          paneToolStartTimes.set(paneId, new Map());
+        }
+        paneToolStartTimes.get(paneId)!.set(block.id, now);
 
         useChatStore.setState((s) => {
           const next = new Map(s.panes);
           const pane = next.get(paneId);
           if (!pane || !pane.isGenerating) return s;
 
-          const streaming = paneStreamingState.get(paneId);
-          const assistantId = streaming?.assistantId || generateId();
+          const currentStreaming = paneStreamingState.get(paneId);
+          const aid = currentStreaming?.assistantId || generateId();
 
-          if (!streaming?.assistantId) {
+          if (!currentStreaming?.assistantId) {
             const assistantMsg: ChatMessage = {
-              id: assistantId,
+              id: aid,
               role: 'assistant',
               content: '',
               toolCalls: [toolCall],
@@ -291,15 +377,24 @@ function handleClaudeOutput(line: string, sessionId: string) {
               model: pane.currentModel || undefined,
             };
             next.set(paneId, { ...pane, messages: [...pane.messages, assistantMsg] });
-            paneStreamingState.set(paneId, { assistantId, currentModel: pane.currentModel });
+            paneStreamingState.set(paneId, {
+              assistantId: aid,
+              streamMessageId: currentStreaming?.streamMessageId || streamMsgId,
+              currentModel: pane.currentModel,
+            });
           } else {
+            // Add tool call if not already tracked (stream repeats existing tools)
             next.set(paneId, {
               ...pane,
-              messages: pane.messages.map(m =>
-                m.id === assistantId
-                  ? { ...m, toolCalls: [...(m.toolCalls || []), toolCall] }
-                  : m
-              ),
+              messages: pane.messages.map(m => {
+                if (m.id !== aid) return m;
+                const existing = m.toolCalls || [];
+                const alreadyExists = existing.some(tc => tc.id === block.id);
+                return {
+                  ...m,
+                  toolCalls: alreadyExists ? existing : [...existing, toolCall],
+                };
+              }),
             });
           }
           return { panes: next };
@@ -558,7 +653,8 @@ export const useChatStore = create<ChatState>()((set, get) => ({
           }),
         };
       });
-      paneStreamingState.set(paneId, { assistantId: null, currentModel: streaming.currentModel });
+      paneStreamingState.set(paneId, { assistantId: null, streamMessageId: null, currentModel: streaming.currentModel });
+      paneToolStartTimes.delete(paneId);
     } else {
       set((s) => {
         const pane = s.panes.get(paneId);

@@ -109,6 +109,42 @@
   background: var(--error-bg);
 }
 
+.badgeIcon {
+  font-family: 'Material Symbols Outlined';
+  font-size: 14px;
+  line-height: 1;
+}
+
+.badgeIconSuccess {
+  color: var(--success);
+}
+
+.badgeIconError {
+  color: var(--error);
+}
+
+.toolCallRunning {
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: rgba(0, 91, 192, 0.30); }
+  50% { border-color: rgba(0, 91, 192, 0.60); }
+}
+
+[data-theme="dark"] .toolCallRunning {
+  animation: pulse-border-dark 2s ease-in-out infinite;
+}
+
+@keyframes pulse-border-dark {
+  0%, 100% { border-color: rgba(75, 142, 255, 0.20); }
+  50% { border-color: rgba(75, 142, 255, 0.50); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .spinner {
   display: inline-block;
   width: 8px;

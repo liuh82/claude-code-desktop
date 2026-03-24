@@ -52,16 +52,20 @@ function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
     </span>
   ) : toolCall.status === 'completed' ? (
     <span className={`${styles.badge} ${styles.badgeCompleted}`}>
+      <span className={`${styles.badgeIcon} ${styles.badgeIconSuccess}`}>check_circle</span>
       {durationStr}
     </span>
   ) : (
-    <span className={`${styles.badge} ${styles.badgeError}`}>失败</span>
+    <span className={`${styles.badge} ${styles.badgeError}`}>
+      <span className={`${styles.badgeIcon} ${styles.badgeIconError}`}>error</span>
+      失败
+    </span>
   );
 
   const inputStr = JSON.stringify(toolCall.input, null, 2);
 
   return (
-    <div className={styles.toolCall}>
+    <div className={`${styles.toolCall} ${toolCall.status === 'running' ? styles.toolCallRunning : ''}`}>
       <div className={styles.toolCallHeader} onClick={toggleExpand}>
         <span className={`${styles.toolIcon} ${styles[iconClass]}`}>
           <span className="material-symbols-outlined">{icon}</span>

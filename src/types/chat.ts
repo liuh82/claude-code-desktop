@@ -5,6 +5,7 @@ export interface ToolCall {
   input: Record<string, unknown>;
   output?: string;
   duration?: number;
+  startTime?: number;
 }
 
 export interface ChatMessage {

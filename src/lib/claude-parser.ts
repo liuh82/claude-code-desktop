@@ -64,17 +64,37 @@ export interface ParsedResult {
   session_id: string;
 }
 
-export type ParsedLine = ParsedSystemInit | ParsedAssistantMessage | ParsedResult | ParsedToolResult | null;
+export interface ParsedRawUser {
+  type: 'user';
+  message?: unknown;
+  session_id?: string;
+}
+
+export type ParsedLine = ParsedSystemInit | ParsedAssistantMessage | ParsedResult | ParsedToolResult | ParsedRawUser | null;
 
 export interface ParsedToolResult {
   type: 'user';
-  tool_use_result?: {
-    type: 'create' | 'edit' | 'delete' | 'read';
-    filePath: string;
-    content?: string;
-    structuredPatch?: Array<{ oldStart: number; oldLines: number; newStart: number; newLines: number; lines: string[] }>;
-    originalFile?: string | null;
+  message?: {
+    content: Array<{
+      tool_use_id?: string;
+      type: 'tool_result';
+      content: string;
+      is_error?: boolean;
+    }>;
   };
+  /** Matches the tool_use_id in assistant tool_use blocks */
+  tool_use_result?: {
+    tool_use_id: string;
+    stdout: string;
+    stderr: string;
+    is_error: boolean;
+    interrupted: boolean;
+  };
+  /** Diff/file tracking (hook-injected fields) */
+  filePath?: string;
+  content?: string;
+  structuredPatch?: Array<{ oldStart: number; oldLines: number; newStart: number; newLines: number; lines: string[] }>;
+  originalFile?: string | null;
   error?: string;
   session_id: string;
 }
