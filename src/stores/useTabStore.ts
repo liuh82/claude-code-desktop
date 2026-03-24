@@ -11,7 +11,7 @@ import {
 } from '@/types/pane';
 
 const MAX_TABS = 10;
-const MAX_PANES_PER_TAB = 6;
+const MAX_PANES_PER_TAB = 3;
 
 interface TabState {
   tabs: Map<string, Tab>;

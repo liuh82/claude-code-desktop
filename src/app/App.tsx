@@ -6,7 +6,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useChatStore } from '@/stores/useChatStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useTabStore } from '@/stores/useTabStore';
-import { ChatHeader } from '@/components/Chat/ChatHeader';
+// import { ChatHeader } from '@/components/Chat/ChatHeader';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { ToolPanel } from '@/components/ToolPanel/ToolPanel';
 import { SidebarToggle, ToolPanelToggle } from '@/components/PanelToggles';
@@ -15,7 +15,7 @@ import { ProjectSelector } from '@/components/ProjectSelector';
 import { CommandPalette, type CommandItem } from '@/components/CommandPalette';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { HistoryDialog } from '@/components/HistoryDialog';
-// import { TabBar } from '@/components/Pane/TabBar';
+import { TabBar } from '@/components/Pane/TabBar';
 import { PaneContainer } from '@/components/Pane/PaneContainer';
 import type { LayoutNode } from '@/types/pane';
 import './App.css';
@@ -238,8 +238,8 @@ function AppContent() {
 
         {/* Main content area with tabs */}
         <div className="appMainContent">
-          {/* <TabBar projectPath={projectPath} /> */}
-          <ChatHeader />
+          <TabBar projectPath={projectPath} />
+          {/* <ChatHeader /> */}
           {activeTab ? (
             <PaneContainer
               layout={activeTab.layout}

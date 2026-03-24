@@ -20,7 +20,6 @@ const CC_BUILTIN_MODELS = [
 ];
 
 const NAV_ITEMS = [
-  { id: 'new-chat', icon: 'add', label: '新建对话' },
   { id: 'search', icon: 'search', label: '搜索 (⌘K)' },
   { id: 'history', icon: 'history', label: '历史记录' },
 ] as const;
@@ -71,7 +70,6 @@ function Sidebar({ projectPath: _projectPath, onNewChat, onOpenSettings, onToggl
   }, [claudeConfig]);
 
   const handleNavClick = useCallback((id: string) => {
-    if (id === 'new-chat') { onNewChat(); return; }
     if (id === 'settings') { onOpenSettings(); return; }
     if (id === 'theme') { onToggleTheme(); return; }
     if (id === 'history') { onOpenHistory?.(); return; }
