@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CCDesk | Editorial Curator Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@700;800&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "error": "#ba1a1a",
+              "surface-container-highest": "#dae3ef",
+              "on-primary-container": "#c9d9ff",
+              "primary": "#004493",
+              "on-surface-variant": "#424753",
+              "surface-container-high": "#e0e9f5",
+              "surface-container-lowest": "#ffffff",
+              "background": "#f7f9ff",
+              "tertiary-container": "#006e2f",
+              "surface-container-low": "#edf4ff",
+              "on-tertiary-container": "#60f587",
+              "surface-tint": "#005bc0",
+              "error-container": "#ffdad6",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-fixed": "#002109",
+              "on-primary-fixed": "#001a41",
+              "secondary-fixed-dim": "#ffb77d",
+              "outline-variant": "#c2c6d5",
+              "secondary-container": "#fe932c",
+              "surface-container": "#e6effb",
+              "on-primary": "#ffffff",
+              "on-surface": "#141c25",
+              "primary-container": "#005bc0",
+              "on-secondary-container": "#663500",
+              "on-error": "#ffffff",
+              "on-primary-fixed-variant": "#004493",
+              "surface-variant": "#dae3ef",
+              "surface-dim": "#d2dbe7",
+              "on-error-container": "#93000a",
+              "primary-fixed": "#d8e2ff",
+              "on-secondary": "#ffffff",
+              "inverse-primary": "#adc7ff",
+              "inverse-on-surface": "#e9f2fe",
+              "inverse-surface": "#28313a",
+              "primary-fixed-dim": "#adc7ff",
+              "on-secondary-fixed-variant": "#6e3900",
+              "on-secondary-fixed": "#2f1500",
+              "tertiary-fixed": "#6bff8f",
+              "outline": "#727784",
+              "tertiary-fixed-dim": "#4ae176",
+              "on-tertiary-fixed-variant": "#005321",
+              "surface": "#f7f9ff",
+              "surface-bright": "#f7f9ff",
+              "tertiary": "#005322",
+              "on-background": "#141c25",
+              "secondary-fixed": "#ffdcc3",
+              "secondary": "#904d00"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "mono": ["JetBrains Mono"]
+            },
+            borderRadius: {"DEFAULT": "8px", "lg": "12px", "xl": "24px", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+        .editorial-shadow {
+            box-shadow: 0 4px 24px rgba(42, 52, 57, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen selection:bg-primary selection:text-white">
+<!-- Top Navigation Anchor -->
+<header class="bg-[#f7f9ff]/80 backdrop-blur-md fixed top-0 z-50 w-full border-b border-outline-variant/30">
+<div class="flex justify-between items-center w-full px-6 py-3 max-w-[896px] mx-auto">
+<div class="text-2xl font-black text-[#005BC0] tracking-tight">CCDesk</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-[#005BC0] font-bold border-b-2 border-[#005BC0] pb-1 hover:text-[#004493] transition-colors" href="#">Dashboard</a>
+<a class="text-[#424753] font-medium hover:text-[#004493] transition-colors" href="#">Analytics</a>
+<a class="text-[#424753] font-medium hover:text-[#004493] transition-colors" href="#">Chains</a>
+<a class="text-[#424753] font-medium hover:text-[#004493] transition-colors" href="#">Logs</a>
+</nav>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-all">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-all">settings</span>
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden ring-1 ring-outline-variant/30">
+<img alt="User profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgI-5dc0VylbNDDtle6EJ4hA67dnJv8ArTFtaZ688UW9rR7WWD3Nq0BcQOTcPJlGi33QH5xu_S5tBpxjPiL2m17BOqmyXcq5LD90uUbXpFOqNlRq6ctRgVKz7e__iaiUPDN04om9q1eUGVmSTtD-ggXL6AscpJW2535TcWxq2XUHCYm0MD3Z_gwmpO6xyLzBu1zBnkc_15Lx3VnMFoscuBgXAH8nNDZ-cNT7sQeuoEEc2uCCDOmvnqpGPyIVmuuRYec6-7d5Q7YC1E"/>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-20 px-4 max-w-[896px] mx-auto space-y-12">
+<!-- Header Story -->
+<section class="space-y-2">
+<span class="text-primary font-bold tracking-widest text-xs uppercase">Editorial Curator v2.0</span>
+<h1 class="text-4xl font-extrabold tracking-tight text-on-surface">System Architecture &amp; Insight</h1>
+<p class="text-on-surface-variant max-w-xl body-md">Visualizing the high-performance bridge between Claude Code CLI and the CCDesk modern interface.</p>
+</section>
+<!-- 1. Architecture Card -->
+<section class="bg-surface-container-lowest rounded-lg p-8 editorial-shadow">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h2 class="text-xl font-bold text-on-surface">Architect</h2>
+<p class="text-sm text-on-surface-variant">Core structural components &amp; communication layers</p>
+</div>
+<span class="material-symbols-outlined text-primary-container" data-weight="fill" style="font-variation-settings: 'FILL' 1;">account_tree</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+<!-- Main Thread -->
+<div class="bg-primary text-white p-6 rounded-lg flex flex-col justify-between h-40">
+<span class="text-xs font-bold uppercase tracking-tighter opacity-80">Process A</span>
+<div class="space-y-1">
+<p class="font-bold text-lg">Electron Main</p>
+<p class="text-xs opacity-90 font-mono">ipcMain.handle()</p>
+</div>
+</div>
+<!-- CLI Link -->
+<div class="bg-secondary-container text-on-secondary-container p-6 rounded-lg flex flex-col justify-between h-40 z-10">
+<span class="text-xs font-bold uppercase tracking-tighter opacity-80">Adapter</span>
+<div class="space-y-1">
+<p class="font-bold text-lg">Claude Code CLI</p>
+<p class="text-xs opacity-90 font-mono">spawn_child_process</p>
+</div>
+</div>
+<!-- Renderer -->
+<div class="bg-surface-container-high p-6 rounded-lg flex flex-col justify-between h-40 border border-transparent">
+<span class="text-xs font-bold uppercase tracking-tighter text-primary">UI Layer</span>
+<div class="space-y-1 text-on-surface">
+<p class="font-bold text-lg">Renderer</p>
+<p class="text-xs text-on-surface-variant font-mono">React + Tailwind</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. Data Flow & Flow Priority & Statistics -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Data Flow Card -->
+<section class="md:col-span-8 bg-surface-container-lowest rounded-lg p-8 editorial-shadow flex flex-col h-full">
+<div class="mb-6">
+<span class="text-xs font-bold tracking-widest text-secondary uppercase mb-1 block">Active Stream</span>
+<h2 class="text-xl font-bold text-on-surface">Data Flow</h2>
+<p class="text-sm text-on-surface-variant">Sequence of information processing</p>
+</div>
+<div class="space-y-3 flex-grow">
+<div class="flex items-center gap-4 p-3 bg-surface-container rounded-lg group hover:bg-surface-container-high transition-colors">
+<div class="w-2 h-2 rounded-full bg-primary shrink-0"></div>
+<div class="flex-grow">
+<p class="text-sm font-mono text-on-surface">GET /api/v1/curator/extract</p>
+</div>
+<span class="text-[10px] font-mono text-outline">24ms</span>
+</div>
+<div class="flex items-center gap-4 p-3 bg-surface-container rounded-lg group hover:bg-surface-container-high transition-colors">
+<div class="w-2 h-2 rounded-full bg-primary shrink-0"></div>
+<div class="flex-grow">
+<p class="text-sm font-mono text-on-surface">POST /api/v1/chains/execute</p>
+</div>
+<span class="text-[10px] font-mono text-outline">142ms</span>
+</div>
+<div class="flex items-center gap-4 p-3 bg-tertiary-container/10 border border-tertiary/20 rounded-lg">
+<div class="w-2 h-2 rounded-full bg-tertiary animate-pulse shrink-0"></div>
+<div class="flex-grow">
+<p class="text-sm font-bold text-tertiary">Real-time UI hydration</p>
+</div>
+<span class="material-symbols-outlined text-tertiary text-sm">check_circle</span>
+</div>
+</div>
+<div class="mt-8 flex justify-between items-end">
+<div class="space-y-1">
+<div class="text-3xl font-black font-mono text-tertiary">99.9%</div>
+<div class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Throughput Success</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/10 text-6xl">api</span>
+</div>
+</section>
+<!-- Flow Priority Card -->
+<section class="md:col-span-4 bg-primary rounded-lg p-6 flex flex-col justify-center text-white editorial-shadow">
+<h3 class="font-bold text-lg mb-2">Flow Priority</h3>
+<p class="text-sm opacity-90 leading-relaxed mb-8">High-bandwidth channels are automatically routed through low-latency edge nodes.</p>
+<div class="space-y-2">
+<div class="h-1.5 w-full bg-white/20 rounded-full overflow-hidden">
+<div class="h-full bg-white w-3/4"></div>
+</div>
+<div class="text-[10px] font-black uppercase tracking-widest opacity-80">System Saturation</div>
+</div>
+</section>
+<!-- Statistics Card -->
+<section class="md:col-span-12 bg-surface-container-lowest rounded-lg p-8 editorial-shadow">
+<div class="flex justify-between items-center mb-10">
+<div>
+<span class="text-xs font-bold tracking-widest text-primary uppercase mb-1 block">Performance Index</span>
+<h2 class="text-xl font-bold text-on-surface">Statistics</h2>
+</div>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-surface-container rounded-lg transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">download</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+<div class="space-y-1">
+<p class="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Active Nodes</p>
+<p class="text-4xl font-black text-on-surface">1,248</p>
+<div class="flex items-center gap-1 text-[10px] font-bold text-tertiary">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+12% this week</span>
+</div>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Requests</p>
+<p class="text-4xl font-black text-on-surface">4.2M</p>
+<p class="text-[10px] font-bold text-outline">Average Load</p>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Error Rate</p>
+<p class="text-4xl font-black text-error">0.02%</p>
+<div class="flex items-center gap-1 text-[10px] font-bold text-tertiary">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+<span>Stable</span>
+</div>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Cost / Req</p>
+<p class="text-4xl font-black text-on-surface">$0.003</p>
+<div class="flex items-center gap-1 text-[10px] font-bold text-secondary">
+<span class="material-symbols-outlined text-sm">token</span>
+<span>Optimized</span>
+</div>
+</div>
+</div>
+<!-- Performance Index Bar Chart -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Performance History</span>
+<span class="text-[10px] font-black text-tertiary">+4.2%</span>
+</div>
+<div class="h-32 w-full flex items-end gap-2 px-1">
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[30%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[45%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[60%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[55%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[80%]"></div>
+<div class="flex-1 bg-primary/40 rounded-t-lg h-[95%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[70%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[65%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[50%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[40%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[35%]"></div>
+<div class="flex-1 bg-primary/60 rounded-t-lg h-[30%]"></div>
+</div>
+</div>
+</section>
+</div>
+<!-- 3. Comparison Card -->
+<section class="bg-surface-container-lowest rounded-lg overflow-hidden editorial-shadow border border-outline-variant/10">
+<div class="p-8 pb-4">
+<span class="text-xs font-bold tracking-widest text-primary uppercase mb-1 block">A/B Intelligence</span>
+<h2 class="text-xl font-bold text-on-surface">Comparison</h2>
+<p class="text-sm text-on-surface-variant">Legacy vs. Modern Editorial Interface</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2">
+<!-- Native CLI (Legacy) -->
+<div class="p-8 bg-[#f1f5f9] border-r border-outline-variant/10">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-outline/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline text-sm">terminal</span>
+</div>
+<p class="font-bold text-on-surface-variant text-lg">Native CLI</p>
+</div>
+<span class="bg-outline/20 text-on-surface-variant text-[10px] font-black px-2 py-1 rounded tracking-widest">LEGACY</span>
+</div>
+<ul class="space-y-6">
+<li class="flex justify-between items-center border-b border-outline-variant/10 pb-4">
+<span class="text-xs font-bold text-on-surface-variant/70 uppercase tracking-widest">Speed</span>
+<span class="text-sm font-medium text-on-surface">Standard execution</span>
+</li>
+<li class="flex justify-between items-center border-b border-outline-variant/10 pb-4">
+<span class="text-xs font-bold text-on-surface-variant/70 uppercase tracking-widest">UX</span>
+<span class="text-sm font-medium text-on-surface">Text-only friction</span>
+</li>
+<li class="flex justify-between items-center pb-4">
+<span class="text-xs font-bold text-on-surface-variant/70 uppercase tracking-widest">Visual</span>
+<span class="text-sm font-medium text-on-surface">ASCII tables</span>
+</li>
+</ul>
+</div>
+<!-- CCDesk UI (Modern) -->
+<div class="p-8 bg-[#005bc0] text-white">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-sm">bolt</span>
+</div>
+<p class="font-black text-lg">CCDesk UI</p>
+</div>
+<span class="bg-white text-[#005bc0] text-[10px] font-black px-2 py-1 rounded tracking-widest shadow-lg">PREMIUM</span>
+</div>
+<ul class="space-y-6">
+<li class="flex justify-between items-center border-b border-white/10 pb-4">
+<span class="text-xs font-bold text-white/70 uppercase tracking-widest">Speed</span>
+<div class="flex items-center gap-2">
+<span class="text-sm font-black">120ms</span>
+<span class="bg-tertiary-container text-on-tertiary-container px-1.5 py-0.5 rounded text-[8px] font-black uppercase">OPTIMIZED</span>
+</div>
+</li>
+<li class="flex justify-between items-center border-b border-white/10 pb-4">
+<span class="text-xs font-bold text-white/70 uppercase tracking-widest">UX</span>
+<span class="text-sm font-black">Editorial blocks</span>
+</li>
+<li class="flex justify-between items-center pb-4">
+<span class="text-xs font-bold text-white/70 uppercase tracking-widest">Visual</span>
+<span class="text-sm font-black">Interactive Bento</span>
+</li>
+</ul>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">info</span>
+<p class="text-xs text-on-surface-variant italic">The CCDesk interface provides 40% higher task completion rate for curator-led editorial workflows.</p>
+</div>
+</section>
+<!-- 4. Timeline Card -->
+<section class="bg-surface-container-lowest rounded-lg p-8 editorial-shadow">
+<div class="mb-10">
+<span class="text-xs font-bold tracking-widest text-primary uppercase mb-1 block">Workflow Pipeline</span>
+<h2 class="text-xl font-bold text-on-surface">Timeline</h2>
+<p class="text-sm text-on-surface-variant">Lifecycle of a single editorial change</p>
+</div>
+<div class="relative">
+<!-- Line -->
+<div class="absolute top-5 left-0 w-full h-0.5 bg-surface-container hidden md:block"></div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+<!-- Step 1 -->
+<div class="relative z-10 flex md:flex-col items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary shrink-0 ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Project Scan</p>
+<p class="text-xs text-on-surface-variant mt-1">Indexing directory</p>
+<p class="text-[10px] font-mono mt-2 text-primary">0.4s</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="relative z-10 flex md:flex-col items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shrink-0 ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-sm animate-pulse">analytics</span>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">Analysis</p>
+<p class="text-xs text-on-surface-variant mt-1">Logic mapping</p>
+<p class="text-[10px] font-mono mt-2 text-primary">1.2s</p>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="relative z-10 flex md:flex-col items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-outline-variant shrink-0 ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-sm">edit_note</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface opacity-50">Edit Suggestion</p>
+<p class="text-xs text-on-surface-variant mt-1 opacity-50">LLM synthesis</p>
+<p class="text-[10px] font-mono mt-2 text-outline-variant">QUEUED</p>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="relative z-10 flex md:flex-col items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-outline-variant shrink-0 ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-sm">verified</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface opacity-50">User Approval</p>
+<p class="text-xs text-on-surface-variant mt-1 opacity-50">Final review</p>
+<p class="text-[10px] font-mono mt-2 text-outline-variant">PENDING</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Navigation Shell Support -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 md:hidden z-50">
+<nav class="bg-surface-container-lowest editorial-shadow rounded-full flex items-center p-2 gap-1 border border-outline-variant/20">
+<a class="w-12 h-12 flex items-center justify-center rounded-full bg-primary text-white" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+</a>
+<a class="w-12 h-12 flex items-center justify-center rounded-full text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">analytics</span>
+</a>
+<a class="w-12 h-12 flex items-center justify-center rounded-full text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+</a>
+<a class="w-12 h-12 flex items-center justify-center rounded-full text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">history</span>
+</a>
+</nav>
+</div>
+</body></html>

@@ -64,6 +64,36 @@ export interface DbSession {
   createdAt: string;
 }
 
+// ── Direct API (SSE streaming) types ──
+
+export interface DirectApiConfig {
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+  maxTokens?: number;
+  maxContextMessages?: number;
+}
+
+/** SSE event types from Anthropic Messages API */
+export type DirectSSEEvent =
+  | { type: 'message_start'; message: { id: string; model: string; usage: { input_tokens: number } } }
+  | { type: 'content_block_start'; index: number; content_block: { type: string; text?: string; id?: string; name?: string; input?: Record<string, unknown> } }
+  | { type: 'content_block_delta'; index: number; delta: { type: string; text?: string; partial_json?: string } }
+  | { type: 'content_block_stop'; index: number }
+  | { type: 'message_delta'; delta: { stop_reason: string | null }; usage: { output_tokens: number } }
+  | { type: 'message_stop' }
+  | { type: 'ping' };
+
+/** Wrapped SSE event sent to renderer via claude-output channel */
+export interface DirectApiOutput {
+  apiMode: 'direct';
+  sessionId: string;
+  event: DirectSSEEvent;
+}
+
+/** API mode setting */
+export type ApiMode = 'cli' | 'direct';
+
 export interface SavedTabState {
   tabs: Array<{
     id: string;

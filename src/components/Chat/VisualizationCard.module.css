@@ -1,0 +1,716 @@
+/* ═══ VisualizationCard — Editorial Infographic Cards ═══ */
+/* Design tokens from: .stitch-cards/ccdesk_prism/DESIGN.md */
+
+/* ── Base card ── */
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+  margin: 12px 0;
+  box-shadow: var(--card-shadow);
+  animation: fadeIn 0.3s ease;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.cardLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--card-label);
+  margin-bottom: 4px;
+}
+
+.cardTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--card-title);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.cardSubtitle {
+  font-size: 13px;
+  color: var(--card-label);
+  margin-top: 4px;
+}
+
+.cardIcon {
+  color: var(--accent);
+  font-size: 28px;
+  opacity: 0.6;
+}
+
+.cardInsight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--card-info-bg);
+  border-radius: 8px;
+  margin-top: 24px;
+}
+
+.cardInsight .material-symbols-outlined {
+  color: var(--accent);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.cardInsight p {
+  font-size: 12px;
+  color: var(--card-label);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Error ── */
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--error-bg);
+  border-radius: 8px;
+  color: var(--error-text);
+  font-size: 13px;
+  margin: 12px 0;
+}
+
+/* ═══ 1. Architecture Card ═══ */
+
+.moduleGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.module {
+  background: var(--card-surface);
+  border-radius: 8px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  min-height: 160px;
+}
+
+.modulePrimary {
+  color: var(--accent);
+  background: var(--accent);
+}
+
+.modulePrimary .moduleIconWrap {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.modulePrimary .moduleName,
+.modulePrimary .moduleDetail,
+.modulePrimary .moduleChild {
+  color: #ffffff;
+}
+
+.modulePrimary .moduleDetail {
+  opacity: 0.9;
+}
+
+.moduleSecondary {
+  background: var(--card-secondary-bg);
+  color: var(--card-secondary-text);
+}
+
+.moduleSecondary .moduleIconWrap {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.moduleSecondary .moduleName,
+.moduleSecondary .moduleDetail,
+.moduleSecondary .moduleChild {
+  color: var(--card-secondary-text);
+}
+
+.moduleTertiary {
+  background: var(--card-surface);
+  color: var(--card-title);
+}
+
+.moduleTertiary .moduleIconWrap {
+  background: var(--card-tertiary-bg);
+}
+
+.moduleTertiary .moduleIconWrap .material-symbols-outlined {
+  color: var(--card-tertiary-text);
+}
+
+.moduleIconWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.moduleIconWrap .material-symbols-outlined {
+  font-size: 22px;
+  color: var(--accent);
+}
+
+.moduleName {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--card-title);
+  line-height: 1.3;
+}
+
+.moduleDetail {
+  font-size: 11px;
+  color: var(--card-label);
+  font-family: var(--card-mono);
+}
+
+.moduleChildren {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.moduleChild {
+  font-size: 10px;
+  font-family: var(--card-mono);
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--card-tag-bg);
+  color: var(--card-tag-text);
+  font-weight: 500;
+}
+
+/* ═══ 2. Data Flow Card ═══ */
+
+.flowLayout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.flowMain {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.flowSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.flowStep {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: var(--card-surface);
+  border-radius: 8px;
+  transition: background 150ms;
+}
+
+.flowStepActive {
+  background: var(--card-tertiary-bg);
+}
+
+.flowDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.flowDotActive {
+  background: var(--card-tertiary-text);
+  animation: pulse 2s infinite;
+}
+
+.flowDotSuccess {
+  background: var(--card-tertiary-text);
+}
+
+.flowEndpoint {
+  flex: 1;
+  font-size: 13px;
+  font-family: var(--card-mono);
+  color: var(--card-title);
+}
+
+.flowStepActive .flowEndpoint {
+  font-weight: 700;
+  color: var(--card-tertiary-text);
+}
+
+.flowDuration {
+  font-size: 10px;
+  font-family: var(--card-mono);
+  color: var(--card-label);
+}
+
+.flowMetric {
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.flowMetricValue {
+  font-size: 30px;
+  font-weight: 900;
+  font-family: var(--card-mono);
+  color: var(--card-tertiary-text);
+  line-height: 1;
+}
+
+.flowMetricLabel {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--card-label);
+}
+
+/* Flow sidebar */
+
+.flowSidebar {
+  background: var(--card-secondary-bg);
+  color: var(--card-secondary-text);
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.flowSidebarTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.flowSidebarDesc {
+  font-size: 13px;
+  opacity: 0.9;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+.flowBar {
+  height: 4px;
+  width: 100%;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.flowBarFill {
+  height: 100%;
+  width: 75%;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.flowBarLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+/* ═══ 3. Comparison Card ═══ */
+
+.compareGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--card-divider);
+}
+
+.compareSide {
+  background: var(--card-surface);
+  padding: 24px;
+}
+
+.compareSideHighlight {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.compareSideHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.compareSideIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--card-tag-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.compareSideIcon .material-symbols-outlined {
+  font-size: 14px;
+  color: var(--card-label);
+}
+
+.compareSideHighlight .compareSideIcon {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.compareSideHighlight .compareSideIcon .material-symbols-outlined {
+  color: #ffffff;
+}
+
+.compareSideName {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--card-title);
+  flex: 1;
+}
+
+.compareSideHighlight .compareSideName {
+  color: #ffffff;
+}
+
+.compareBadge {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--card-tag-bg);
+  color: var(--card-label);
+}
+
+.compareBadgeHighlight {
+  background: #ffffff;
+  color: var(--accent);
+}
+
+.compareRows {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.compareRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--card-divider);
+}
+
+.compareRow:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.compareSideHighlight .compareRow {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.compareRowLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--card-label);
+}
+
+.compareSideHighlight .compareRowLabel {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.compareRowValue {
+  font-size: 14px;
+  font-family: var(--card-mono);
+  font-weight: 500;
+  color: var(--card-title);
+}
+
+.compareSideHighlight .compareRowValue {
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.compareRowHighlight {
+  color: var(--card-tertiary-text);
+  font-weight: 700;
+}
+
+/* ═══ 4. Statistics Card ═══ */
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--card-label);
+}
+
+.statValue {
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--card-title);
+  line-height: 1.2;
+  font-family: var(--card-mono);
+}
+
+.statError {
+  color: var(--card-error-text);
+}
+
+.statTrend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--card-label);
+}
+
+.statTrend .material-symbols-outlined {
+  font-size: 14px;
+}
+
+.trendSuccess {
+  color: var(--card-tertiary-text);
+}
+
+.trendSecondary {
+  color: var(--card-secondary-bg);
+}
+
+/* Bar chart */
+
+.barsSection {
+  margin-top: 16px;
+}
+
+.barsLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.barsLabel::before {
+  content: 'Performance History';
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--card-label);
+}
+
+.barsContainer {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 128px;
+  padding: 0 4px;
+}
+
+.bar {
+  flex: 1;
+  border-radius: 6px 6px 0 0;
+  background: var(--card-bar-bg);
+  min-height: 4px;
+  transition: background 150ms;
+}
+
+.bar:last-child {
+  background: var(--accent);
+}
+
+/* ═══ 5. Timeline Card ═══ */
+
+.timeline {
+  position: relative;
+}
+
+.timelineLine {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--card-divider);
+}
+
+.timelineSteps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.timelineItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.timelineItemPending {
+  opacity: 0.5;
+}
+
+.timelineDot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--card-surface);
+  box-shadow: 0 0 0 4px var(--card-bg);
+}
+
+.timelineDot .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.timelineDotCompleted {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.timelineDotCompleted .material-symbols-outlined {
+  font-variation-settings: 'FILL' 1;
+}
+
+.timelineDotActive {
+  background: var(--accent);
+  color: #ffffff;
+  border: 4px solid var(--card-bg);
+  box-shadow: none;
+}
+
+.timelineDotPending {
+  background: var(--card-surface);
+  color: var(--card-label);
+}
+
+.timelineDotPulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  animation: pulse 2s infinite;
+}
+
+.timelineContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timelineTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--card-title);
+}
+
+.timelineDotActive + .timelineContent .timelineTitle,
+.timelineItem:has(.timelineDotActive) .timelineTitle {
+  color: var(--accent);
+}
+
+.timelineDesc {
+  font-size: 12px;
+  color: var(--card-label);
+  line-height: 1.5;
+}
+
+.timelineDetail {
+  font-size: 10px;
+  font-family: var(--card-mono);
+  color: var(--accent);
+  margin-top: 8px;
+}
+
+.timelineItemPending .timelineDetail {
+  color: var(--card-label);
+}
+
+/* ═══ Responsive ═══ */
+
+@media (max-width: 640px) {
+  .moduleGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .flowLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .timelineSteps {
+    grid-template-columns: 1fr;
+  }
+
+  .timelineLine {
+    display: none;
+  }
+
+  .compareGrid {
+    grid-template-columns: 1fr;
+  }
+}

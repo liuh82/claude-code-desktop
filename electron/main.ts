@@ -3,6 +3,7 @@ import path from 'path';
 import { spawn, ChildProcess } from 'child_process';
 import Database from 'better-sqlite3';
 import fs from 'fs';
+import { ClaudeDirectClient, loadDirectApiConfig } from './claude-direct';
 
 // ── Types ──
 
@@ -41,6 +42,8 @@ const sessions = new Map<string, ChildProcess>();
 const sessionHistory = new Map<string, Array<{ role: string; content: string }>>();
 // Map sessionId -> current model
 const sessionModels = new Map<string, string>();
+// Map sessionId -> Direct API client
+const directClients = new Map<string, ClaudeDirectClient>();
 let db: Database.Database | null = null;
 
 // ── Database ──
@@ -130,11 +133,16 @@ function createWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
-    // Kill all sessions
+    // Kill all CLI sessions
     for (const [id, proc] of sessions) {
       try { proc.kill('SIGTERM'); } catch {}
     }
     sessions.clear();
+    // Stop all Direct API clients
+    for (const [, client] of directClients) {
+      client.stop();
+    }
+    directClients.clear();
   });
 }
 
@@ -405,6 +413,119 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
   }
 }
 
+// ── Direct API helpers ──
+
+function getApiMode(): 'cli' | 'direct' {
+  if (!db) return 'cli';
+  try {
+    const row = db.prepare("SELECT value FROM app_settings WHERE key = 'settings' LIMIT 1").get() as { value?: string } | undefined;
+    if (row?.value) {
+      const settings = JSON.parse(row.value);
+      if (settings.apiMode === 'direct') return 'direct';
+    }
+  } catch {}
+  return 'cli';
+}
+
+function handleDirectMessage(sessionId: string, projectPath: string, message: string, model?: string) {
+  const config = loadDirectApiConfig(db);
+  if (!config) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('claude-error', {
+        sessionId,
+        error: 'Direct API 未配置。请设置 ANTHROPIC_API_KEY（在 ~/.claude/settings.json 的 env 中，或在应用设置中配置）。',
+      });
+    }
+    return;
+  }
+
+  // Override model if specified
+  if (model) {
+    config.model = model;
+  }
+
+  // Get or create client for this session
+  let client = directClients.get(sessionId);
+  if (!client) {
+    client = new ClaudeDirectClient(config);
+    directClients.set(sessionId, client);
+    sessionModels.set(sessionId, config.model);
+  }
+
+  // Save user message to DB
+  if (db) {
+    try {
+      const userMsgId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      db.prepare(
+        'INSERT OR IGNORE INTO messages (id, session_id, role, content, timestamp) VALUES (?, ?, ?, ?, ?)'
+      ).run(userMsgId, sessionId, 'user', message, new Date().toISOString());
+      db.prepare(
+        "UPDATE sessions SET message_count = message_count + 1, updated_at = ? WHERE id = ?"
+      ).run(new Date().toISOString(), sessionId);
+    } catch (err) {
+      console.error('[CCDesk] Failed to save user message:', err);
+    }
+  }
+
+  // Track assistant content for DB persistence
+  let assistantContent = '';
+
+  client.sendMessage(
+    sessionId,
+    message,
+    projectPath,
+    // onEvent — forward each SSE event to renderer
+    (event) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        const wrapped = JSON.stringify({ apiMode: 'direct', sessionId, event });
+        mainWindow.webContents.send('claude-output', wrapped, sessionId);
+
+        // Accumulate text content for DB persistence
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta' && event.delta.text) {
+          assistantContent += event.delta.text;
+        }
+
+        // Update model in sessionModels
+        if (event.type === 'message_start' && event.message?.model) {
+          sessionModels.set(sessionId, event.message.model);
+        }
+      }
+    },
+    // onError
+    (error) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('claude-error', { sessionId, error });
+      }
+    },
+  ).then(() => {
+    // Save assistant message to DB
+    if (db && assistantContent) {
+      try {
+        const aMsgId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        db.prepare(
+          'INSERT OR IGNORE INTO messages (id, session_id, role, content, timestamp) VALUES (?, ?, ?, ?, ?)'
+        ).run(aMsgId, sessionId, 'assistant', assistantContent, new Date().toISOString());
+        db.prepare(
+          "UPDATE sessions SET message_count = message_count + 1, updated_at = ? WHERE id = ?"
+        ).run(new Date().toISOString(), sessionId);
+      } catch {}
+    }
+
+    // Signal completion
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('claude-exit', { sessionId, exitCode: 0 });
+    }
+
+    if (db) {
+      db.prepare("UPDATE sessions SET status = 'idle', updated_at = ? WHERE id = ?").run(
+        new Date().toISOString(), sessionId
+      );
+    }
+  }).catch(() => {
+    // Already handled via onError callback
+  });
+}
+
 // ── IPC Handlers ──
 
 function registerIpcHandlers() {
@@ -589,24 +710,54 @@ function registerIpcHandlers() {
 
   /**
    * Send message — spawns `claude -p "message"` and streams output back.
-   * This is the primary interaction method.
+   * Routes to Direct API or CLI based on settings.
    */
   ipcMain.handle('send-message', (_event, { sessionId, projectPath, message, model }: {
     sessionId: string; projectPath: string; message: string; model?: string;
   }) => {
-    const effectiveModel = model || sessionModels.get(sessionId) || undefined;
-    spawnClaudeMessage(sessionId, projectPath, message, effectiveModel);
+    const apiMode = getApiMode();
+    if (apiMode === 'direct') {
+      handleDirectMessage(sessionId, projectPath, message, model);
+    } else {
+      const effectiveModel = model || sessionModels.get(sessionId) || undefined;
+      spawnClaudeMessage(sessionId, projectPath, message, effectiveModel);
+    }
     return;
   });
 
   /**
-   * Stop generation — kills the running claude process.
+   * Send message via Direct API only (explicit call from renderer).
+   */
+  ipcMain.handle('send-message-direct', (_event, { sessionId, projectPath, message, model }: {
+    sessionId: string; projectPath: string; message: string; model?: string;
+  }) => {
+    handleDirectMessage(sessionId, projectPath, message, model);
+    return;
+  });
+
+  /**
+   * Stop Direct API generation.
+   */
+  ipcMain.handle('stop-generation-direct', (_event, { sessionId }: { sessionId: string }) => {
+    const client = directClients.get(sessionId);
+    if (client) {
+      client.stop();
+    }
+    return;
+  });
+
+  /**
+   * Stop generation — kills the running claude process or stops Direct API stream.
    */
   ipcMain.handle('stop-generation', (_event, { sessionId }: { sessionId: string }) => {
     const proc = sessions.get(sessionId);
     if (proc) {
       try { proc.kill('SIGTERM'); } catch {}
       sessions.delete(sessionId);
+    }
+    const directClient = directClients.get(sessionId);
+    if (directClient) {
+      directClient.stop();
     }
     return;
   });
@@ -635,6 +786,13 @@ function registerIpcHandlers() {
     if (proc) {
       try { proc.kill('SIGTERM'); } catch {}
       sessions.delete(sessionId);
+    }
+    // Stop Direct API client if any
+    const directClient = directClients.get(sessionId);
+    if (directClient) {
+      directClient.stop();
+      directClient.reset();
+      directClients.delete(sessionId);
     }
     sessionHistory.delete(sessionId);
     sessionModels.delete(sessionId);
@@ -834,6 +992,13 @@ function registerIpcHandlers() {
     if (proc) {
       try { proc.kill('SIGTERM'); } catch {}
       sessions.delete(sessionId);
+    }
+    // Stop Direct API client if any
+    const directClient = directClients.get(sessionId);
+    if (directClient) {
+      directClient.stop();
+      directClient.reset();
+      directClients.delete(sessionId);
     }
     sessionHistory.delete(sessionId);
     sessionModels.delete(sessionId);

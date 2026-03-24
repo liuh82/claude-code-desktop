@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import type { ChatMessage, ToolCall, FileNode, DiffFile, TokenUsage, DbMessage, DbSession } from '@/types/chat';
 import { claudeApi, isElectron } from '@/lib/claude-api';
-import { parseClaudeLine, extractModel } from '@/lib/claude-parser';
+import { parseClaudeLine, extractModel, isDirectApiLine, parseDirectApiLine } from '@/lib/claude-parser';
 import type { ParsedAssistantMessage, ParsedResult, ParsedToolResult } from '@/lib/claude-parser';
+import type { DirectSSEEvent } from '@/types/chat';
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -97,6 +98,16 @@ const paneToolStartTimes = new Map<string, Map<string, number>>();
 // Map sessionId → paneId (for IPC routing)
 const sessionIdToPaneId = new Map<string, string>();
 
+// Direct API streaming state per pane
+const directStreamState = new Map<string, {
+  assistantId: string | null;
+  model: string;
+  contentStarted: boolean;
+  toolAccumulating: boolean;
+  currentToolId: string;
+  currentToolName: string;
+}>();
+
 // Global IPC cleanup
 let cleanupFns: Array<() => void> = [];
 
@@ -177,8 +188,236 @@ function finalizeAssistantForPane(paneId: string) {
   paneToolStartTimes.delete(paneId);
 }
 
+/**
+ * Handle Direct API SSE events — true delta streaming.
+ */
+function handleDirectApiEvent(paneId: string, _sessionId: string, event: DirectSSEEvent) {
+  // Initialize stream state if needed
+  if (!directStreamState.has(paneId)) {
+    directStreamState.set(paneId, {
+      assistantId: null,
+      model: '',
+      contentStarted: false,
+      toolAccumulating: false,
+      currentToolId: '',
+      currentToolName: '',
+    });
+  }
+  const ds = directStreamState.get(paneId)!;
+
+  switch (event.type) {
+    case 'message_start': {
+      // Extract model name
+      if (event.message?.model) {
+        ds.model = event.message.model;
+        useChatStore.setState((s) => {
+          const next = new Map(s.panes);
+          const pane = next.get(paneId);
+          if (pane) next.set(paneId, { ...pane, currentModel: event.message!.model });
+          return { panes: next };
+        });
+      }
+      break;
+    }
+
+    case 'content_block_start': {
+      if (event.content_block?.type === 'text') {
+        // New text block — create assistant message if first block
+        if (!ds.contentStarted) {
+          ds.contentStarted = true;
+          const aid = generateId();
+          ds.assistantId = aid;
+          const assistantMsg: ChatMessage = {
+            id: aid,
+            role: 'assistant',
+            content: '',
+            toolCalls: [],
+            timestamp: Date.now(),
+            isStreaming: true,
+            model: ds.model || undefined,
+          };
+          useChatStore.setState((s) => {
+            const next = new Map(s.panes);
+            const pane = next.get(paneId);
+            if (!pane) return s;
+            return { panes: new Map(s.panes).set(paneId, { ...pane, messages: [...pane.messages, assistantMsg] }) };
+          });
+        }
+      } else if (event.content_block?.type === 'tool_use') {
+        // Tool use block — create tool call with running status
+        ds.toolAccumulating = true;
+        ds.currentToolId = event.content_block.id || generateId();
+        ds.currentToolName = event.content_block.name || 'unknown';
+        const now = Date.now();
+        const toolCall: ToolCall = {
+          id: ds.currentToolId,
+          name: ds.currentToolName,
+          status: 'running',
+          input: {},
+          startTime: now,
+        };
+
+        // Record start time for duration
+        if (!paneToolStartTimes.has(paneId)) {
+          paneToolStartTimes.set(paneId, new Map());
+        }
+        paneToolStartTimes.get(paneId)!.set(ds.currentToolId, now);
+
+        // Ensure assistant message exists
+        const aid = ds.assistantId || generateId();
+        if (!ds.assistantId) {
+          ds.assistantId = aid;
+          ds.contentStarted = true;
+          const assistantMsg: ChatMessage = {
+            id: aid,
+            role: 'assistant',
+            content: '',
+            toolCalls: [],
+            timestamp: Date.now(),
+            isStreaming: true,
+            model: ds.model || undefined,
+          };
+          useChatStore.setState((s) => {
+            const next = new Map(s.panes);
+            const pane = next.get(paneId);
+            if (!pane) return s;
+            return { panes: new Map(s.panes).set(paneId, { ...pane, messages: [...pane.messages, assistantMsg] }) };
+          });
+        }
+
+        // Add tool call to assistant message
+        useChatStore.setState((s) => {
+          const next = new Map(s.panes);
+          const pane = next.get(paneId);
+          if (!pane) return s;
+          return {
+            panes: new Map(s.panes).set(paneId, {
+              ...pane,
+              messages: pane.messages.map(m => {
+                if (m.id !== aid) return m;
+                return { ...m, toolCalls: [...(m.toolCalls || []), toolCall] };
+              }),
+            }),
+          };
+        });
+      }
+      break;
+    }
+
+    case 'content_block_delta': {
+      if (event.delta?.type === 'text_delta' && event.delta.text && ds.assistantId) {
+        // True delta streaming — APPEND text
+        useChatStore.setState((s) => {
+          const next = new Map(s.panes);
+          const pane = next.get(paneId);
+          if (!pane || !pane.isGenerating) return s;
+          return {
+            panes: new Map(s.panes).set(paneId, {
+              ...pane,
+              messages: pane.messages.map(m =>
+                m.id === ds.assistantId ? { ...m, content: m.content + event.delta!.text } : m
+              ),
+            }),
+          };
+        });
+      }
+      // input_json_delta is accumulated in main process, no action needed here
+      break;
+    }
+
+    case 'content_block_stop': {
+      // When tool_use block stops, the main process already has the full input.
+      // The tool execution happens in main process, and when done, a new round starts.
+      // We don't need to do anything special here — the main process sends a new message_start
+      // for the continuation after tool results.
+      ds.toolAccumulating = false;
+      break;
+    }
+
+    case 'message_delta': {
+      // Update token usage
+      if (event.usage?.output_tokens) {
+        useChatStore.setState((s) => {
+          const next = new Map(s.panes);
+          const pane = next.get(paneId);
+          if (pane) {
+            next.set(paneId, {
+              ...pane,
+              tokenUsage: {
+                input: pane.tokenUsage.input,
+                output: pane.tokenUsage.output + event.usage!.output_tokens,
+              },
+            });
+          }
+          return { panes: next };
+        });
+      }
+
+      // If stop_reason is set, the conversation is done
+      if (event.delta?.stop_reason && ds.assistantId) {
+        finalizeDirectStream(paneId);
+        useChatStore.setState((s) => {
+          const next = new Map(s.panes);
+          const pane = next.get(paneId);
+          if (pane) next.set(paneId, { ...pane, isGenerating: false });
+          return { panes: next };
+        });
+      }
+      break;
+    }
+
+    case 'message_stop': {
+      finalizeDirectStream(paneId);
+      useChatStore.setState((s) => {
+        const next = new Map(s.panes);
+        const pane = next.get(paneId);
+        if (pane) next.set(paneId, { ...pane, isGenerating: false });
+        return { panes: next };
+      });
+      break;
+    }
+
+    case 'ping':
+      break;
+  }
+}
+
+function finalizeDirectStream(paneId: string) {
+  const ds = directStreamState.get(paneId);
+  if (!ds?.assistantId) return;
+
+  useChatStore.setState((s) => {
+    const pane = s.panes.get(paneId);
+    if (!pane) return s;
+    return {
+      panes: new Map(s.panes).set(paneId, {
+        ...pane,
+        messages: pane.messages.map(m =>
+          m.id === ds.assistantId ? { ...m, isStreaming: false } : m
+        ),
+      }),
+    };
+  });
+
+  // Reset stream state for potential continuation (tool loop)
+  ds.assistantId = null;
+  ds.contentStarted = false;
+  paneToolStartTimes.delete(paneId);
+}
+
 function handleClaudeOutput(line: string, sessionId: string) {
   const paneId = sessionIdToPaneId.get(sessionId);
+
+  // Route Direct API events to dedicated handler
+  if (isDirectApiLine(line)) {
+    const parsed = parseDirectApiLine(line);
+    if (parsed && paneId) {
+      handleDirectApiEvent(paneId, sessionId, parsed.event);
+    }
+    return;
+  }
+
+  if (!paneId) return;
   if (!paneId) return;
 
   const parsed = parseClaudeLine(line);
@@ -639,7 +878,9 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       claudeApi.stopGeneration({ sessionId: paneState.sessionId });
     }
     const streaming = paneStreamingState.get(paneId);
-    if (streaming?.assistantId) {
+    const directDs = directStreamState.get(paneId);
+    const activeAssistantId = streaming?.assistantId || directDs?.assistantId;
+    if (activeAssistantId) {
       set((s) => {
         const pane = s.panes.get(paneId);
         if (!pane) return s;
@@ -648,12 +889,18 @@ export const useChatStore = create<ChatState>()((set, get) => ({
             ...pane,
             isGenerating: false,
             messages: pane.messages.map(m =>
-              m.id === streaming.assistantId ? { ...m, isStreaming: false } : m
+              m.id === activeAssistantId ? { ...m, isStreaming: false } : m
             ),
           }),
         };
       });
-      paneStreamingState.set(paneId, { assistantId: null, streamMessageId: null, currentModel: streaming.currentModel });
+      if (streaming) {
+        paneStreamingState.set(paneId, { assistantId: null, streamMessageId: null, currentModel: streaming.currentModel });
+      }
+      if (directDs) {
+        directDs.assistantId = null;
+        directDs.contentStarted = false;
+      }
       paneToolStartTimes.delete(paneId);
     } else {
       set((s) => {
@@ -684,6 +931,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       sessionIdToPaneId.delete(paneState.sessionId);
     }
     paneStreamingState.delete(paneId);
+    directStreamState.delete(paneId);
     set((s) => ({
       panes: new Map(s.panes).set(paneId, emptyPaneState()),
     }));

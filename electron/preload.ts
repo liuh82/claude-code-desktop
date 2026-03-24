@@ -20,6 +20,8 @@ const api = {
     ipcRenderer.invoke('start-session', args),
   sendMessage: (args: { sessionId: string; projectPath: string; message: string; model?: string }) =>
     ipcRenderer.invoke('send-message', args),
+  sendMessageDirect: (args: { sessionId: string; projectPath: string; message: string; model?: string }) =>
+    ipcRenderer.invoke('send-message-direct', args),
   stopGeneration: (args: { sessionId: string }) =>
     ipcRenderer.invoke('stop-generation', args),
   sendInput: (args: { sessionId: string; input: string }) =>

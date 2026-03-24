@@ -136,6 +136,28 @@
 
   /* Top nav height */
   --topnav-height: 56px;
+
+  /* Visualization Card tokens */
+  --card-bg: var(--bg-input);
+  --card-surface: var(--bg-secondary);
+  --card-radius: 12px;
+  --card-padding: 32px;
+  --card-shadow: var(--shadow-md);
+  --card-label: var(--text-muted);
+  --card-title: var(--text-primary);
+  --card-value: var(--text-primary);
+  --card-mono: var(--font-mono);
+  --card-tag-bg: var(--accent-surface);
+  --card-tag-text: var(--accent);
+  --card-secondary-bg: var(--cta);
+  --card-secondary-text: #ffffff;
+  --card-tertiary-bg: var(--success-bg);
+  --card-tertiary-text: var(--success);
+  --card-error-text: var(--error);
+  --card-bar-bg: var(--accent-muted);
+  --card-bar-fill: var(--accent);
+  --card-divider: var(--border-divider);
+  --card-info-bg: var(--bg-elevated);
 }
 
 body {
@@ -261,6 +283,18 @@ body {
   --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
 
   --glass-bg: rgba(19, 19, 20, 0.85);
+
+  --card-bg: var(--bg-elevated);
+  --card-surface: var(--bg-secondary);
+  --card-tag-bg: var(--accent-surface);
+  --card-tag-text: var(--accent);
+  --card-secondary-bg: var(--cta);
+  --card-secondary-text: #ffffff;
+  --card-tertiary-bg: var(--success-bg);
+  --card-tertiary-text: var(--success);
+  --card-bar-bg: rgba(173, 198, 255, 0.12);
+  --card-bar-fill: var(--accent);
+  --card-info-bg: var(--bg-hover);
 }
 
 * {

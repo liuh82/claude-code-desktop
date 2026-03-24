@@ -15,6 +15,7 @@ interface ElectronAPI {
   createSession: (args: { projectId: string; projectPath: string }) => Promise<{ session_id: string }>;
   startSession: (args: { sessionId: string; projectPath: string; model?: string; permissionMode?: string }) => Promise<number>;
   sendMessage: (args: { sessionId: string; projectPath: string; message: string; model?: string }) => Promise<void>;
+  sendMessageDirect: (args: { sessionId: string; projectPath: string; message: string; model?: string }) => Promise<void>;
   stopGeneration: (args: { sessionId: string }) => Promise<void>;
   sendInput: (args: { sessionId: string; input: string }) => Promise<void>;
   closeSession: (args: { sessionId: string }) => Promise<void>;
@@ -59,6 +60,7 @@ export const claudeApi: ElectronAPI = {
   createSession: (a) => getApi()?.createSession(a) ?? Promise.resolve({ session_id: 'mock' }),
   startSession: (a) => getApi()?.startSession(a) ?? Promise.resolve(0),
   sendMessage: (a) => getApi()?.sendMessage(a) ?? Promise.resolve(),
+  sendMessageDirect: (a) => getApi()?.sendMessageDirect(a) ?? Promise.resolve(),
   stopGeneration: (a) => getApi()?.stopGeneration(a) ?? Promise.resolve(),
   sendInput: (a) => getApi()?.sendInput(a) ?? Promise.resolve(),
   closeSession: (a) => getApi()?.closeSession(a) ?? Promise.resolve(),

@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { CodeBlock } from './CodeBlock';
 import { ChartBlock } from './ChartBlock';
+import { VisualizationCard } from './VisualizationCard';
 
 interface MarkdownRendererProps {
   content: string;
@@ -56,6 +57,11 @@ function CodeElement({ children, className }: ComponentPropsWithoutRef<'code'> &
   // Render chart code blocks as interactive ECharts
   if (lang === 'chart' || lang === 'echarts') {
     return <ChartBlock code={codeString} />;
+  }
+
+  // Render visualization card code blocks
+  if (lang === 'visual' || lang === 'card') {
+    return <VisualizationCard code={codeString} />;
   }
 
   return <CodeBlock code={codeString} language={lang || undefined} />;

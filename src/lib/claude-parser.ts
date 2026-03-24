@@ -1,3 +1,5 @@
+import type { DirectSSEEvent } from '@/types/chat';
+
 /**
  * Parse Claude CLI stream-json output.
  *
@@ -99,6 +101,33 @@ export interface ParsedToolResult {
   session_id: string;
 }
 
+
+/**
+ * Check if a raw IPC line is from Direct API mode.
+ */
+export function isDirectApiLine(line: string): boolean {
+  try {
+    const obj = JSON.parse(line);
+    return obj && obj.apiMode === 'direct';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Parse a Direct API SSE event from the wrapped IPC line.
+ */
+export function parseDirectApiLine(line: string): { sessionId: string; event: DirectSSEEvent } | null {
+  try {
+    const obj = JSON.parse(line);
+    if (obj?.apiMode === 'direct' && obj?.event) {
+      return { sessionId: obj.sessionId, event: obj.event };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 export function parseClaudeLine(line: string): ParsedLine {
   if (!line.trim()) return null;
