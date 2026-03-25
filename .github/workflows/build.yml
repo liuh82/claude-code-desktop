@@ -7,12 +7,7 @@ on:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [macos-latest, windows-latest]
-
-    runs-on: ${{ matrix.platform }}
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -25,28 +20,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build (macOS)
-        if: matrix.platform == 'macos-latest'
-        run: npm run electron:build -- --mac
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build (Windows)
-        if: matrix.platform == 'windows-latest'
         run: npm run electron:build -- --win
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload macOS artifact
-        if: matrix.platform == 'macos-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: CCDesk-macos
-          path: release/*.dmg
-          retention-days: 30
-
       - name: Upload Windows artifact
-        if: matrix.platform == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: CCDesk-windows
