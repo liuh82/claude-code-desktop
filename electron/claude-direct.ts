@@ -173,6 +173,25 @@ visual 代码块示例：
 - 必须输出：\`{"type": "timeline", "title": "...", "steps": [...]}\`
 - steps 中每个对象：label（阶段名）、icon、items（该阶段的事项数组）
 
+6. **Mermaid 图表** — 架构图、流程图、时序图、类图、ER 图 → 使用 \`\`\`mermaid 代码块
+
+Mermaid 图表可以表达复杂的架构关系和流程，推荐用于：
+- 系统架构图（graph TD）
+- API 调用时序（sequenceDiagram）
+- 类关系图（classDiagram）
+- 实体关系图（erDiagram）
+- 甘特图（gantt）
+- 饼图/流程图（pie/flowchart）
+
+示例：
+\`\`\`mermaid
+graph TD
+    A[用户界面] -->|HTTP| B[API 网关]
+    B --> C[认证服务]
+    B --> D[业务服务]
+    D --> E[(数据库)]
+\`\`\`
+
 ## 其他语法
 - 图表可视化：使用 \`\`\`chart 代码块，内容为 ECharts JSON 配置。支持折线图、柱状图、饼图、散点图、雷达图等所有类型。
 - 文件引用：用户消息中的 @path/to/file 表示引用项目文件。`;

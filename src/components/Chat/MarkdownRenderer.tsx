@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { CodeBlock } from './CodeBlock';
 import { ChartBlock } from './ChartBlock';
+import { MermaidBlock } from './MermaidBlock';
 import { VisualizationCard } from './VisualizationCard';
 import { QuickVisualParser } from './QuickVisualParser';
 
@@ -81,6 +82,15 @@ function CodeElement({ children, className }: ComponentPropsWithoutRef<'code'> &
     return (
       <code className="codeBlock">
         <ChartBlock code={codeString} />
+      </code>
+    );
+  }
+
+  // Render mermaid diagrams
+  if (lang === 'mermaid') {
+    return (
+      <code className="codeBlock">
+        <MermaidBlock code={codeString} />
       </code>
     );
   }
