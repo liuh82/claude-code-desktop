@@ -327,7 +327,7 @@ function QuickVisualParser({ content }: QuickVisualParserProps) {
         if (part.kind === 'card') {
           return <VisualizationCard key={`qvc-${i}`} code={part.code} />;
         }
-        return <MarkdownRenderer key={`qvt-${i}`} content={part.text} />;
+        return <MarkdownRenderer key={`qvt-${i}`} content={part.text} isNested />;
       })}
     </>
   );

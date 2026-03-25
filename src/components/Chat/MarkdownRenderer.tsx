@@ -9,11 +9,14 @@ import { QuickVisualParser } from './QuickVisualParser';
 
 interface MarkdownRendererProps {
   content: string;
+  /** When true, skip QuickVisualParser to prevent infinite recursion */
+  isNested?: boolean;
 }
 
-function MarkdownRenderer({ content }: MarkdownRendererProps) {
+function MarkdownRenderer({ content, isNested }: MarkdownRendererProps) {
   // If content contains quick-viz commands, use QuickVisualParser instead
-  if (/^@(arch|flow|compare|timeline)\b/m.test(content)) {
+  // Skip when nested to prevent infinite recursion (QVP → MarkdownRenderer → QVP)
+  if (!isNested && /^@(arch|flow|compare|timeline)\b/m.test(content)) {
     return (
       <div className="markdown-body">
         <QuickVisualParser content={content} />

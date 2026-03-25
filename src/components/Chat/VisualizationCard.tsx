@@ -262,13 +262,16 @@ function StatisticsCard({ card }: { card: Extract<VizCard, { type: 'statistics' 
         <div className={styles.barsSection}>
           <div className={styles.barsLabel}>Performance History</div>
           <div className={styles.barsContainer}>
-            {((card.bars && card.bars.values) || []).map((v, i) => (
+            {((card.bars && card.bars.values) || []).map((v, i) => {
+              const clamped = Math.max(0, Math.min(100, v));
+              return (
               <div
                 key={i}
                 className={styles.bar}
-                style={{ height: `${v}%` }}
+                style={{ height: `${clamped}%` }}
               />
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

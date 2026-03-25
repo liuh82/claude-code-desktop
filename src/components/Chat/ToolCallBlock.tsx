@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { ToolCall } from '@/types/chat';
 import styles from './ToolCallBlock.module.css';
 
@@ -74,7 +74,7 @@ function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
     ? 'FAILED'
     : durationStr;
 
-  const inputStr = JSON.stringify(toolCall.input, null, 2);
+  const inputStr = useMemo(() => JSON.stringify(toolCall.input, null, 2), [toolCall.input]);
 
   return (
     <div>

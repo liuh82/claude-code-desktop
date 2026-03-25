@@ -85,17 +85,31 @@ const api = {
   },
 
   // Tool Permission
+  _pendingPermissionSessionIds: new Map<string, string>(),
   onToolPermissionRequest: (callback: (data: { sessionId: string; toolCall: { id: string; name: string; input: Record<string, unknown> } }) => void) => {
     const handler = (_event: Electron.IpcRendererEvent, data: { sessionId: string; toolCall: { id: string; name: string; input: Record<string, unknown> } }) => {
-      // Track which session the pending permission belongs to
-      (api as any)._pendingPermissionSessionId = data.sessionId;
+      // Track which session each pending permission belongs to (keyed by toolCallId)
+      (api as any)._pendingPermissionSessionIds.set(data.toolCall.id, data.sessionId);
       callback(data);
     };
     ipcRenderer.on('tool-permission-request', handler);
     return () => ipcRenderer.removeListener('tool-permission-request', handler);
   },
-  toolPermissionResponse: (granted: boolean) => {
-    const sessionId = (api as any)._pendingPermissionSessionId;
+  toolPermissionResponse: (granted: boolean, toolCallId?: string) => {
+    // Use the most recent pending session if no toolCallId provided (backward compat)
+    const ids = (api as any)._pendingPermissionSessionIds as Map<string, string>;
+    let sessionId: string | undefined;
+    if (toolCallId) {
+      sessionId = ids.get(toolCallId);
+      ids.delete(toolCallId);
+    } else {
+      // Fallback: use the last entry
+      for (const [id, sid] of ids) {
+        sessionId = sid;
+        ids.delete(id);
+        break;
+      }
+    }
     return ipcRenderer.invoke('tool-permission-response', { sessionId, granted });
   },
   onToolExecutionUpdate: (callback: (data: { sessionId: string; update: { id: string; name: string; input?: Record<string, unknown>; status: string; output?: string } }) => void) => {

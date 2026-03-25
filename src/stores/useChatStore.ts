@@ -123,7 +123,7 @@ function startCliTypingSimulation(paneId: string, assistantId: string, fullText:
     revealedIndex: 0,
     assistantId,
     chunkSize: 3,
-    speed: 15,
+    speed: 50,
   };
 
   cliStreamSimulation.set(paneId, sim);
@@ -1085,8 +1085,6 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   },
 
   addSystemMessage: (paneId: string, content: string) => {
-    const pane = get().panes.get(paneId);
-    if (!pane) return;
     const msg: ChatMessage = {
       id: `sys-${Date.now()}`,
       role: 'assistant',
@@ -1094,7 +1092,13 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       content,
       isStreaming: false,
     };
-    get().panes.set(paneId, { ...pane, messages: [...pane.messages, msg] });
+    set((s) => {
+      const pane = s.panes.get(paneId);
+      if (!pane) return s;
+      return {
+        panes: new Map(s.panes).set(paneId, { ...pane, messages: [...pane.messages, msg] }),
+      };
+    });
   },
 
   clearPane: (paneId: string) => {

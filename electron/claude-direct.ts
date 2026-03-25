@@ -341,10 +341,15 @@ export class ClaudeDirectClient {
         headers['anthropic-version'] = '2023-06-01';
 
         // Pass through any additional headers from claude env
+        // Only allow x- prefixed headers to prevent overriding sensitive headers like Host, Authorization
         if (env.ANTHROPIC_API_HEADERS) {
           try {
             const extra = JSON.parse(env.ANTHROPIC_API_HEADERS);
-            Object.assign(headers, extra);
+            for (const [key, value] of Object.entries(extra)) {
+              if (typeof key === 'string' && key.startsWith('x-')) {
+                headers[key] = String(value);
+              }
+            }
           } catch (e: any) {
             console.warn(`[DirectAPI] Failed to parse ANTHROPIC_API_HEADERS: ${e.message}`);
           }
@@ -896,12 +901,21 @@ export class ClaudeDirectClient {
       return merged;
     };
 
+    // Check if a message contains tool_use or tool_result blocks — these must not
+    // be merged with adjacent same-role messages to preserve tool context pairing.
+    const hasToolBlocks = (content: ApiContentBlock[]): boolean =>
+      content.some(b => b.type === 'tool_use' || b.type === 'tool_result');
+
     const filtered: ApiMessage[] = [firstMsg];
     let lastRole = firstMsg.role;
     for (const msg of recent) {
       if (msg.role !== lastRole) {
         filtered.push(msg);
         lastRole = msg.role;
+      } else if (hasToolBlocks(msg.content) || hasToolBlocks(filtered[filtered.length - 1].content)) {
+        // Don't merge — tool_use/tool_result blocks must stay intact to preserve
+        // tool_use ↔ tool_result pairing required by the API.
+        filtered.push(msg);
       } else {
         // Merge content into the last kept message instead of dropping
         const last = filtered[filtered.length - 1];

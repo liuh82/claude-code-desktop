@@ -3,6 +3,7 @@ import path from 'path';
 import { spawn, ChildProcess } from 'child_process';
 import Database from 'better-sqlite3';
 import fs from 'fs';
+import { randomUUID } from 'crypto';
 import { ClaudeDirectClient, loadDirectApiConfig, PermissionMode } from './claude-direct';
 
 // ── Types ──
@@ -336,7 +337,7 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
   // Save user message to DB
   if (db) {
     try {
-      const userMsgId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const userMsgId = randomUUID();
       db.prepare(
         'INSERT OR IGNORE INTO messages (id, session_id, role, content, timestamp) VALUES (?, ?, ?, ?, ?)'
       ).run(userMsgId, sessionId, 'user', message, new Date().toISOString());
@@ -381,7 +382,7 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
               // Finalize assistant message to DB when stop_reason present
               if (msg.stop_reason && currentAssistantContent) {
                 try {
-                  const aMsgId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                  const aMsgId = randomUUID();
                   db.prepare(
                     'INSERT OR IGNORE INTO messages (id, session_id, role, content, timestamp) VALUES (?, ?, ?, ?, ?)'
                   ).run(aMsgId, sessionId, 'assistant', currentAssistantContent, new Date().toISOString());
@@ -420,17 +421,14 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('claude-exit', { sessionId, exitCode: code });
     }
-    if (db) {
-      db.prepare("UPDATE sessions SET status = 'idle', updated_at = ? WHERE id = ?").run(
-        new Date().toISOString(), sessionId
-      );
-    }
-  });
-
-  proc.on('error', (err) => {
-    console.error('[CCDesk process error]', err);
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('claude-error', { sessionId, error: err.message });
+    try {
+      if (db) {
+        db.prepare("UPDATE sessions SET status = 'idle', updated_at = ? WHERE id = ?").run(
+          new Date().toISOString(), sessionId
+        );
+      }
+    } catch (err) {
+      console.error('[CCDesk] Failed to update session status on close:', err);
     }
   });
 
@@ -511,7 +509,7 @@ function handleDirectMessage(sessionId: string, projectPath: string, message: st
   // Save user message to DB
   if (db) {
     try {
-      const userMsgId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const userMsgId = randomUUID();
       db.prepare(
         'INSERT OR IGNORE INTO messages (id, session_id, role, content, timestamp) VALUES (?, ?, ?, ?, ?)'
       ).run(userMsgId, sessionId, 'user', message, new Date().toISOString());
@@ -919,6 +917,8 @@ function registerIpcHandlers() {
         let messageCount = 0;
 
         try {
+          // Skip files larger than 10MB to prevent OOM
+          if (stat.size > 10 * 1024 * 1024) continue;
           const content = fs.readFileSync(filePath, 'utf-8');
           const lines = content.split('\n').filter(l => l.trim());
           messageCount = lines.length;
