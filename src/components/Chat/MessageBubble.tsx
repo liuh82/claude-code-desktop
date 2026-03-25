@@ -82,6 +82,12 @@ function MessageBubble({ message, onPermissionAllow, onPermissionDeny }: Message
                     toolCalls={message.toolCalls || []}
                     hasTextContent={!!message.content}
                   />
+                  {/* Real-time streaming text — plain text during stream, markdown after */}
+                  {message.content && (
+                    <div className={styles.streamingText}>
+                      {message.content}
+                    </div>
+                  )}
                 </>
               ) : (
                 /* ── Completed: show full tool call cards + markdown ── */

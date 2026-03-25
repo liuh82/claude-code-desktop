@@ -249,6 +249,20 @@
   background: var(--bg-elevated);
 }
 
+/* Streaming text — matches MarkdownRenderer paragraph line-height to prevent layout jump */
+.streamingText {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 15px;
+  line-height: var(--line-height-relaxed);
+  color: var(--text-primary);
+  margin-top: 8px;
+}
+
+[data-theme="dark"] .streamingText {
+  opacity: 0.90;
+}
+
 /* Tool call list */
 .toolCallList {
   margin-bottom: 12px;
