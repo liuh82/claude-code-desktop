@@ -691,12 +691,12 @@
   color: var(--text-muted);
 }
 
-/* ═══ Attached file chips ═══ */
-.chipList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 2px 0;
+/* ═══ Attached file chips — inline in action row ═══ */
+.chipListDivider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-ghost);
+  flex-shrink: 0;
 }
 
 .chip {

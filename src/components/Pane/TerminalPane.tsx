@@ -710,9 +710,18 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                 rows={2}
               />
 
-              {/* Attached file chips */}
-              {attachedFiles.length > 0 && (
-                <div className={styles.chipList}>
+              {/* Bottom row: attach + image | chips | mode selector | send */}
+              <div className={styles.paneInputActions}>
+                <div className={styles.paneInputActionsLeft}>
+                  <button className={styles.actionToolBtn} title="附加文件" onClick={handleAttachFile}>
+                    <span className="material-symbols-outlined">attach_file</span>
+                  </button>
+                  <button className={styles.actionToolBtn} title="附加图片" onClick={handleAttachImage}>
+                    <span className="material-symbols-outlined">image</span>
+                  </button>
+                  {attachedFiles.length > 0 && (
+                    <span className={styles.chipListDivider} />
+                  )}
                   {attachedFiles.map((filePath) => {
                     const fileName = filePath.split('/').pop() || filePath;
                     const fileIcon = getFileIcon(fileName);
@@ -726,18 +735,6 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                       </div>
                     );
                   })}
-                </div>
-              )}
-
-              {/* Bottom row: attach + image | mode selector | send */}
-              <div className={styles.paneInputActions}>
-                <div className={styles.paneInputActionsLeft}>
-                  <button className={styles.actionToolBtn} title="附加文件" onClick={handleAttachFile}>
-                    <span className="material-symbols-outlined">attach_file</span>
-                  </button>
-                  <button className={styles.actionToolBtn} title="附加图片" onClick={handleAttachImage}>
-                    <span className="material-symbols-outlined">image</span>
-                  </button>
                 </div>
                 <div className={styles.paneInputSpacer} />
                 <div className={styles.modeSelector}>
