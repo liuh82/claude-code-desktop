@@ -471,6 +471,8 @@ function handleDirectMessage(sessionId: string, projectPath: string, message: st
 
   // Track assistant content for DB persistence
   let assistantContent = '';
+  // Guard: prevent claude-exit from firing after claude-error
+  let errorSent = false;
 
   client.sendMessage(
     sessionId,
@@ -495,11 +497,19 @@ function handleDirectMessage(sessionId: string, projectPath: string, message: st
     },
     // onError
     (error) => {
+      errorSent = true;
+      console.error(`[CCDesk DirectAPI] Error for session ${sessionId}: ${error}`);
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('claude-error', { sessionId, error });
       }
     },
   ).then(() => {
+    // If error was already sent, don't send claude-exit (avoids confusing double-signal)
+    if (errorSent) {
+      console.error(`[CCDesk DirectAPI] Skipping claude-exit (error already sent) for session ${sessionId}`);
+      return;
+    }
+
     // Save assistant message to DB
     if (db && assistantContent) {
       try {

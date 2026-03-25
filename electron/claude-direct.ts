@@ -203,8 +203,9 @@ export class ClaudeDirectClient {
         } else {
           // Anthropic native or Anthropic-compatible
           headers['x-api-key'] = this.config.apiKey;
-          headers['anthropic-version'] = '2023-06-01';
         }
+        // Always send anthropic-version — third-party providers may require it too
+        headers['anthropic-version'] = '2023-06-01';
 
         // Pass through any additional headers from claude env
         if (env.ANTHROPIC_API_HEADERS) {
@@ -214,7 +215,10 @@ export class ClaudeDirectClient {
           } catch {}
         }
 
-        const response = await fetch(`${this.config.baseUrl}/v1/messages`, {
+        const apiUrl = `${this.config.baseUrl}/v1/messages`;
+        console.error(`[DirectAPI] Round ${round}: POST ${apiUrl} model=${this.config.model} msgs=${this.messages.length}`);
+
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers,
           body: JSON.stringify(body),
@@ -223,14 +227,18 @@ export class ClaudeDirectClient {
 
         if (!response.ok) {
           const errText = await response.text().catch(() => 'Unknown error');
+          console.error(`[DirectAPI] HTTP ${response.status}: ${errText}`);
           onError(`API 错误 (${response.status}): ${errText}`);
           // Remove the last user message since it failed
           this.messages.pop();
           return;
         }
 
+        console.error(`[DirectAPI] Stream started, status=${response.status}`);
+
         // Parse SSE stream
         const assistantContent = await this.parseSSEStream(response, onEvent);
+        console.error(`[DirectAPI] Stream done, ${assistantContent.length} content blocks`);
 
         // If no content, we're done
         if (!assistantContent || assistantContent.length === 0) {
@@ -277,8 +285,10 @@ export class ClaudeDirectClient {
       } catch (err: any) {
         if (err.name === 'AbortError') {
           // User cancelled — don't treat as error
+          console.error('[DirectAPI] Request aborted by user');
           return;
         }
+        console.error(`[DirectAPI] Request failed: ${err.message}`, err.stack);
         onError(`请求失败: ${err.message}`);
         return;
       }
@@ -307,98 +317,140 @@ export class ClaudeDirectClient {
     let currentToolName = '';
     let currentToolJson = '';
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      buffer += decoder.decode(value, { stream: true });
+        buffer += decoder.decode(value, { stream: true });
 
-      // SSE format: "event: ...\ndata: ...\n\n"
-      // But Anthropic uses data-only lines (event is inline in JSON)
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
+        // SSE format: "event: ...\ndata: ...\n\n"
+        // But Anthropic uses data-only lines (event is inline in JSON)
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
 
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith(':')) continue; // skip comments/empty
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith(':')) continue; // skip comments/empty
 
-        if (!trimmed.startsWith('data: ')) continue;
+          // Handle "event:" lines — some providers send explicit event type
+          if (trimmed.startsWith('event:')) {
+            // Just informational, skip — the type is in the JSON data
+            continue;
+          }
 
-        const jsonStr = trimmed.slice(6);
-        if (jsonStr === '[DONE]') continue;
+          if (!trimmed.startsWith('data: ')) {
+            // Non-standard line — log but don't crash
+            console.error(`[DirectAPI SSE] Skipping non-data line: "${trimmed.slice(0, 100)}"`);
+            continue;
+          }
 
-        let event: DirectSSEEvent;
-        try {
-          event = JSON.parse(jsonStr);
-        } catch {
-          continue;
-        }
+          const jsonStr = trimmed.slice(6);
+          if (jsonStr === '[DONE]') continue;
 
-        // Forward every event to the renderer
-        onEvent(event);
+          let event: DirectSSEEvent;
+          try {
+            event = JSON.parse(jsonStr);
+          } catch (e: any) {
+            console.error(`[DirectAPI SSE] JSON parse error: ${e.message}, raw: "${jsonStr.slice(0, 200)}"`);
+            continue;
+          }
 
-        switch (event.type) {
-          case 'message_start':
-            // Extract model from message_start
-            if (event.message?.model) {
-              // Already forwarded — renderer will extract model
-            }
-            break;
+          // Log event type for debugging
+          console.error(`[DirectAPI SSE] event type: ${event.type}`);
 
-          case 'content_block_start':
-            if (event.content_block?.type === 'text') {
-              currentTextIndex = contentBlocks.length;
-              contentBlocks.push({ type: 'text', text: '' });
-            } else if (event.content_block?.type === 'tool_use') {
-              currentToolIndex = contentBlocks.length;
-              currentToolId = event.content_block.id || `tool_${Date.now()}`;
-              currentToolName = event.content_block.name || 'unknown';
-              currentToolJson = '';
-              contentBlocks.push({
-                type: 'tool_use',
-                id: currentToolId,
-                name: currentToolName,
-                input: {},
-              });
-            }
-            break;
+          // Forward every event to the renderer
+          onEvent(event);
 
-          case 'content_block_delta':
-            if (event.delta?.type === 'text_delta' && event.delta.text && currentTextIndex >= 0) {
-              const block = contentBlocks[currentTextIndex];
-              if (block.type === 'text') {
-                block.text += event.delta.text;
+          switch (event.type) {
+            case 'message_start':
+              if (event.message?.model) {
+                console.error(`[DirectAPI SSE] model: ${event.message.model}`);
               }
-            } else if (event.delta?.type === 'input_json_delta' && event.delta.partial_json) {
-              currentToolJson += event.delta.partial_json;
-            }
-            break;
+              break;
 
-          case 'content_block_stop':
-            // Finalize tool input JSON
-            if (currentToolIndex >= 0 && currentToolJson) {
-              const block = contentBlocks[currentToolIndex];
-              if (block.type === 'tool_use') {
-                try {
-                  block.input = JSON.parse(currentToolJson);
-                } catch {
-                  block.input = { raw: currentToolJson };
+            case 'content_block_start': {
+              // Some providers (e.g. 智谱) omit the 'index' field
+              const blockType = event.content_block?.type;
+              if (blockType === 'text') {
+                currentTextIndex = contentBlocks.length;
+                contentBlocks.push({ type: 'text', text: '' });
+              } else if (blockType === 'tool_use') {
+                currentToolIndex = contentBlocks.length;
+                currentToolId = event.content_block?.id || `tool_${Date.now()}`;
+                currentToolName = event.content_block?.name || 'unknown';
+                currentToolJson = '';
+                contentBlocks.push({
+                  type: 'tool_use',
+                  id: currentToolId,
+                  name: currentToolName,
+                  input: {},
+                });
+              }
+              break;
+            }
+
+            case 'content_block_delta':
+              if (event.delta?.type === 'text_delta' && event.delta.text && currentTextIndex >= 0) {
+                const block = contentBlocks[currentTextIndex];
+                if (block.type === 'text') {
+                  block.text += event.delta.text;
+                }
+              } else if (event.delta?.type === 'input_json_delta' && event.delta.partial_json) {
+                currentToolJson += event.delta.partial_json;
+              }
+              break;
+
+            case 'content_block_stop':
+              // Finalize tool input JSON
+              if (currentToolIndex >= 0 && currentToolJson) {
+                const block = contentBlocks[currentToolIndex];
+                if (block.type === 'tool_use') {
+                  try {
+                    block.input = JSON.parse(currentToolJson);
+                  } catch {
+                    block.input = { raw: currentToolJson };
+                  }
                 }
               }
-            }
-            // Reset tracking
-            currentTextIndex = -1;
-            currentToolIndex = -1;
-            currentToolId = '';
-            currentToolName = '';
-            currentToolJson = '';
-            break;
+              // Reset tracking
+              currentTextIndex = -1;
+              currentToolIndex = -1;
+              currentToolId = '';
+              currentToolName = '';
+              currentToolJson = '';
+              break;
 
-          case 'message_stop':
-            // Stream complete
-            break;
+            case 'message_delta':
+              // Some providers send extra usage fields (cache_read_input_tokens, server_tool_use, etc.)
+              // and may have empty delta. This is fine — just log it.
+              if (event.usage) {
+                console.error(`[DirectAPI SSE] usage: ${JSON.stringify(event.usage)}`);
+              }
+              break;
+
+            case 'message_stop':
+              // Stream complete
+              break;
+
+            case 'ping':
+              break;
+
+            case 'error':
+              // Some providers send error events in the stream
+              console.error(`[DirectAPI SSE] Error event in stream: ${JSON.stringify(event)}`);
+              break;
+
+            default:
+              // Unknown event type — don't crash, just log
+              console.error(`[DirectAPI SSE] Unknown event type: ${event.type}`);
+              break;
+          }
         }
       }
+    } catch (e: any) {
+      console.error(`[DirectAPI SSE] Stream read error: ${e.message}`);
+      throw e; // Re-throw so sendMessage's catch handles it
     }
 
     // Process any remaining buffer
