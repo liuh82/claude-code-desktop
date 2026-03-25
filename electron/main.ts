@@ -416,15 +416,17 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
 // ── Direct API helpers ──
 
 function getApiMode(): 'cli' | 'direct' {
-  if (!db) return 'cli';
+  if (!db) return 'direct';
   try {
     const row = db.prepare("SELECT value FROM app_settings WHERE key = 'settings' LIMIT 1").get() as { value?: string } | undefined;
     if (row?.value) {
       const settings = JSON.parse(row.value);
-      if (settings.apiMode === 'direct') return 'direct';
+      // Only use CLI if explicitly set
+      if (settings.apiMode === 'cli') return 'cli';
+      return 'direct';
     }
   } catch {}
-  return 'cli';
+  return 'direct';
 }
 
 function handleDirectMessage(sessionId: string, projectPath: string, message: string, model?: string) {

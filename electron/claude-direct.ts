@@ -187,13 +187,20 @@ export class ClaudeDirectClient {
           body.tools = TOOL_DEFINITIONS;
         }
 
+        const isAnthropic = this.config.baseUrl.includes('anthropic.com');
+        const headers: Record<string, string> = {
+          'content-type': 'application/json',
+        };
+        if (isAnthropic) {
+          headers['x-api-key'] = this.config.apiKey;
+          headers['anthropic-version'] = '2023-06-01';
+        } else {
+          headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+        }
+
         const response = await fetch(`${this.config.baseUrl}/v1/messages`, {
           method: 'POST',
-          headers: {
-            'x-api-key': this.config.apiKey,
-            'anthropic-version': '2023-06-01',
-            'content-type': 'application/json',
-          },
+          headers,
           body: JSON.stringify(body),
           signal: this.abortController.signal,
         });
@@ -549,7 +556,7 @@ export function loadDirectApiConfig(db?: any): DirectApiConfig | null {
     } catch {}
   }
 
-  const apiKey = claudeEnv.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY || appSettings.directApiKey || '';
+  const apiKey = claudeEnv.ANTHROPIC_API_KEY || claudeEnv.ANTHROPIC_AUTH_TOKEN || process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN || appSettings.directApiKey || '';
   const baseUrl = claudeEnv.ANTHROPIC_BASE_URL || 'https://api.anthropic.com';
   const model = claudeEnv.ANTHROPIC_MODEL || appSettings.directModel || 'claude-sonnet-4-6';
   const maxTokens = appSettings.directMaxTokens || 8192;
