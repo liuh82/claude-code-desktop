@@ -89,6 +89,29 @@ const api = {
     ipcRenderer.on('claude-error', handler);
     return () => ipcRenderer.removeListener('claude-error', handler);
   },
+
+  // Tool Permission
+  onToolPermissionRequest: (callback: (data: { sessionId: string; toolCall: { id: string; name: string; input: Record<string, unknown> } }) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, data: { sessionId: string; toolCall: { id: string; name: string; input: Record<string, unknown> } }) => {
+      // Track which session the pending permission belongs to
+      (api as any)._pendingPermissionSessionId = data.sessionId;
+      callback(data);
+    };
+    ipcRenderer.on('tool-permission-request', handler);
+    return () => ipcRenderer.removeListener('tool-permission-request', handler);
+  },
+  toolPermissionResponse: (granted: boolean) => {
+    const sessionId = (api as any)._pendingPermissionSessionId;
+    return ipcRenderer.invoke('tool-permission-response', { sessionId, granted });
+  },
+  onToolExecutionUpdate: (callback: (data: { sessionId: string; update: { id: string; name: string; input?: Record<string, unknown>; status: string; output?: string } }) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, data: { sessionId: string; update: { id: string; name: string; input?: Record<string, unknown>; status: string; output?: string } }) => callback(data);
+    ipcRenderer.on('tool-execution-update', handler);
+    return () => ipcRenderer.removeListener('tool-execution-update', handler);
+  },
+  setPermissionMode: (sessionId: string, mode: string) => {
+    return ipcRenderer.invoke('set-permission-mode', { sessionId, mode });
+  },
 };
 
 contextBridge.exposeInMainWorld('claudeAPI', api);

@@ -3,7 +3,7 @@ import path from 'path';
 import { spawn, ChildProcess } from 'child_process';
 import Database from 'better-sqlite3';
 import fs from 'fs';
-import { ClaudeDirectClient, loadDirectApiConfig } from './claude-direct';
+import { ClaudeDirectClient, loadDirectApiConfig, PermissionMode } from './claude-direct';
 
 // ── Types ──
 
@@ -140,6 +140,7 @@ function createWindow() {
     sessions.clear();
     // Stop all Direct API clients
     for (const [, client] of directClients) {
+      client.cleanupPendingPermission();
       client.stop();
     }
     directClients.clear();
@@ -452,6 +453,32 @@ function handleDirectMessage(sessionId: string, projectPath: string, message: st
     client = new ClaudeDirectClient(config);
     directClients.set(sessionId, client);
     sessionModels.set(sessionId, config.model);
+
+    // Wire up permission request callback
+    client.onPermissionRequest = (toolCall) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('tool-permission-request', { sessionId, toolCall });
+      }
+    };
+
+    // Wire up tool execution status callback
+    client.onToolExecution = (update) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('tool-execution-update', { sessionId, update });
+      }
+    };
+
+    // Read permission mode from settings
+    try {
+      if (db) {
+        const row = db.prepare("SELECT value FROM app_settings WHERE key = 'settings' LIMIT 1").get() as { value?: string } | undefined;
+        if (row?.value) {
+          const settings = JSON.parse(row.value);
+          const mode = (settings.permissionMode || 'auto') as PermissionMode;
+          client.setPermissionMode(mode);
+        }
+      }
+    } catch {}
   }
 
   // Save user message to DB
@@ -802,6 +829,7 @@ function registerIpcHandlers() {
     // Stop Direct API client if any
     const directClient = directClients.get(sessionId);
     if (directClient) {
+      directClient.cleanupPendingPermission();
       directClient.stop();
       directClient.reset();
       directClients.delete(sessionId);
@@ -975,6 +1003,22 @@ function registerIpcHandlers() {
     );
   });
 
+  // ── Tool Permission ──
+
+  ipcMain.handle('tool-permission-response', (_event, { sessionId, granted }: { sessionId: string; granted: boolean }) => {
+    const client = directClients.get(sessionId);
+    if (client) {
+      client.grantPermission(granted);
+    }
+  });
+
+  ipcMain.handle('set-permission-mode', (_event, { sessionId, mode }: { sessionId: string; mode: PermissionMode }) => {
+    const client = directClients.get(sessionId);
+    if (client) {
+      client.setPermissionMode(mode);
+    }
+  });
+
   // ── Persistence: Messages ──
 
   ipcMain.handle('load-messages', (_event, { sessionId }: { sessionId: string }) => {
@@ -1008,6 +1052,7 @@ function registerIpcHandlers() {
     // Stop Direct API client if any
     const directClient = directClients.get(sessionId);
     if (directClient) {
+      directClient.cleanupPendingPermission();
       directClient.stop();
       directClient.reset();
       directClients.delete(sessionId);

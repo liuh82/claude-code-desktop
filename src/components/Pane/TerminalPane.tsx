@@ -5,7 +5,7 @@ import { useProjectStore } from '@/stores/useProjectStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { MessageBubble } from '@/components/Chat/MessageBubble';
 import { claudeApi, isElectron } from '@/lib/claude-api';
-import type { FileNode } from '@/types/chat';
+import type { FileNode, ToolCall } from '@/types/chat';
 import styles from './TerminalPane.module.css';
 
 // ── Slash command types ──
@@ -136,6 +136,10 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const pendingFileMention = useChatStore((s) => s.pendingFileMention);
   const tokenUsage = paneState?.tokenUsage ?? { input: 0, output: 0 };
   const currentModel = useChatStore((s) => s.currentModel) || 'claude-sonnet-4-6';
+  const permissionMode = useChatStore((s) => s.permissionMode);
+  const grantPermission = useChatStore((s) => s.grantPermission);
+  const denyPermission = useChatStore((s) => s.denyPermission);
+  const setPermissionMode = useChatStore((s) => s.setPermissionMode);
 
   const [text, setText] = useState('');
   const [editMode, setEditMode] = useState<'plan' | 'auto' | 'confirm'>('confirm');
@@ -323,6 +327,22 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const handleSend = useCallback(() => {
     const trimmed = text.trim();
     if (!trimmed && attachedFiles.length === 0) return;
+
+    // Handle /permissions <mode> with argument
+    if (trimmed.startsWith('/permissions ')) {
+      const modeArg = trimmed.split(/\s+/)[1]?.toLowerCase();
+      const validModes = ['bypass', 'auto', 'ask'];
+      if (validModes.includes(modeArg)) {
+        setPermissionMode(modeArg as 'bypass' | 'auto' | 'ask');
+        useChatStore.getState().addSystemMessage(paneId, `权限模式已切换为: ${modeArg.toUpperCase()}`);
+      } else {
+        useChatStore.getState().addSystemMessage(paneId, `无效模式: ${modeArg}。可用: bypass, auto, ask`);
+      }
+      setText('');
+      setAttachedFiles([]);
+      return;
+    }
+
     if (trimmed.startsWith('/') && !trimmed.includes(' ')) {
       const cmd = allCommands.find(c => c.name === trimmed);
       if (cmd) { handleSlashSelect(cmd); return; }
@@ -421,6 +441,31 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       }
       if (name === '/compact') {
         store.sendMessage(paneId, '/compact');
+        setText('');
+        return;
+      }
+      if (name === '/permissions') {
+        const mode = useChatStore.getState().permissionMode;
+        const modeDescriptions: Record<string, string> = {
+          bypass: '所有工具直接执行（无确认）',
+          auto: '安全工具自动执行，危险工具（Write/Edit/Bash）弹确认',
+          ask: '所有工具都需要人工确认',
+        };
+        store.addSystemMessage(paneId, [
+          '```',
+          '权限模式',
+          '━━━━━━━━━━━━',
+          '当前模式: ' + mode.toUpperCase(),
+          modeDescriptions[mode],
+          '',
+          '可用模式:',
+          '  bypass — 不确认，直接执行',
+          '  auto   — 安全工具自动，危险工具确认',
+          '  ask    — 全部需要确认',
+          '',
+          '使用 /permissions <模式> 切换，例如: /permissions bypass',
+          '```',
+        ].join('\n'));
         setText('');
         return;
       }
@@ -621,7 +666,12 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               </div>
             )}
             {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} />
+              <MessageBubble
+                key={msg.id}
+                message={msg}
+                onPermissionAllow={(_tc: ToolCall) => grantPermission()}
+                onPermissionDeny={(_tc: ToolCall) => denyPermission()}
+              />
             ))}
             <div ref={messagesEndRef} />
           </div>
@@ -784,6 +834,8 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               <span>{currentModel.replace('claude-', '').replace(/-\d{8}$/, '')}</span>
               <span className={styles.paneInputHintDot} />
               <span>{editMode === 'plan' ? 'Plan' : editMode === 'auto' ? 'Auto Edit' : 'Confirm Edit'}</span>
+              <span className={styles.paneInputHintDot} />
+              <span>{permissionMode}</span>
             </div>
             <div className={styles.paneInputHintRow}>
               <span>{tokenUsage.input > 1000 ? Math.round(tokenUsage.input / 1000) + 'K' : tokenUsage.input} in / {tokenUsage.output > 1000 ? Math.round(tokenUsage.output / 1000) + 'K' : tokenUsage.output} out</span>

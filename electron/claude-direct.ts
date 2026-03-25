@@ -158,14 +158,53 @@ const DANGEROUS_COMMAND_PATTERNS = [
 
 // ── Client class ──
 
+export type PermissionMode = 'bypass' | 'auto' | 'ask';
+
+// Tools considered safe — auto-executed in 'auto' mode
+const SAFE_TOOLS = ['Read', 'Grep', 'Glob'];
+
 export class ClaudeDirectClient {
   private config: DirectApiConfig;
   private messages: ApiMessage[] = [];
   private abortController: AbortController | null = null;
   private projectPath: string = '';
+  private permissionMode: PermissionMode = 'auto';
+  private permissionResolve: ((granted: boolean) => void) | null = null;
+  private permissionTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Callbacks — set by main.ts after construction */
+  onPermissionRequest: ((toolCall: { id: string; name: string; input: Record<string, unknown> }) => void) | null = null;
+  onToolExecution: ((update: { id: string; name: string; input?: Record<string, unknown>; status: 'running' | 'completed' | 'error'; output?: string }) => void) | null = null;
 
   constructor(config: DirectApiConfig) {
     this.config = config;
+  }
+
+  setPermissionMode(mode: PermissionMode) {
+    this.permissionMode = mode;
+  }
+
+  grantPermission(granted: boolean) {
+    if (this.permissionTimer) {
+      clearTimeout(this.permissionTimer);
+      this.permissionTimer = null;
+    }
+    if (this.permissionResolve) {
+      this.permissionResolve(granted);
+      this.permissionResolve = null;
+    }
+  }
+
+  /** Clean up pending permission on session close */
+  cleanupPendingPermission() {
+    if (this.permissionResolve) {
+      this.permissionResolve(false);
+      this.permissionResolve = null;
+    }
+    if (this.permissionTimer) {
+      clearTimeout(this.permissionTimer);
+      this.permissionTimer = null;
+    }
   }
 
   setProjectPath(p: string) {
@@ -175,11 +214,13 @@ export class ClaudeDirectClient {
   stop() {
     this.abortController?.abort();
     this.abortController = null;
+    this.cleanupPendingPermission();
   }
 
   reset() {
     this.messages = [];
     this.abortController = null;
+    this.cleanupPendingPermission();
   }
 
   getMessages(): ApiMessage[] {
@@ -310,10 +351,33 @@ export class ClaudeDirectClient {
         // Execute each tool and collect results
         const toolResults: ApiContentBlock[] = [];
         for (const toolBlock of toolUseBlocks) {
-          const result = await this.executeTool(
-            toolBlock.name,
-            toolBlock.input,
-          );
+          // Request permission before executing
+          const granted = await this.requestPermission(toolBlock.id, toolBlock.name, toolBlock.input);
+          if (!granted) {
+            toolResults.push({
+              type: 'tool_result',
+              tool_use_id: toolBlock.id,
+              content: 'Permission denied by user',
+            });
+            this.onToolExecution?.({ id: toolBlock.id, name: toolBlock.name, status: 'error', output: 'Permission denied by user' });
+            continue;
+          }
+
+          // Notify renderer that tool is running
+          this.onToolExecution?.({ id: toolBlock.id, name: toolBlock.name, input: toolBlock.input, status: 'running' });
+
+          let result: string;
+          try {
+            result = await this.executeTool(toolBlock.name, toolBlock.input);
+          } catch (err: any) {
+            result = `Error: ${err.message}`;
+            this.onToolExecution?.({ id: toolBlock.id, name: toolBlock.name, status: 'error', output: result });
+            toolResults.push({ type: 'tool_result', tool_use_id: toolBlock.id, content: result });
+            continue;
+          }
+
+          // Notify renderer that tool completed
+          this.onToolExecution?.({ id: toolBlock.id, name: toolBlock.name, status: 'completed', output: result });
           toolResults.push({
             type: 'tool_result',
             tool_use_id: toolBlock.id,
@@ -536,6 +600,38 @@ export class ClaudeDirectClient {
     }
 
     return contentBlocks;
+  }
+
+  /**
+   * Check permission before executing a tool.
+   * - bypass: always allow
+   * - auto: safe tools auto-execute, dangerous tools prompt
+   * - ask: all tools prompt
+   * Returns false on timeout (60s).
+   */
+  private async requestPermission(
+    toolCallId: string,
+    name: string,
+    input: Record<string, unknown>,
+  ): Promise<boolean> {
+    if (this.permissionMode === 'bypass') return true;
+    if (this.permissionMode === 'auto' && SAFE_TOOLS.includes(name)) return true;
+
+    // Send permission request to renderer
+    if (this.onPermissionRequest) {
+      this.onPermissionRequest({ id: toolCallId, name, input });
+    }
+
+    // Wait for user response with 60s timeout
+    return new Promise<boolean>((resolve) => {
+      this.permissionResolve = resolve;
+      this.permissionTimer = setTimeout(() => {
+        this.permissionResolve = null;
+        this.permissionTimer = null;
+        console.warn(`[DirectAPI] Permission timeout for ${name} — auto-denied`);
+        resolve(false);
+      }, 60_000);
+    });
   }
 
   /**

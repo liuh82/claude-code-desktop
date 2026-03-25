@@ -272,8 +272,35 @@ function startListening() {
       return { panes: next };
     });
   });
+  const unsubPermission = claudeApi.onToolPermissionRequest((data) => {
+    const paneId = sessionIdToPaneId.get(data.sessionId);
+    if (!paneId) return;
+    // Update the tool call status to pending_permission
+    useChatStore.setState((s) => {
+      const next = new Map(s.panes);
+      const pane = next.get(paneId);
+      if (!pane) return s;
+      const updatedMessages = pane.messages.map(m => {
+        if (!m.toolCalls) return m;
+        const updatedCalls = m.toolCalls.map(tc =>
+          tc.id === data.toolCall.id ? { ...tc, status: 'pending_permission' as const, input: data.toolCall.input } : tc
+        );
+        return { ...m, toolCalls: updatedCalls };
+      });
+      next.set(paneId, { ...pane, messages: updatedMessages });
+      return {
+        panes: next,
+        pendingPermission: {
+          sessionId: data.sessionId,
+          toolCallId: data.toolCall.id,
+          name: data.toolCall.name,
+          input: data.toolCall.input,
+        },
+      };
+    });
+  });
 
-  cleanupFns = [unsubOutput, unsubStderr, unsubExit, unsubError];
+  cleanupFns = [unsubOutput, unsubStderr, unsubExit, unsubError, unsubPermission];
 }
 
 function stopListening() {
@@ -821,6 +848,8 @@ interface ChatState {
   projectPath: string;
   currentModel: string;
   pendingFileMention: string | null;  // file path to @-mention
+  pendingPermission: { sessionId: string; toolCallId: string; name: string; input: Record<string, unknown> } | null;
+  permissionMode: 'bypass' | 'auto' | 'ask';
 
   setProjectPath: (path: string) => void;
   setCurrentModel: (model: string) => void;
@@ -836,6 +865,9 @@ interface ChatState {
   getProjectSessions: (projectPath: string) => Promise<DbSession[]>;
   triggerFileMention: (filePath: string) => void;
   consumeFileMention: () => string | null;
+  grantPermission: () => Promise<void>;
+  denyPermission: () => Promise<void>;
+  setPermissionMode: (mode: 'bypass' | 'auto' | 'ask') => void;
 }
 
 export const useChatStore = create<ChatState>()((set, get) => ({
@@ -845,6 +877,8 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   diffFiles: [],
   projectPath: '',
   pendingFileMention: null,
+  pendingPermission: null,
+  permissionMode: 'auto',
 
   setProjectPath: (path: string) => {
     set({ projectPath: path });
@@ -1103,6 +1137,32 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     const path = get().pendingFileMention;
     if (path) set({ pendingFileMention: null });
     return path;
+  },
+
+  grantPermission: async () => {
+    const { pendingPermission } = get();
+    if (!pendingPermission) return;
+    await claudeApi.toolPermissionResponse(true);
+    set({ pendingPermission: null });
+  },
+
+  denyPermission: async () => {
+    const { pendingPermission } = get();
+    if (!pendingPermission) return;
+    await claudeApi.toolPermissionResponse(false);
+    set({ pendingPermission: null });
+  },
+
+  setPermissionMode: (mode) => {
+    const { panes } = get();
+    // Find the active session to send IPC
+    for (const [, pane] of panes) {
+      if (pane.sessionId) {
+        claudeApi.setPermissionMode(pane.sessionId, mode);
+        break;
+      }
+    }
+    set({ permissionMode: mode });
   },
 
   getProjectSessions: async (projectPath: string) => {

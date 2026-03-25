@@ -31,6 +31,11 @@ interface ElectronAPI {
   onClaudeStderr: (cb: (data: string, sessionId: string) => void) => () => void;
   onClaudeExit: (cb: (info: { sessionId: string; exitCode: number | null }) => void) => () => void;
   onClaudeError: (cb: (info: { sessionId: string; error: string }) => void) => () => void;
+  // Tool Permission
+  onToolPermissionRequest: (cb: (data: { sessionId: string; toolCall: { id: string; name: string; input: Record<string, unknown> } }) => void) => () => void;
+  toolPermissionResponse: (granted: boolean) => Promise<void>;
+  onToolExecutionUpdate: (cb: (data: { sessionId: string; update: { id: string; name: string; input?: Record<string, unknown>; status: string; output?: string } }) => void) => () => void;
+  setPermissionMode: (sessionId: string, mode: string) => Promise<void>;
   // Persistence
   loadMessages: (args: { sessionId: string }) => Promise<DbMessage[]>;
   getProjectSessions: (args: { projectPath: string }) => Promise<DbSession[]>;
@@ -76,6 +81,11 @@ export const claudeApi: ElectronAPI = {
   onClaudeStderr: (cb) => getApi()?.onClaudeStderr(cb) ?? (() => {}),
   onClaudeExit: (cb) => getApi()?.onClaudeExit(cb) ?? (() => {}),
   onClaudeError: (cb) => getApi()?.onClaudeError(cb) ?? (() => {}),
+  // Tool Permission fallbacks
+  onToolPermissionRequest: (cb) => getApi()?.onToolPermissionRequest(cb) ?? (() => {}),
+  toolPermissionResponse: (granted) => getApi()?.toolPermissionResponse(granted) ?? Promise.resolve(),
+  onToolExecutionUpdate: (cb) => getApi()?.onToolExecutionUpdate(cb) ?? (() => {}),
+  setPermissionMode: (sessionId, mode) => getApi()?.setPermissionMode(sessionId, mode) ?? Promise.resolve(),
   // Persistence fallbacks
   loadMessages: (a) => getApi()?.loadMessages(a) ?? Promise.resolve([]),
   getProjectSessions: (a) => getApi()?.getProjectSessions(a) ?? Promise.resolve([]),
