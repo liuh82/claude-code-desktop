@@ -1,0 +1,19 @@
+.slideWrapper {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin: 8px 0;
+  background: #f5f5f5;
+  transition: box-shadow 0.2s ease;
+}
+
+.slideWrapper:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.slideWrapper iframe {
+  display: block;
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+}

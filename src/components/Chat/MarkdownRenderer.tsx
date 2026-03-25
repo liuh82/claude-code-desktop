@@ -4,16 +4,13 @@ import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { CodeBlock } from './CodeBlock';
 import { ChartBlock } from './ChartBlock';
-import { VisualizationCard } from './VisualizationCard';
-import { QuickVisualParser } from './QuickVisualParser';
+import { HtmlSlideBlock } from './HtmlSlideBlock';
 
 // Mermaid rendering with graceful fallback on syntax errors
 import { MermaidSafe } from "./MermaidSafe";
 
 interface MarkdownRendererProps {
   content: string;
-  /** When true, skip QuickVisualParser to prevent infinite recursion */
-  isNested?: boolean;
   /** When true, treat unclosed mermaid blocks as regular code blocks */
   isStreaming?: boolean;
 }
@@ -40,17 +37,7 @@ function isIncompleteMermaidBlock(content: string): boolean {
   return false;
 }
 
-function MarkdownRenderer({ content, isNested, isStreaming }: MarkdownRendererProps) {
-  // If content contains quick-viz commands, use QuickVisualParser instead
-  // Skip when nested to prevent infinite recursion (QVP → MarkdownRenderer → QVP)
-  if (!isNested && /^@(arch|flow|compare|timeline)\b/m.test(content)) {
-    return (
-      <div className="markdown-body">
-        <QuickVisualParser content={content} />
-      </div>
-    );
-  }
-
+function MarkdownRenderer({ content, isStreaming }: MarkdownRendererProps) {
   // Detect incomplete mermaid blocks during streaming
   const hasIncompleteMermaid = isStreaming && isIncompleteMermaidBlock(content);
 
@@ -138,11 +125,12 @@ function CodeElement({ children, className, hasIncompleteMermaid }: ComponentPro
     );
   }
 
-  // Render visualization card code blocks
-  if (lang === 'visual' || lang === 'card') {
+  // 检测 ```htmlslide 代码块，用 sandbox iframe 渲染
+  if (lang === 'htmlslide') {
+    const htmlContent = String(children);
     return (
       <code className="codeBlock">
-        <VisualizationCard code={codeString} />
+        <HtmlSlideBlock html={htmlContent} />
       </code>
     );
   }

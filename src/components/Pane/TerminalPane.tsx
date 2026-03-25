@@ -37,10 +37,7 @@ const BUILT_IN_COMMANDS: SlashCommand[] = [
   { name: '/test', description: '为选定函数生成单元测试', source: 'built-in' },
   { name: '/bug', description: '报告 CLI 行为中的 bug', source: 'built-in' },
   { name: '/vim', description: '切换 vim 模式', source: 'built-in' },
-  { name: '/arch', description: '生成架构图（如：/arch 标题\\n节点A → 节点B）', source: 'built-in' },
-  { name: '/flow', description: '生成数据流图（如：/flow 标题\\n步骤1 → 步骤2）', source: 'built-in' },
-  { name: '/compare', description: '生成对比卡片（如：/compare 标题\\n方案A: 优点1, 优点2）', source: 'built-in' },
-  { name: '/timeline', description: '生成时间线（如：/timeline 标题\\n2024-Q1: 里程碑）', source: 'built-in' },
+  { name: '/slide', description: 'PPT 风格信息幻灯片（如：/slide:business 项目概览）', source: 'built-in' },
 ];
 
 const AVAILABLE_MODELS = [
@@ -483,13 +480,6 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
           '```',
         ].join('\n'));
         setText('');
-        return;
-      }
-      // Visualization commands: insert into textarea with newline, don't send
-      const VIZ_COMMANDS = new Set(['/arch', '/flow', '/compare', '/timeline']);
-      if (VIZ_COMMANDS.has(name)) {
-        setText(name + ' \n');
-        textareaRef.current?.focus();
         return;
       }
     }
