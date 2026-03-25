@@ -258,7 +258,7 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                     max={200000}
                     step={1024}
                     value={localSettings.maxTokens}
-                    onChange={(e) => handleChange('maxTokens', parseInt(e.target.value, 10) || 8192)}
+                    onChange={(e) => handleChange('maxTokens', parseInt(e.target.value, 10) || 16384)}
                   />
                 </SettingsField>
                 <SettingsField label="API 模式">

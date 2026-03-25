@@ -1052,7 +1052,7 @@ export function loadDirectApiConfig(db?: any): DirectApiConfig | null {
     || claudeEnv.ANTHROPIC_BASE_URL
     || 'https://api.anthropic.com';
   const model = claudeEnv.ANTHROPIC_MODEL || claudeEnv.ANTHROPIC_DEFAULT_SONNET_MODEL || appSettings.directModel || 'claude-sonnet-4-6';
-  const maxTokens = appSettings.directMaxTokens || 8192;
+  const maxTokens = appSettings.directMaxTokens || 16384;
   const maxContextMessages = appSettings.maxContextMessages || 20;
 
   console.error(`[DirectAPI] Config loaded: baseUrl=${baseUrl}, model=${model}, anthNative=${isAnthropicNativeDomain(baseUrl)}`);
