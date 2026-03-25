@@ -26,8 +26,6 @@ const api = {
     ipcRenderer.invoke('stop-generation', args),
   sendInput: (args: { sessionId: string; input: string }) =>
     ipcRenderer.invoke('send-input', args),
-  sendToSession: (args: { sessionId: string; input: string }) =>
-    ipcRenderer.invoke('send-to-session', args),
   closeSession: (args: { sessionId: string }) =>
     ipcRenderer.invoke('close-session', args),
   listSessions: (args: { projectId: string }) =>
@@ -60,10 +58,6 @@ const api = {
   openDirectoryDialog: () => ipcRenderer.invoke('open-directory-dialog'),
   openFileDialog: (opts?: any) => ipcRenderer.invoke('open-file-dialog', opts) as Promise<string[]>,
   openInExternal: (url: string) => ipcRenderer.invoke('open-in-external', url),
-
-  // Config
-  getConfig: (args: { key: string }) => ipcRenderer.invoke('get-config', args),
-  setConfig: (args: { key: string; value: unknown }) => ipcRenderer.invoke('set-config', args),
 
   // Slash Commands
   listSlashCommands: (args: { projectPath: string }) => ipcRenderer.invoke('list-slash-commands', args) as Promise<Array<{ name: string; description: string; source: string; pluginName?: string }>>,

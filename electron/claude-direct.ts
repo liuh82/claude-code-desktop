@@ -150,6 +150,37 @@ visual 代码块示例：
 - 图表可视化：使用 \`\`\`chart 代码块，内容为 ECharts JSON 配置。支持折线图、柱状图、饼图、散点图、雷达图等所有类型。
 - 文件引用：用户消息中的 @path/to/file 表示引用项目文件。`;
 
+// ── Sensitive paths that should never be written to (non-bypass) ──
+
+const SENSITIVE_WRITE_PATHS = [
+  '/etc', '/usr', '/bin', '/sbin', '/boot', '/dev', '/proc', '/sys',
+  '/var/lib', '/var/log',
+].map(p => path.resolve(p));
+
+function getSensitiveHomePaths(): string[] {
+  const home = process.env.HOME || process.env.USERPROFILE || '';
+  if (!home) return [];
+  return [
+    path.join(home, '.ssh'),
+    path.join(home, '.gnupg'),
+    path.join(home, '.aws'),
+    path.join(home, '.gpg'),
+    path.join(home, '.config', 'gnupg'),
+    path.join(home, '.local', 'share', 'gnupg'),
+  ].map(p => path.resolve(p));
+}
+
+function isSensitivePath(resolved: string): boolean {
+  const normalized = path.resolve(resolved);
+  for (const sp of SENSITIVE_WRITE_PATHS) {
+    if (normalized === sp || normalized.startsWith(sp + path.sep)) return true;
+  }
+  for (const sp of getSensitiveHomePaths()) {
+    if (normalized === sp || normalized.startsWith(sp + path.sep)) return true;
+  }
+  return false;
+}
+
 // ── Dangerous command patterns (log warning, don't block) ──
 
 const DANGEROUS_COMMAND_PATTERNS = [
@@ -314,18 +345,31 @@ export class ClaudeDirectClient {
           try {
             const extra = JSON.parse(env.ANTHROPIC_API_HEADERS);
             Object.assign(headers, extra);
-          } catch {}
+          } catch (e: any) {
+            console.warn(`[DirectAPI] Failed to parse ANTHROPIC_API_HEADERS: ${e.message}`);
+          }
         }
 
         const apiUrl = `${this.config.baseUrl}/v1/messages`;
         console.error(`[DirectAPI] Round ${round}: POST ${apiUrl} model=${this.config.model} msgs=${this.messages.length}`);
 
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(body),
-          signal: this.abortController.signal,
-        });
+        // Automatic timeout for fetch (5 minutes) — abort controller handles cancellation
+        const fetchTimeout = setTimeout(() => {
+          this.abortController?.abort();
+          console.warn(`[DirectAPI] Fetch timeout (300s) for round ${round}`);
+        }, 300_000);
+
+        let response: Response;
+        try {
+          response = await fetch(apiUrl, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body),
+            signal: this.abortController.signal,
+          });
+        } finally {
+          clearTimeout(fetchTimeout);
+        }
 
         if (!response.ok) {
           const errText = await response.text().catch(() => 'Unknown error');
@@ -546,7 +590,10 @@ export class ClaudeDirectClient {
     response: Response,
     onEvent: (event: DirectSSEEvent) => void,
   ): Promise<ApiContentBlock[]> {
-    const reader = response.body!.getReader();
+    if (!response.body) {
+      throw new Error('Response body is null — cannot read SSE stream');
+    }
+    const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
     let pendingDataLines: string[] = []; // Accumulate multi-line data fields per SSE event
@@ -676,8 +723,14 @@ export class ClaudeDirectClient {
           const filePath = String(input.file_path || '');
           const content = String(input.content || '');
           const resolved = path.isAbsolute(filePath) ? filePath : path.join(this.projectPath, filePath);
-          // Warn (but don't block) writes outside the project directory
-          if (this.projectPath && !resolved.startsWith(path.resolve(this.projectPath))) {
+          // Block writes to sensitive system paths (unless bypass mode)
+          if (isSensitivePath(resolved)) {
+            if (this.permissionMode === 'bypass') {
+              console.warn(`[DirectAPI] BYPASS MODE: writing to sensitive path: ${resolved}`);
+            } else {
+              return `Error: Write to sensitive path blocked: ${resolved}`;
+            }
+          } else if (this.projectPath && !resolved.startsWith(path.resolve(this.projectPath))) {
             console.warn(`[DirectAPI] Writing outside project directory: ${resolved}`);
           }
           // Ensure directory exists
@@ -824,15 +877,44 @@ export class ClaudeDirectClient {
     const firstMsg = this.messages[0];
     const recent = this.messages.slice(-(max * 2));
 
-    // Remove consecutive messages with the same role to satisfy API alternation
+    // Merge consecutive same-role messages to satisfy API alternation requirement.
+    // Content from dropped messages is concatenated into the kept message to
+    // preserve information.
+    const mergeContent = (a: ApiContentBlock[], b: ApiContentBlock[]): ApiContentBlock[] => {
+      // If both have text blocks, merge them into one; otherwise keep separate
+      const merged: ApiContentBlock[] = [...a];
+      for (const block of b) {
+        if (block.type === 'text' && merged.length > 0) {
+          const lastBlock = merged[merged.length - 1];
+          if (lastBlock.type === 'text') {
+            merged[merged.length - 1] = { type: 'text', text: lastBlock.text + '\n' + block.text };
+            continue;
+          }
+        }
+        merged.push(block);
+      }
+      return merged;
+    };
+
     const filtered: ApiMessage[] = [firstMsg];
     let lastRole = firstMsg.role;
     for (const msg of recent) {
       if (msg.role !== lastRole) {
         filtered.push(msg);
         lastRole = msg.role;
+      } else {
+        // Merge content into the last kept message instead of dropping
+        const last = filtered[filtered.length - 1];
+        last.content = mergeContent(last.content, msg.content);
       }
     }
+
+    // Safety: ensure we don't end up with only one message or same-role at end
+    if (filtered.length >= 2 && filtered[filtered.length - 1].role === filtered[filtered.length - 2].role) {
+      // Remove the last message if it duplicates the previous role
+      filtered.pop();
+    }
+
     this.messages = filtered;
   }
 }

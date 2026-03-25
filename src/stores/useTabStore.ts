@@ -101,8 +101,8 @@ export const useTabStore = create<TabState>()((set, get) => ({
 
     // Enforce max tabs
     while (newOrder.length > MAX_TABS) {
-      const oldest = newOrder.shift()!;
-      newTabs.delete(oldest);
+      const oldest = newOrder.shift();
+      if (oldest) newTabs.delete(oldest);
     }
 
     set({ tabs: newTabs, activeTabId: tabId, tabOrder: newOrder, projectPaths: newProjectPaths });

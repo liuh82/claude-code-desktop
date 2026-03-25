@@ -33,6 +33,32 @@ interface AppSettings {
   dataDirectory: string;
 }
 
+// ── Sensitive read path protection ──
+
+function isSensitiveReadPath(filePath: string): boolean {
+  const normalized = path.resolve(filePath);
+  const sensitiveDirs = [
+    '/etc/shadow', '/etc/gshadow', '/etc/passwd',
+    '/etc/sudoers', '/etc/ssh',
+  ];
+  const home = process.env.HOME || process.env.USERPROFILE || '';
+  const sensitiveHomeDirs = [
+    '.ssh', '.gnupg', '.aws', '.gpg',
+    '.config/gnupg', '.local/share/gnupg',
+    '.env', '.npmrc', '.pypirc',
+  ];
+  for (const sp of sensitiveDirs) {
+    if (normalized.startsWith(path.resolve(sp))) return true;
+  }
+  if (home) {
+    for (const sd of sensitiveHomeDirs) {
+      const full = path.resolve(path.join(home, sd));
+      if (normalized === full || normalized.startsWith(full + path.sep)) return true;
+    }
+  }
+  return false;
+}
+
 // ── State ──
 
 let mainWindow: BrowserWindow | null = null;
@@ -211,11 +237,12 @@ function detectClaudeCli(): string {
 
   // 9. Last resort: try login shell
   try {
-    const { execSync } = require('child_process') as typeof import('child_process');
+    const { execFileSync } = require('child_process') as typeof import('child_process');
     const shell = process.env.SHELL || '/bin/zsh';
-    const result = execSync(shell + " -l -c 'which claude' 2>/dev/null", {
+    const result = execFileSync(shell, ['-l', '-c', 'which claude'], {
       encoding: 'utf-8',
       timeout: 3000,
+      stdio: ['pipe', 'pipe', 'pipe'],
     }).trim();
     if (result && fs.existsSync(result)) {
       candidates.unshift(result); // Put shell result first
@@ -607,6 +634,9 @@ function registerIpcHandlers() {
   // ── File Tree ──
 
   ipcMain.handle('read-directory', async (_event, { dirPath, maxDepth }: { dirPath: string; maxDepth?: number }) => {
+    if (isSensitiveReadPath(dirPath)) {
+      return [];
+    }
     const depth = maxDepth || 5;
     const result: Array<{ name: string; path: string; type: string; children?: unknown[] }> = [];
 
@@ -657,6 +687,9 @@ function registerIpcHandlers() {
 
   ipcMain.handle('read-file', async (_event, { filePath }: { filePath: string }) => {
     try {
+      if (isSensitiveReadPath(filePath)) {
+        return { content: null, error: 'Access to sensitive path is restricted' };
+      }
       if (!fs.existsSync(filePath)) return { content: null, error: 'File not found' };
       const content = fs.readFileSync(filePath, 'utf-8');
       return { content, error: null };
@@ -985,6 +1018,17 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle('open-in-external', (_event, url: string) => {
+    try {
+      const parsed = new URL(url);
+      const allowedSchemes = ['http:', 'https:', 'mailto:'];
+      if (!allowedSchemes.includes(parsed.protocol)) {
+        console.error(`[CCDesk] Blocked external open with disallowed scheme: ${parsed.protocol}`);
+        return;
+      }
+    } catch {
+      console.error(`[CCDesk] Blocked external open with invalid URL: ${url}`);
+      return;
+    }
     shell.openExternal(url);
   });
 
@@ -1255,11 +1299,12 @@ function fixPath() {
 
   // 5. Try login shell as last resort
   try {
-    const { execSync } = require('child_process') as typeof import('child_process');
+    const { execFileSync } = require('child_process') as typeof import('child_process');
     const shell = process.env.SHELL || '/bin/zsh';
-    const shellPath = execSync(shell + " -l -c 'echo $PATH'", {
+    const shellPath = execFileSync(shell, ['-l', '-c', 'echo $PATH'], {
       encoding: 'utf-8',
       timeout: 3000,
+      stdio: ['pipe', 'pipe', 'pipe'],
     }).trim();
     if (shellPath) {
       for (const p of shellPath.split(':')) {

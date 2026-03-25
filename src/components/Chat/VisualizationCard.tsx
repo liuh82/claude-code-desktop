@@ -86,6 +86,25 @@ function VizCardInner({ card }: { card: VizCard }) {
   }
 }
 
+/* ── Icon validation ── */
+
+// Common valid Material Symbols icon names used across card types
+const VALID_ICONS = new Set([
+  'account_tree', 'widgets', 'terminal', 'bolt', 'check', 'play_arrow', 'schedule',
+  'more_horiz', 'info', 'error', 'trending_up', 'check_circle', 'token',
+  'api', 'router', 'dns', 'desktop_windows', 'web', 'storage', 'flash_on',
+  'list_alt', 'lock', 'person', 'phone_android', 'view_in_ar', 'hub', 'cloud',
+  'public', 'language', 'swap_horiz', 'settings_ethernet', 'receipt_long',
+  'monitor_heart', 'build', 'commit', 'search', 'psychology', 'model_training',
+  'store', 'data_object', 'settings', 'edit_note', 'edit', 'folder_open',
+  'progress_activity', 'auto_awesome', 'build',
+]);
+
+function safeIcon(icon?: string, fallback = 'widgets'): string {
+  if (!icon) return fallback;
+  return VALID_ICONS.has(icon) ? icon : fallback;
+}
+
 /* ── Shared header ── */
 
 function CardHeader({ title, subtitle, label, icon }: { title: string; subtitle?: string; label?: string; icon?: string }) {
@@ -97,7 +116,7 @@ function CardHeader({ title, subtitle, label, icon }: { title: string; subtitle?
         {subtitle && <p className={styles.cardSubtitle}>{subtitle}</p>}
       </div>
       {icon && (
-        <span className={`${styles.cardIcon} material-symbols-outlined`}>{icon}</span>
+        <span className={`${styles.cardIcon} material-symbols-outlined`}>{safeIcon(icon)}</span>
       )}
     </div>
   );
@@ -185,7 +204,7 @@ function ComparisonCard({ card }: { card: Extract<VizCard, { type: 'comparison' 
           <div key={i} className={`${styles.compareSide} ${side.badgeVariant === 'highlight' ? styles.compareSideHighlight : ''}`}>
             <div className={styles.compareSideHeader}>
               <div className={styles.compareSideIcon}>
-                <span className="material-symbols-outlined">{side.icon || (i === 0 ? 'terminal' : 'bolt')}</span>
+                <span className="material-symbols-outlined">{safeIcon(side.icon, i === 0 ? 'terminal' : 'bolt')}</span>
               </div>
               <span className={styles.compareSideName}>{side.name}</span>
               {side.badge && (
@@ -232,7 +251,7 @@ function StatisticsCard({ card }: { card: Extract<VizCard, { type: 'statistics' 
             </div>
             {stat.trend && (
               <div className={`${styles.statTrend} ${stat.trendColor === 'success' ? styles.trendSuccess : stat.trendColor === 'secondary' ? styles.trendSecondary : ''}`}>
-                {stat.trendIcon && <span className="material-symbols-outlined">{stat.trendIcon}</span>}
+                {stat.trendIcon && <span className="material-symbols-outlined">{safeIcon(stat.trendIcon, 'trending_up')}</span>}
                 <span>{stat.trend}</span>
               </div>
             )}
@@ -276,7 +295,7 @@ function TimelineCard({ card }: { card: Extract<VizCard, { type: 'timeline' }> }
                 <div className={`${styles.timelineDot} ${dotClass}`}>
                   {step.status === 'completed' && <span className="material-symbols-outlined">check</span>}
                   {step.status === 'active' && <div className={styles.timelineDotPulse} />}
-                  {step.status === 'pending' && <span className="material-symbols-outlined">{step.icon || 'more_horiz'}</span>}
+                  {step.status === 'pending' && <span className="material-symbols-outlined">{safeIcon(step.icon, 'more_horiz')}</span>}
                 </div>
                 <div className={styles.timelineContent}>
                   <div className={styles.timelineTitle}>{step.title}</div>
@@ -305,16 +324,7 @@ function parseCard(code: string): VizCard | null {
     }
     return null;
   } catch {
-    try {
-      const raw = new Function('return (' + code + ')')();
-      const validTypes = ['architecture', 'dataflow', 'comparison', 'statistics', 'timeline'];
-      if (raw && typeof raw.type === 'string' && validTypes.includes(raw.type)) {
-        return raw as VizCard;
-      }
-      return null;
-    } catch {
-      return null;
-    }
+    return null;
   }
 }
 

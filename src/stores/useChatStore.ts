@@ -582,7 +582,6 @@ function handleClaudeOutput(line: string, sessionId: string) {
   }
 
   if (!paneId) return;
-  if (!paneId) return;
 
   const parsed = parseClaudeLine(line);
   if (!parsed) return;
