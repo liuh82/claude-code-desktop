@@ -82,7 +82,8 @@ function VisualizationCard({ code }: { code: string }) {
 }
 
 function VizCardInner({ card }: { card: VizCard }) {
-  const theme = (card as Record<string, unknown>).theme === 'tech' ? 'tech' : 'business';
+  const raw = (card as Record<string, unknown>).theme;
+  const theme = raw === 'tech' ? 'tech' : raw === 'classic' ? 'business' : 'ppt';
   return (
     <div data-viz-theme={theme}>
       {card.type === 'architecture' && <ArchitectureCard card={card} />}

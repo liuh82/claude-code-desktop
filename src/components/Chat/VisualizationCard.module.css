@@ -2,6 +2,44 @@
 /* Business: white/blue, clean, professional */
 /* Tech: dark/purple, gradients, cyberpunk glow */
 
+/* ── CSS Custom Properties ── */
+
+:root {
+  /* Pastel card backgrounds */
+  --ppt-bg-purple: #F0EAFF;
+  --ppt-bg-green: #ECFDF5;
+  --ppt-bg-blue: #EFF6FF;
+  --ppt-bg-yellow: #FEF9C3;
+  --ppt-bg-pink: #FDF2F8;
+  --ppt-bg-orange: #FFF7ED;
+  --ppt-bg-white: #FFFFFF;
+
+  /* Gradient accent bars */
+  --ppt-gradient-indigo: linear-gradient(90deg, #6366F1, #3B82F6);
+  --ppt-gradient-green: linear-gradient(90deg, #10B981, #14B8A6);
+  --ppt-gradient-amber: linear-gradient(90deg, #F59E0B, #EC4899);
+  --ppt-gradient-blue-purple: linear-gradient(90deg, #6366F1, #A855F7);
+  --ppt-gradient-orange: linear-gradient(90deg, #F97316, #FB923C);
+
+  /* Text colors */
+  --ppt-text-primary: #1E293B;
+  --ppt-text-secondary: #64748B;
+  --ppt-text-muted: #94A3B8;
+
+  /* Accent icon colors */
+  --ppt-icon-indigo: #6366F1;
+  --ppt-icon-green: #10B981;
+  --ppt-icon-blue: #3B82F6;
+  --ppt-icon-amber: #F59E0B;
+  --ppt-icon-pink: #EC4899;
+  --ppt-icon-orange: #F97316;
+
+  /* Shadows */
+  --ppt-shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --ppt-shadow-md: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --ppt-shadow-lg: 0 4px 6px rgba(0,0,0,0.05), 0 10px 24px rgba(0,0,0,0.08);
+}
+
 /* ── Stable wrapper ── */
 
 .vizWrapper {
@@ -45,6 +83,21 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes pptPulseGreen {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+}
+
+@keyframes pptPulseAmber {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+}
+
+@keyframes pptDotPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 /* ═══════════════════════════════════════════════════════════
    BUSINESS THEME (default — white/blue, professional)
    ═══════════════════════════════════════════════════════════ */
@@ -58,6 +111,8 @@
   margin: 8px 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
   animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .cardHeader {
@@ -1298,6 +1353,866 @@
 
 [data-viz-theme="tech"] .timelineItemPending .timelineDetail {
   color: #64748B;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PPT THEME — pastel, gradient bars, presentation cards
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Base card — PPT ── */
+
+[data-viz-theme="ppt"] .card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin: 8px 0;
+  box-shadow: var(--ppt-shadow-md);
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+[data-viz-theme="ppt"] .card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--ppt-gradient-indigo);
+  border-radius: 16px 16px 0 0;
+}
+
+[data-viz-theme="ppt"] .cardHeader {
+  margin-bottom: 20px;
+  padding-top: 4px;
+}
+
+[data-viz-theme="ppt"] .cardLabel {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ppt-icon-indigo);
+  margin-bottom: 4px;
+}
+
+[data-viz-theme="ppt"] .cardTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ppt-text-primary);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+[data-viz-theme="ppt"] .cardSubtitle {
+  font-size: 12px;
+  color: var(--ppt-text-secondary);
+  margin-top: 4px;
+}
+
+[data-viz-theme="ppt"] .cardIcon {
+  color: var(--ppt-icon-indigo);
+  font-size: 28px;
+  opacity: 0.15;
+}
+
+[data-viz-theme="ppt"] .cardInsight {
+  background: var(--ppt-bg-purple);
+  border-radius: 10px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  gap: 10px;
+}
+
+[data-viz-theme="ppt"] .cardInsight .material-symbols-outlined {
+  color: var(--ppt-icon-indigo);
+  font-size: 18px;
+}
+
+[data-viz-theme="ppt"] .cardInsight p {
+  font-size: 12px;
+  color: var(--ppt-text-secondary);
+  line-height: 1.5;
+}
+
+[data-viz-theme="ppt"] .error {
+  background: #FEF2F2;
+  border-radius: 10px;
+  color: #DC2626;
+  font-size: 13px;
+  padding: 10px 16px;
+  gap: 8px;
+}
+
+/* ═══ 1. Architecture Card — PPT (Module Overview Card) ═══ */
+
+[data-viz-theme="ppt"] .card:has(.archLayers) {
+  background: var(--ppt-bg-purple);
+}
+
+[data-viz-theme="ppt"] .card:has(.archLayers)::before {
+  background: var(--ppt-gradient-indigo);
+}
+
+[data-viz-theme="ppt"] .card:has(.archModuleGrid) {
+  background: var(--ppt-bg-purple);
+}
+
+[data-viz-theme="ppt"] .archLayers {
+  gap: 8px;
+}
+
+[data-viz-theme="ppt"] .archLayerModules {
+  gap: 10px;
+  padding: 10px 0;
+}
+
+[data-viz-theme="ppt"] .archLayerName {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ppt-icon-indigo);
+  text-align: left;
+  padding: 6px 4px 4px;
+  background: rgba(99, 102, 241, 0.06);
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+[data-viz-theme="ppt"] .archArrow {
+  border-top: none;
+  background: none;
+  opacity: 1;
+  color: var(--ppt-icon-indigo);
+  font-size: 16px;
+  padding: 4px 0;
+}
+
+[data-viz-theme="ppt"] .archModuleGrid {
+  gap: 10px;
+}
+
+[data-viz-theme="ppt"] .module {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 16px 12px;
+  min-width: 130px;
+  box-shadow: var(--ppt-shadow-sm);
+  border: none;
+  border-left: none;
+  gap: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-viz-theme="ppt"] .module:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ppt-shadow-md);
+}
+
+[data-viz-theme="ppt"] .modulePrimary {
+  border-left: none;
+  border: none;
+  background: #FFFFFF;
+}
+
+[data-viz-theme="ppt"] .modulePrimary .moduleIconWrap {
+  background: var(--ppt-bg-blue);
+  width: 40px;
+  height: 40px;
+}
+
+[data-viz-theme="ppt"] .modulePrimary .moduleIconWrap .material-symbols-outlined {
+  color: var(--ppt-icon-blue);
+  font-size: 18px;
+}
+
+[data-viz-theme="ppt"] .modulePrimary .moduleName {
+  color: var(--ppt-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+[data-viz-theme="ppt"] .modulePrimary .moduleDetail {
+  color: var(--ppt-text-muted);
+  font-size: 10px;
+}
+
+[data-viz-theme="ppt"] .modulePrimary .moduleChild {
+  background: var(--ppt-bg-blue);
+  color: var(--ppt-icon-blue);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+[data-viz-theme="ppt"] .moduleSecondary {
+  background: #FFFFFF;
+  border-left: none;
+  border: none;
+}
+
+[data-viz-theme="ppt"] .moduleSecondary .moduleIconWrap {
+  background: var(--ppt-bg-green);
+  width: 40px;
+  height: 40px;
+}
+
+[data-viz-theme="ppt"] .moduleSecondary .moduleIconWrap .material-symbols-outlined {
+  color: var(--ppt-icon-green);
+  font-size: 18px;
+}
+
+[data-viz-theme="ppt"] .moduleSecondary .moduleName {
+  color: var(--ppt-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+[data-viz-theme="ppt"] .moduleSecondary .moduleDetail {
+  color: var(--ppt-text-muted);
+  font-size: 10px;
+}
+
+[data-viz-theme="ppt"] .moduleSecondary .moduleChild {
+  background: var(--ppt-bg-green);
+  color: var(--ppt-icon-green);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+[data-viz-theme="ppt"] .moduleTertiary {
+  background: #FFFFFF;
+  border-left: none;
+  border: none;
+}
+
+[data-viz-theme="ppt"] .moduleTertiary .moduleIconWrap {
+  background: var(--ppt-bg-pink);
+  width: 40px;
+  height: 40px;
+}
+
+[data-viz-theme="ppt"] .moduleTertiary .moduleIconWrap .material-symbols-outlined {
+  color: var(--ppt-icon-pink);
+  font-size: 18px;
+}
+
+[data-viz-theme="ppt"] .moduleTertiary .moduleName {
+  color: var(--ppt-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+[data-viz-theme="ppt"] .moduleTertiary .moduleDetail {
+  color: var(--ppt-text-muted);
+  font-size: 10px;
+}
+
+[data-viz-theme="ppt"] .moduleTertiary .moduleChild {
+  background: var(--ppt-bg-pink);
+  color: var(--ppt-icon-pink);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+[data-viz-theme="ppt"] .moduleIconWrap {
+  background: var(--ppt-bg-blue);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+[data-viz-theme="ppt"] .moduleIconWrap .material-symbols-outlined {
+  font-size: 18px;
+  color: var(--ppt-icon-blue);
+}
+
+[data-viz-theme="ppt"] .moduleName {
+  color: var(--ppt-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+[data-viz-theme="ppt"] .moduleDetail {
+  color: var(--ppt-text-muted);
+  font-size: 10px;
+}
+
+[data-viz-theme="ppt"] .moduleChild {
+  background: var(--ppt-bg-blue);
+  color: var(--ppt-icon-blue);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+[data-viz-theme="ppt"] .moduleChildren {
+  gap: 6px;
+}
+
+/* ═══ 2. Data Flow Card — PPT (Process Flow Card) ═══ */
+
+[data-viz-theme="ppt"] .flowLayout {
+  gap: 12px;
+}
+
+[data-viz-theme="ppt"] .flowMain {
+  background: var(--ppt-bg-green);
+  border-radius: 16px;
+}
+
+[data-viz-theme="ppt"] .flowMain::before {
+  background: var(--ppt-gradient-green);
+}
+
+[data-viz-theme="ppt"] .flowSteps {
+  gap: 8px;
+}
+
+[data-viz-theme="ppt"] .flowStep {
+  background: #FFFFFF;
+  border-radius: 10px;
+  padding: 12px 14px;
+  border-left: none;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: var(--ppt-shadow-sm);
+}
+
+[data-viz-theme="ppt"] .flowStepActive {
+  background: #FFFFFF;
+  border: 2px solid var(--ppt-icon-green);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1), var(--ppt-shadow-md);
+}
+
+[data-viz-theme="ppt"] .flowDot {
+  width: 8px;
+  height: 8px;
+  background: var(--ppt-icon-green);
+  box-shadow: none;
+}
+
+[data-viz-theme="ppt"] .flowDotActive {
+  background: var(--ppt-icon-green);
+  animation: pptDotPulse 2s infinite;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+[data-viz-theme="ppt"] .flowDotSuccess {
+  background: var(--ppt-icon-green);
+  position: relative;
+}
+
+[data-viz-theme="ppt"] .flowEndpoint {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ppt-text-primary);
+  font-family: inherit;
+}
+
+[data-viz-theme="ppt"] .flowStepActive .flowEndpoint {
+  color: var(--ppt-icon-green);
+  font-weight: 800;
+}
+
+[data-viz-theme="ppt"] .flowDuration {
+  font-size: 11px;
+  color: var(--ppt-text-muted);
+  font-family: inherit;
+  background: var(--ppt-bg-green);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+[data-viz-theme="ppt"] .flowMetric {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #FFFFFF;
+  border-radius: 10px;
+  box-shadow: var(--ppt-shadow-sm);
+  align-items: center;
+}
+
+[data-viz-theme="ppt"] .flowMetricValue {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--ppt-icon-green);
+  font-family: inherit;
+  line-height: 1;
+}
+
+[data-viz-theme="ppt"] .flowMetricLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ppt-text-muted);
+}
+
+[data-viz-theme="ppt"] .flowSidebar {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--ppt-shadow-md);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-viz-theme="ppt"] .flowSidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--ppt-gradient-green);
+  border-radius: 16px 16px 0 0;
+}
+
+[data-viz-theme="ppt"] .flowSidebarTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ppt-text-primary);
+  margin: 0 0 6px;
+  padding-top: 4px;
+}
+
+[data-viz-theme="ppt"] .flowSidebarDesc {
+  font-size: 12px;
+  color: var(--ppt-text-secondary);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+[data-viz-theme="ppt"] .flowBar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ppt-bg-green);
+}
+
+[data-viz-theme="ppt"] .flowBarFill {
+  background: var(--ppt-gradient-green);
+  border-radius: 3px;
+}
+
+[data-viz-theme="ppt"] .flowBarLabel {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ppt-text-muted);
+  margin-top: 8px;
+}
+
+/* ═══ 3. Comparison Card — PPT (A/B Comparison Card) ═══ */
+
+[data-viz-theme="ppt"] .card:has(.compareGrid) {
+  background: var(--ppt-bg-white);
+}
+
+[data-viz-theme="ppt"] .card:has(.compareGrid)::before {
+  background: linear-gradient(90deg, var(--ppt-icon-blue), var(--ppt-icon-orange));
+  height: 4px;
+}
+
+[data-viz-theme="ppt"] .compareGrid {
+  background: transparent;
+  border-radius: 12px;
+  overflow: hidden;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+}
+
+[data-viz-theme="ppt"] .compareSide {
+  background: var(--ppt-bg-blue);
+  border-radius: 12px;
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(59, 130, 246, 0.08);
+}
+
+[data-viz-theme="ppt"] .compareSide:first-child::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #6366F1, #3B82F6);
+}
+
+[data-viz-theme="ppt"] .compareSide:last-child {
+  background: var(--ppt-bg-orange);
+  border-color: rgba(249, 115, 22, 0.08);
+}
+
+[data-viz-theme="ppt"] .compareSide:last-child::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--ppt-gradient-orange);
+}
+
+[data-viz-theme="ppt"] .compareSideHighlight {
+  background: var(--ppt-bg-orange);
+  color: var(--ppt-text-primary);
+}
+
+[data-viz-theme="ppt"] .compareSideHighlight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--ppt-gradient-orange);
+}
+
+[data-viz-theme="ppt"] .compareSideHeader {
+  margin-bottom: 16px;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+[data-viz-theme="ppt"] .compareSideIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+[data-viz-theme="ppt"] .compareSide:last-child .compareSideIcon {
+  background: rgba(249, 115, 22, 0.1);
+}
+
+[data-viz-theme="ppt"] .compareSideIcon .material-symbols-outlined {
+  font-size: 16px;
+  color: var(--ppt-icon-blue);
+}
+
+[data-viz-theme="ppt"] .compareSide:last-child .compareSideIcon .material-symbols-outlined {
+  color: var(--ppt-icon-orange);
+}
+
+[data-viz-theme="ppt"] .compareSideHighlight .compareSideIcon {
+  background: rgba(249, 115, 22, 0.12);
+}
+
+[data-viz-theme="ppt"] .compareSideHighlight .compareSideIcon .material-symbols-outlined {
+  color: var(--ppt-icon-orange);
+}
+
+[data-viz-theme="ppt"] .compareSideName {
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--ppt-text-primary);
+}
+
+[data-viz-theme="ppt"] .compareSideHighlight .compareSideName {
+  color: var(--ppt-text-primary);
+}
+
+[data-viz-theme="ppt"] .compareBadge {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--ppt-icon-blue);
+}
+
+[data-viz-theme="ppt"] .compareSide:last-child .compareBadge {
+  background: rgba(249, 115, 22, 0.12);
+  color: var(--ppt-icon-orange);
+}
+
+[data-viz-theme="ppt"] .compareBadgeHighlight {
+  background: rgba(249, 115, 22, 0.12);
+  color: var(--ppt-icon-orange);
+}
+
+[data-viz-theme="ppt"] .compareRows {
+  gap: 0;
+}
+
+[data-viz-theme="ppt"] .compareRow {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+[data-viz-theme="ppt"] .compareSideHighlight .compareRow {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+[data-viz-theme="ppt"] .compareRowLabel {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ppt-text-muted);
+}
+
+[data-viz-theme="ppt"] .compareSideHighlight .compareRowLabel {
+  color: var(--ppt-text-muted);
+}
+
+[data-viz-theme="ppt"] .compareRowValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ppt-text-primary);
+  font-family: inherit;
+}
+
+[data-viz-theme="ppt"] .compareSideHighlight .compareRowValue {
+  font-weight: 800;
+  color: var(--ppt-text-primary);
+}
+
+[data-viz-theme="ppt"] .compareRowHighlight {
+  color: var(--ppt-icon-green);
+  font-weight: 800;
+}
+
+/* ═══ 4. Statistics Card — PPT (Dashboard KPI Card) ═══ */
+
+[data-viz-theme="ppt"] .card:has(.statsGrid) {
+  background: #FFFFFF;
+  box-shadow: var(--ppt-shadow-lg);
+}
+
+[data-viz-theme="ppt"] .card:has(.statsGrid)::before {
+  background: var(--ppt-gradient-blue-purple);
+}
+
+[data-viz-theme="ppt"] .statsGrid {
+  gap: 12px;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+[data-viz-theme="ppt"] .statItem {
+  background: var(--ppt-bg-blue);
+  border-radius: 12px;
+  padding: 14px;
+  gap: 4px;
+}
+
+[data-viz-theme="ppt"] .statItem:nth-child(2) {
+  background: var(--ppt-bg-green);
+}
+
+[data-viz-theme="ppt"] .statItem:nth-child(3) {
+  background: var(--ppt-bg-orange);
+}
+
+[data-viz-theme="ppt"] .statItem:nth-child(4) {
+  background: var(--ppt-bg-purple);
+}
+
+[data-viz-theme="ppt"] .statLabel {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ppt-text-secondary);
+}
+
+[data-viz-theme="ppt"] .statValue {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--ppt-text-primary);
+  line-height: 1.2;
+  font-family: inherit;
+}
+
+[data-viz-theme="ppt"] .statError {
+  color: #EF4444;
+  -webkit-text-fill-color: #EF4444;
+}
+
+[data-viz-theme="ppt"] .statTrend {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ppt-text-secondary);
+  gap: 4px;
+}
+
+[data-viz-theme="ppt"] .statTrend .material-symbols-outlined {
+  font-size: 14px;
+}
+
+[data-viz-theme="ppt"] .trendSuccess {
+  color: var(--ppt-icon-green);
+}
+
+[data-viz-theme="ppt"] .trendSecondary {
+  color: var(--ppt-icon-indigo);
+}
+
+[data-viz-theme="ppt"] .barsSection {
+  margin-top: 12px;
+  background: #F8FAFC;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+[data-viz-theme="ppt"] .barsLabel {
+  margin-bottom: 10px;
+}
+
+[data-viz-theme="ppt"] .barsLabel::before {
+  color: var(--ppt-text-secondary);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+[data-viz-theme="ppt"] .barsContainer {
+  height: 90px;
+  gap: 5px;
+}
+
+[data-viz-theme="ppt"] .bar {
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(to top, var(--ppt-icon-indigo), var(--ppt-icon-blue));
+  opacity: 0.75;
+}
+
+[data-viz-theme="ppt"] .bar:last-child {
+  background: linear-gradient(to top, var(--ppt-icon-indigo), #A855F7);
+  opacity: 1;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+/* ═══ 5. Timeline Card — PPT (Progress Timeline Card) ═══ */
+
+[data-viz-theme="ppt"] .card:has(.timeline) {
+  background: var(--ppt-bg-yellow);
+}
+
+[data-viz-theme="ppt"] .card:has(.timeline)::before {
+  background: var(--ppt-gradient-amber);
+}
+
+[data-viz-theme="ppt"] .timeline {
+  padding-top: 4px;
+}
+
+[data-viz-theme="ppt"] .timelineLine {
+  background: linear-gradient(to right, var(--ppt-icon-amber), var(--ppt-icon-pink));
+  height: 3px;
+  top: 18px;
+  border-radius: 2px;
+}
+
+[data-viz-theme="ppt"] .timelineSteps {
+  gap: 12px;
+}
+
+[data-viz-theme="ppt"] .timelineItem {
+  gap: 10px;
+}
+
+[data-viz-theme="ppt"] .timelineItemPending {
+  opacity: 0.45;
+}
+
+[data-viz-theme="ppt"] .timelineDot {
+  width: 36px;
+  height: 36px;
+  background: #FFFFFF;
+  box-shadow: var(--ppt-shadow-sm);
+  border: none;
+}
+
+[data-viz-theme="ppt"] .timelineDot .material-symbols-outlined {
+  font-size: 16px;
+}
+
+[data-viz-theme="ppt"] .timelineDotCompleted {
+  background: var(--ppt-icon-amber);
+  color: #FFFFFF;
+  box-shadow: var(--ppt-shadow-sm);
+}
+
+[data-viz-theme="ppt"] .timelineDotCompleted .material-symbols-outlined {
+  font-variation-settings: 'FILL' 1;
+}
+
+[data-viz-theme="ppt"] .timelineDotActive {
+  background: var(--ppt-icon-amber);
+  color: #FFFFFF;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 0 0 3px var(--ppt-bg-yellow), 0 0 0 5px var(--ppt-icon-amber), 0 4px 12px rgba(245, 158, 11, 0.2);
+  animation: pptPulseAmber 2s infinite;
+}
+
+[data-viz-theme="ppt"] .timelineDotPending {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ppt-text-muted);
+  border: 2px dashed #D1D5DB;
+  box-shadow: none;
+}
+
+[data-viz-theme="ppt"] .timelineDotPulse {
+  background: #FFFFFF;
+  width: 6px;
+  height: 6px;
+  animation: pptDotPulse 2s infinite;
+}
+
+[data-viz-theme="ppt"] .timelineContent {
+  background: #FFFFFF;
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: var(--ppt-shadow-sm);
+  gap: 4px;
+}
+
+[data-viz-theme="ppt"] .timelineItem:has(.timelineDotActive) .timelineContent {
+  border: 2px solid var(--ppt-icon-amber);
+  box-shadow: var(--ppt-shadow-md);
+}
+
+[data-viz-theme="ppt"] .timelineTitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ppt-text-primary);
+}
+
+[data-viz-theme="ppt"] .timelineDotActive + .timelineContent .timelineTitle,
+[data-viz-theme="ppt"] .timelineItem:has(.timelineDotActive) .timelineTitle {
+  color: var(--ppt-icon-amber);
+}
+
+[data-viz-theme="ppt"] .timelineDesc {
+  font-size: 11px;
+  color: var(--ppt-text-secondary);
+  line-height: 1.4;
+}
+
+[data-viz-theme="ppt"] .timelineDetail {
+  color: var(--ppt-icon-amber);
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+[data-viz-theme="ppt"] .timelineItemPending .timelineDetail {
+  color: var(--ppt-text-muted);
 }
 
 /* ═══ Responsive ═══ */

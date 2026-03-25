@@ -250,7 +250,7 @@ function parseTimeline(lines: string[]): QuickVizCard | null {
 
 /* ── Regex-based detection + block splitting ── */
 
-const QUICK_VIZ_RE = /^[\/@](arch|flow|compare|timeline)(?:-tech)?\b/m;
+const QUICK_VIZ_RE = /^[\/@](arch|flow|compare|timeline)(?::(ppt|classic)|-tech)?\b/m;
 
 interface QuickVizBlock {
   command: string;
@@ -270,7 +270,7 @@ function extractBlocks(content: string): QuickVizBlock[] {
     const match = QUICK_VIZ_RE.exec(lines[i]);
     if (match) {
       const fullCommand = match[0].replace(/^[\/@]/, '');
-      const command = fullCommand.replace(/-tech$/, '') as 'arch' | 'flow' | 'compare' | 'timeline';
+      const command = fullCommand.replace(/:(ppt|classic)$/, '').replace(/-tech$/, '') as 'arch' | 'flow' | 'compare' | 'timeline';
       const startLine = i;
       const blockLines: string[] = [lines[i]];
       i++;
@@ -312,8 +312,14 @@ function parseBlock(block: QuickVizBlock): QuickVizCard | null {
       default: return null;
     }
   })();
-  if (card && block.fullCommand.endsWith('-tech')) {
+  if (!card) return null;
+  if (block.fullCommand.endsWith('-tech')) {
     card.theme = 'tech';
+  } else if (block.fullCommand.endsWith(':classic')) {
+    card.theme = 'classic';
+  } else {
+    // Default to PPT theme
+    card.theme = 'ppt';
   }
   return card;
 }
