@@ -6,23 +6,9 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { MessageBubble } from '@/components/Chat/MessageBubble';
 import { PermissionBar } from '@/components/Chat/PermissionBar';
 import { claudeApi, isElectron } from '@/lib/claude-api';
+import { getPermissionInfo } from '@/lib/tool-utils';
 import type { FileNode } from '@/types/chat';
 import styles from './TerminalPane.module.css';
-
-// ── Permission info helper ──
-
-function getPermissionInfo(name: string, input: Record<string, unknown>): { toolName: string; toolIcon: string; target: string; isDangerous: boolean } {
-  if (name === 'ReadFile' || name === 'Read') {
-    return { toolName: 'READ', toolIcon: 'description', target: String(input.file_path || ''), isDangerous: false };
-  }
-  if (name === 'WriteFile' || name === 'Write' || name === 'Edit') {
-    return { toolName: 'WRITE', toolIcon: 'edit_note', target: String(input.file_path || ''), isDangerous: false };
-  }
-  if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') {
-    return { toolName: 'EXEC', toolIcon: 'terminal', target: String(input.command || ''), isDangerous: true };
-  }
-  return { toolName: name.toUpperCase(), toolIcon: 'security', target: '', isDangerous: false };
-}
 
 // ── Slash command types ──
 
@@ -670,6 +656,12 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const canSend = (text.trim().length > 0 || attachedFiles.length > 0) && !isGenerating;
   const shortProjectName = paneProjectPath ? paneProjectPath.split('/').filter(Boolean).pop() || '' : '';
 
+  // M6: compute permission info outside JSX (replaces IIFE)
+  const permissionInfo = useMemo(() => {
+    if (!pendingPermission) return null;
+    return getPermissionInfo(pendingPermission.name, pendingPermission.input);
+  }, [pendingPermission]);
+
   return (
     <div
       ref={paneRef}
@@ -730,19 +722,18 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
         {/* Input — Stitch design: all-in-one rounded box */}
         <div className={styles.paneInput}>
           {/* Permission bar — floats above input when a tool needs approval */}
-          {pendingPermission && (() => {
-            const info = getPermissionInfo(pendingPermission.name, pendingPermission.input);
-            return (
-              <PermissionBar
-                toolName={info.toolName}
-                toolIcon={info.toolIcon}
-                target={info.target}
-                isDangerous={info.isDangerous}
-                onAllow={() => grantPermission()}
-                onDeny={() => denyPermission()}
-              />
-            );
-          })()}
+          {permissionInfo && (
+            <PermissionBar
+              toolName={permissionInfo.toolName}
+              toolIcon={permissionInfo.toolIcon}
+              target={permissionInfo.target}
+              detail={pendingPermission!.input.content as string | undefined}
+              isDangerous={permissionInfo.isDangerous}
+              onAllow={() => grantPermission()}
+              onDeny={() => denyPermission()}
+              onAllowAlways={() => setPermissionMode('bypass')}
+            />
+          )}
 
           <div className={styles.paneInputOuter} ref={inputWrapperRef}>
             {/* @ Mention dropdown — special contexts + files */}

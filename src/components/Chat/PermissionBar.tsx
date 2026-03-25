@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import styles from './PermissionBar.module.css';
 
 interface PermissionBarProps {
@@ -28,9 +28,26 @@ function PermissionBar({
   onDeny,
 }: PermissionBarProps) {
   const [diffExpanded, setDiffExpanded] = useState(false);
+  const busyRef = useRef(false);
 
-  const diffLines = detail ? detail.split('\n').slice(0, 20) : [];
-  const hasMoreLines = detail ? detail.split('\n').length > 20 : false;
+  // M1: compute split once
+  const allLines = detail ? detail.split('\n') : [];
+  const diffLines = allLines.slice(0, 20);
+  const hasMoreLines = allLines.length > 20;
+
+  // M2: guard against rapid double-click
+  const guarded = useCallback((fn: () => void) => {
+    return () => {
+      if (busyRef.current) return;
+      busyRef.current = true;
+      try {
+        fn();
+      } finally {
+        // Reset after microtask so async handlers have time to clear permission
+        queueMicrotask(() => { busyRef.current = false; });
+      }
+    };
+  }, []);
 
   return (
     <div className={`${styles.bar} ${isDangerous ? styles.barDangerous : ''}`}>
@@ -48,15 +65,15 @@ function PermissionBar({
         <div className={styles.barButtons}>
           {isDangerous ? (
             <>
-              <button className={styles.btnBlock} onClick={onDeny}>阻止</button>
-              <button className={styles.btnMuted} onClick={onAllow}>仍然允许</button>
+              <button className={styles.btnBlock} onClick={guarded(onDeny)}>阻止</button>
+              <button className={styles.btnMuted} onClick={guarded(onAllow)}>仍然允许</button>
             </>
           ) : (
             <>
-              <button className={styles.btnAllow} onClick={onAllow}>允许</button>
-              <button className={styles.btnMuted} onClick={onDeny}>拒绝</button>
+              <button className={styles.btnAllow} onClick={guarded(onAllow)}>允许</button>
+              <button className={styles.btnMuted} onClick={guarded(onDeny)}>拒绝</button>
               {onAllowAlways && (
-                <button className={styles.btnSecondary} onClick={onAllowAlways}>始终允许</button>
+                <button className={styles.btnMuted} onClick={guarded(onAllowAlways)}>始终允许</button>
               )}
             </>
           )}
@@ -70,7 +87,7 @@ function PermissionBar({
             className={styles.diffToggle}
             onClick={() => setDiffExpanded(prev => !prev)}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+            <span className={`material-symbols-outlined ${styles.diffToggleIcon}`}>
               {diffExpanded ? 'expand_less' : 'expand_more'}
             </span>
             查看变更

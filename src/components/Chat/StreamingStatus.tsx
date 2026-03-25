@@ -76,7 +76,7 @@ function StatusLine({ toolCall }: { toolCall: ToolCall }) {
 }
 
 function StreamingStatus({ toolCalls, hasTextContent, textContent }: StreamingStatusProps) {
-  // Filter out pending_permission — those are shown as PermissionBlock separately
+  // Filter out pending_permission — those are shown as PermissionBar separately
   const statusCalls = toolCalls.filter(
     (tc) => tc.status !== 'pending_permission'
   );

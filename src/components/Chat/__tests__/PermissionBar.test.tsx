@@ -155,4 +155,19 @@ describe('PermissionBar', () => {
       expect(screen.queryByText('查看变更')).not.toBeInTheDocument();
     });
   });
+
+  describe('busy guard (M2: race condition prevention)', () => {
+    it('allows clicks after microtask resolves', async () => {
+      render(<PermissionBar {...defaultProps} />);
+
+      fireEvent.click(screen.getByText('允许'));
+      expect(defaultProps.onAllow).toHaveBeenCalledTimes(1);
+
+      // Wait for microtask to reset busyRef
+      await new Promise((r) => setTimeout(r, 0));
+
+      fireEvent.click(screen.getByText('允许'));
+      expect(defaultProps.onAllow).toHaveBeenCalledTimes(2);
+    });
+  });
 });

@@ -1,29 +1,16 @@
 import { useCallback } from 'react';
-import type { ChatMessage, ToolCall } from '@/types/chat';
+import type { ChatMessage } from '@/types/chat';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ToolCallBlock } from './ToolCallBlock';
 import { StreamingStatus } from './StreamingStatus';
 import { MessageActions } from './MessageActions';
 import { useChatStore } from '@/stores/useChatStore';
+import { getPermissionInfo } from '@/lib/tool-utils';
 import styles from './MessageBubble.module.css';
 
 interface MessageBubbleProps {
   message: ChatMessage;
   paneId: string;
-}
-
-function getPermissionInfo(toolCall: ToolCall): { toolName: string; toolIcon: string; target: string; isDangerous?: boolean } {
-  const name = toolCall.name;
-  if (name === 'ReadFile' || name === 'Read') {
-    return { toolName: 'READ', toolIcon: 'description', target: String(toolCall.input.file_path || '') };
-  }
-  if (name === 'WriteFile' || name === 'Write' || name === 'Edit') {
-    return { toolName: 'WRITE', toolIcon: 'edit_note', target: String(toolCall.input.file_path || ''), isDangerous: false };
-  }
-  if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') {
-    return { toolName: 'EXEC', toolIcon: 'terminal', target: String(toolCall.input.command || ''), isDangerous: true };
-  }
-  return { toolName: name.toUpperCase(), toolIcon: 'security', target: '', isDangerous: false };
 }
 
 function MessageBubble({ message, paneId }: MessageBubbleProps) {
@@ -78,7 +65,7 @@ function MessageBubble({ message, paneId }: MessageBubbleProps) {
                           const info = getPermissionInfo(tc);
                           return (
                             <div key={tc.id} className={styles.permissionPending}>
-                              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>hourglass_top</span>
+                              <span className="material-symbols-outlined">hourglass_top</span>
                               <span>{info.toolName}</span>
                               <span className={styles.permissionPendingLabel}>等待权限确认...</span>
                             </div>
@@ -104,7 +91,7 @@ function MessageBubble({ message, paneId }: MessageBubbleProps) {
                           const info = getPermissionInfo(tc);
                           return (
                             <div key={tc.id} className={styles.permissionPending}>
-                              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>hourglass_top</span>
+                              <span className="material-symbols-outlined">hourglass_top</span>
                               <span>{info.toolName}</span>
                               <span className={styles.permissionPendingLabel}>等待权限确认...</span>
                             </div>
