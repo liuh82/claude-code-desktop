@@ -45,7 +45,11 @@ function PreBlock({ children }: { children?: ReactNode }) {
   // Always render a stable <pre> wrapper to avoid DOM node type changes during streaming.
   // react-markdown wraps code blocks in <pre>; returning a Fragment causes React #301
   // when the child tree structure changes between renders.
-  return <pre>{children}</pre>;
+  return (
+    <pre style={{ overflowX: 'auto', maxWidth: '100%' }}>
+      {children}
+    </pre>
+  );
 }
 
 function CodeElement({ children, className }: ComponentPropsWithoutRef<'code'> & { children?: ReactNode }) {

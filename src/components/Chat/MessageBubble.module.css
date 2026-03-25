@@ -80,7 +80,7 @@
 .messageBody {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* AI messages: left-aligned */
@@ -105,7 +105,8 @@
   flex-direction: column;
   gap: 0;
   min-width: 0;
-  contain: layout style;
+  contain: layout;
+  overflow: visible;
 }
 
 /* Meta: role + time */
@@ -139,6 +140,8 @@
   color: var(--text-primary);
   word-break: break-word;
   overflow-anchor: none;
+  overflow: visible;
+  max-width: 100%;
 }
 
 [data-theme="dark"] .messageContent {
@@ -255,38 +258,3 @@
   align-items: flex-start;
 }
 
-/* Streaming raw text — preserves whitespace during markdown-free streaming */
-.streamingRawText {
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-size: 15px;
-  line-height: var(--line-height-relaxed);
-  color: var(--text-primary);
-  contain: content;
-}
-
-[data-theme="dark"] .streamingRawText {
-  opacity: 0.90;
-}
-
-/* Streaming cursor — blinking left-half block */
-.streamingCursor {
-  will-change: contents;
-}
-
-.streamingCursor::after {
-  content: '\2588';
-  animation: cursorBlink 1s step-end infinite;
-  color: var(--accent);
-  margin-left: 1px;
-  font-weight: normal;
-}
-
-[data-theme="dark"] .streamingCursor::after {
-  color: var(--accent);
-}
-
-@keyframes cursorBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}

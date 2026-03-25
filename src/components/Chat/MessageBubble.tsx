@@ -1,6 +1,7 @@
 import type { ChatMessage, ToolCall } from '@/types/chat';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ToolCallBlock } from './ToolCallBlock';
+import { StreamingStatus } from './StreamingStatus';
 import { PermissionBlock } from './PermissionBlock';
 import styles from './MessageBubble.module.css';
 
@@ -53,36 +54,66 @@ function MessageBubble({ message, onPermissionAllow, onPermissionDeny }: Message
         ) : (
           <div className={styles.assistantBody}>
             <div className={styles.assistantContent}>
-              {(message.toolCalls && message.toolCalls.length > 0) && (
-                <div className={styles.toolCallList}>
-                  {message.toolCalls.map((tc) => {
-                    if (tc.status === 'pending_permission') {
-                      const info = getPermissionInfo(tc);
-                      return (
-                        <PermissionBlock
-                          key={tc.id}
-                          toolName={info.toolName}
-                          toolIcon={info.toolIcon}
-                          target={info.target}
-                          isDangerous={info.isDangerous}
-                          onAllow={() => onPermissionAllow?.(tc)}
-                          onDeny={() => onPermissionDeny?.(tc)}
-                        />
-                      );
-                    }
-                    return <ToolCallBlock key={tc.id} toolCall={tc} />;
-                  })}
-                </div>
+              {message.isStreaming ? (
+                /* ── Streaming: show status indicators + permission blocks ── */
+                <>
+                  {(message.toolCalls && message.toolCalls.length > 0) && (
+                    <div className={styles.toolCallList}>
+                      {message.toolCalls.map((tc) => {
+                        if (tc.status === 'pending_permission') {
+                          const info = getPermissionInfo(tc);
+                          return (
+                            <PermissionBlock
+                              key={tc.id}
+                              toolName={info.toolName}
+                              toolIcon={info.toolIcon}
+                              target={info.target}
+                              isDangerous={info.isDangerous}
+                              onAllow={() => onPermissionAllow?.(tc)}
+                              onDeny={() => onPermissionDeny?.(tc)}
+                            />
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  )}
+                  <StreamingStatus
+                    toolCalls={message.toolCalls || []}
+                    hasTextContent={!!message.content}
+                  />
+                </>
+              ) : (
+                /* ── Completed: show full tool call cards + markdown ── */
+                <>
+                  {(message.toolCalls && message.toolCalls.length > 0) && (
+                    <div className={styles.toolCallList}>
+                      {message.toolCalls.map((tc) => {
+                        if (tc.status === 'pending_permission') {
+                          const info = getPermissionInfo(tc);
+                          return (
+                            <PermissionBlock
+                              key={tc.id}
+                              toolName={info.toolName}
+                              toolIcon={info.toolIcon}
+                              target={info.target}
+                              isDangerous={info.isDangerous}
+                              onAllow={() => onPermissionAllow?.(tc)}
+                              onDeny={() => onPermissionDeny?.(tc)}
+                            />
+                          );
+                        }
+                        return <ToolCallBlock key={tc.id} toolCall={tc} />;
+                      })}
+                    </div>
+                  )}
+                  <div className={styles.messageContent}>
+                    {message.content ? (
+                      <MarkdownRenderer key={`md-${message.id}`} content={message.content} />
+                    ) : null}
+                  </div>
+                </>
               )}
-              <div className={`${styles.messageContent} ${message.isStreaming ? styles.streamingCursor : ''}`}>
-                {message.content ? (
-                  message.isStreaming ? (
-                    <div className={styles.streamingRawText}>{message.content}</div>
-                  ) : (
-                    <MarkdownRenderer key={`md-${message.id}`} content={message.content} />
-                  )
-                ) : null}
-              </div>
             </div>
           </div>
         )}

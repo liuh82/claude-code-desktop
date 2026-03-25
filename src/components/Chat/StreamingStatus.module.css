@@ -1,0 +1,176 @@
+/* ═══ StreamingStatus — compact work-in-progress indicator ═══ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0;
+}
+
+/* ── Single status line ── */
+.statusLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+.statusLineRunning {
+  animation: fadeSlideIn 200ms ease-out;
+}
+
+.statusLineGenerating {
+  animation: fadeSlideIn 200ms ease-out;
+}
+
+/* ── Tool icon ── */
+.statusIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.statusIcon .material-symbols-outlined {
+  font-size: 16px;
+  color: var(--accent);
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.statusIconDone .material-symbols-outlined {
+  color: var(--success);
+  opacity: 0.6;
+}
+
+.statusIconError .material-symbols-outlined {
+  color: var(--error);
+  opacity: 0.8;
+}
+
+/* ── Status text ── */
+.statusText {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.statusTextDone {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.statusTextError {
+  color: var(--error-text);
+  opacity: 0.8;
+}
+
+/* ── Done/Error badge ── */
+.statusBadge {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--success);
+  opacity: 0.5;
+}
+
+.statusBadgeError {
+  color: var(--error);
+  opacity: 0.6;
+}
+
+/* ── Generating text ── */
+.generatingText {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  animation: textPulse 1.5s ease-in-out infinite;
+}
+
+/* ── Spinner ── */
+.spinner {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+}
+
+.spinner .material-symbols-outlined {
+  font-size: 16px;
+  animation: spin 1.2s linear infinite;
+}
+
+/* ── Dark theme ── */
+[data-theme="dark"] .statusIcon .material-symbols-outlined {
+  color: var(--accent);
+}
+
+[data-theme="dark"] .statusIconDone .material-symbols-outlined {
+  color: var(--success);
+}
+
+[data-theme="dark"] .statusIconError .material-symbols-outlined {
+  color: var(--error);
+}
+
+[data-theme="dark"] .statusText {
+  color: var(--accent);
+}
+
+[data-theme="dark"] .statusTextDone {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .statusTextError {
+  color: var(--error-text);
+}
+
+[data-theme="dark"] .generatingText {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .spinner {
+  color: var(--accent);
+}
+
+[data-theme="dark"] .statusBadge {
+  color: var(--success);
+  opacity: 0.4;
+}
+
+[data-theme="dark"] .statusBadgeError {
+  color: var(--error);
+  opacity: 0.5;
+}
+
+/* ── Animations ── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes textPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
