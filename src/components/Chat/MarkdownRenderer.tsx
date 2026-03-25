@@ -56,7 +56,7 @@ function PreBlock({ children }: { children?: ReactNode }) {
   // react-markdown wraps code blocks in <pre>; returning a Fragment causes React #301
   // when the child tree structure changes between renders.
   return (
-    <pre style={{ overflowX: 'auto', maxWidth: '100%' }}>
+    <pre style={{ overflowX: 'auto', width: '100%', maxWidth: '100%' }}>
       {children}
     </pre>
   );
@@ -117,7 +117,7 @@ function Link({ href, children }: ComponentPropsWithoutRef<'a'> & { children?: R
 
 function Table({ children }: { children?: ReactNode }) {
   return (
-    <div style={{ overflowX: 'auto', margin: '8px 0' }}>
+    <div style={{ overflowX: 'auto', width: '100%', margin: '8px 0' }}>
       <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '15px' }}>{children}</table>
     </div>
   );
