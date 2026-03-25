@@ -4,7 +4,7 @@
  * executes tools locally, and manages multi-turn conversation history.
  */
 
-import { execSync, spawn } from 'child_process';
+import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -103,6 +103,19 @@ const TOOL_DEFINITIONS = [
       required: ['pattern'],
     },
   },
+  {
+    name: 'Edit',
+    description: 'Make targeted edits to a file using search/replace blocks',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        file_path: { type: 'string' as const, description: 'Path to the file to edit' },
+        old_string: { type: 'string' as const, description: 'Text to find in the file' },
+        new_string: { type: 'string' as const, description: 'Replacement text' },
+      },
+      required: ['file_path', 'old_string', 'new_string'],
+    },
+  },
 ];
 
 // ── System prompt ──
@@ -110,6 +123,20 @@ const TOOL_DEFINITIONS = [
 const CCDESK_SYSTEM_PROMPT = `CCDesk 桌面客户端支持以下扩展语法，请在需要可视化数据时使用：
 1. 图表可视化：使用 \`\`\`chart 代码块，内容为 ECharts JSON 配置。支持折线图、柱状图、饼图、散点图、雷达图等所有类型。
 2. 文件引用：用户消息中的 @path/to/file 表示引用项目文件。`;
+
+// ── Dangerous command patterns (log warning, don't block) ──
+
+const DANGEROUS_COMMAND_PATTERNS = [
+  /\brm\s+(-[rfRF]+\s+)?\/\s/,
+  /\brm\s+(-[rfRF]+\s+)?\*$/,
+  /\bsudo\b/,
+  /\bmkfs\b/,
+  /\bdd\s+.*of=\/dev\//,
+  />\s*\/dev\/sd/,
+  /\bchmod\s+(-R\s+)?777\s+\/\s/,
+  /\bshutdown\b/,
+  /\breboot\b/,
+];
 
 // ── Client class ──
 
@@ -284,8 +311,11 @@ export class ClaudeDirectClient {
 
       } catch (err: any) {
         if (err.name === 'AbortError') {
-          // User cancelled — don't treat as error
+          // User cancelled — remove the last user message to avoid stale state
           console.error('[DirectAPI] Request aborted by user');
+          if (this.messages.length > 0 && this.messages[this.messages.length - 1].role === 'user') {
+            this.messages.pop();
+          }
           return;
         }
         console.error(`[DirectAPI] Request failed: ${err.message}`, err.stack);
@@ -295,6 +325,113 @@ export class ClaudeDirectClient {
     }
 
     onError('工具调用轮次超限（20 轮），已停止');
+  }
+
+  /**
+   * Flush accumulated SSE data lines into a parsed event and process it.
+   * Handles multi-line data fields per SSE spec (concatenated with newlines).
+   */
+  private flushSSEEvent(
+    dataLines: string[],
+    onEvent: (event: DirectSSEEvent) => void,
+    contentBlocks: ApiContentBlock[],
+    state: { currentTextIndex: number; currentToolIndex: number; currentToolId: string; currentToolName: string; currentToolJson: string },
+    sync: (s: { currentTextIndex: number; currentToolIndex: number; currentToolId: string; currentToolName: string; currentToolJson: string }) => void,
+  ) {
+    const jsonStr = dataLines.join('');
+    if (jsonStr === '[DONE]') return;
+
+    let event: DirectSSEEvent;
+    try {
+      event = JSON.parse(jsonStr);
+    } catch (e: any) {
+      console.error(`[DirectAPI SSE] JSON parse error: ${e.message}, raw: "${jsonStr.slice(0, 200)}"`);
+      return;
+    }
+
+    console.error(`[DirectAPI SSE] event type: ${event.type}`);
+    onEvent(event);
+
+    switch (event.type) {
+      case 'message_start':
+        if (event.message?.model) {
+          console.error(`[DirectAPI SSE] model: ${event.message.model}`);
+        }
+        break;
+
+      case 'content_block_start': {
+        const blockType = event.content_block?.type;
+        if (blockType === 'text') {
+          state.currentTextIndex = contentBlocks.length;
+          contentBlocks.push({ type: 'text', text: '' });
+        } else if (blockType === 'tool_use') {
+          state.currentToolIndex = contentBlocks.length;
+          state.currentToolId = event.content_block?.id || `tool_${Date.now()}`;
+          state.currentToolName = event.content_block?.name || 'unknown';
+          state.currentToolJson = '';
+          contentBlocks.push({
+            type: 'tool_use',
+            id: state.currentToolId,
+            name: state.currentToolName,
+            input: {},
+          });
+        }
+        break;
+      }
+
+      case 'content_block_delta':
+        if (event.delta?.type === 'text_delta' && event.delta.text && state.currentTextIndex >= 0) {
+          const block = contentBlocks[state.currentTextIndex];
+          if (block.type === 'text') {
+            block.text += event.delta.text;
+          }
+        } else if (event.delta?.type === 'input_json_delta' && event.delta.partial_json) {
+          state.currentToolJson += event.delta.partial_json;
+        }
+        break;
+
+      case 'content_block_stop':
+        // Finalize tool input JSON
+        if (state.currentToolIndex >= 0 && state.currentToolJson) {
+          const block = contentBlocks[state.currentToolIndex];
+          if (block.type === 'tool_use') {
+            try {
+              block.input = JSON.parse(state.currentToolJson);
+            } catch {
+              block.input = { raw: state.currentToolJson };
+            }
+          }
+        }
+        // Reset tracking
+        state.currentTextIndex = -1;
+        state.currentToolIndex = -1;
+        state.currentToolId = '';
+        state.currentToolName = '';
+        state.currentToolJson = '';
+        break;
+
+      case 'message_delta':
+        if (event.usage) {
+          console.error(`[DirectAPI SSE] usage: ${JSON.stringify(event.usage)}`);
+        }
+        break;
+
+      case 'message_stop':
+        break;
+
+      case 'ping':
+        break;
+
+      case 'error':
+        console.error(`[DirectAPI SSE] Error event in stream: ${JSON.stringify(event)}`);
+        break;
+
+      default:
+        console.error(`[DirectAPI SSE] Unknown event type: ${event.type}`);
+        break;
+    }
+
+    sync(state);
   }
 
   /**
@@ -308,6 +445,7 @@ export class ClaudeDirectClient {
     const reader = response.body!.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let pendingDataLines: string[] = []; // Accumulate multi-line data fields per SSE event
 
     // Track current content blocks being built
     const contentBlocks: ApiContentBlock[] = [];
@@ -331,121 +469,38 @@ export class ClaudeDirectClient {
 
         for (const line of lines) {
           const trimmed = line.trim();
-          if (!trimmed || trimmed.startsWith(':')) continue; // skip comments/empty
+          if (!trimmed || trimmed.startsWith(':')) {
+            // Empty line = end of current SSE event — flush accumulated data lines
+            if (pendingDataLines.length > 0) {
+              this.flushSSEEvent(
+                pendingDataLines, onEvent, contentBlocks,
+                { currentTextIndex, currentToolIndex, currentToolId, currentToolName, currentToolJson },
+                (state) => {
+                  currentTextIndex = state.currentTextIndex;
+                  currentToolIndex = state.currentToolIndex;
+                  currentToolId = state.currentToolId;
+                  currentToolName = state.currentToolName;
+                  currentToolJson = state.currentToolJson;
+                },
+              );
+              pendingDataLines = [];
+            }
+            continue;
+          }
 
           // Handle "event:" lines — some providers send explicit event type
           if (trimmed.startsWith('event:')) {
-            // Just informational, skip — the type is in the JSON data
             continue;
           }
 
-          if (!trimmed.startsWith('data: ')) {
-            // Non-standard line — log but don't crash
-            console.error(`[DirectAPI SSE] Skipping non-data line: "${trimmed.slice(0, 100)}"`);
+          if (trimmed.startsWith('data: ')) {
+            // SSE spec: multiple data: lines within one event are concatenated with newlines
+            pendingDataLines.push(trimmed.slice(6));
             continue;
           }
 
-          const jsonStr = trimmed.slice(6);
-          if (jsonStr === '[DONE]') continue;
-
-          let event: DirectSSEEvent;
-          try {
-            event = JSON.parse(jsonStr);
-          } catch (e: any) {
-            console.error(`[DirectAPI SSE] JSON parse error: ${e.message}, raw: "${jsonStr.slice(0, 200)}"`);
-            continue;
-          }
-
-          // Log event type for debugging
-          console.error(`[DirectAPI SSE] event type: ${event.type}`);
-
-          // Forward every event to the renderer
-          onEvent(event);
-
-          switch (event.type) {
-            case 'message_start':
-              if (event.message?.model) {
-                console.error(`[DirectAPI SSE] model: ${event.message.model}`);
-              }
-              break;
-
-            case 'content_block_start': {
-              // Some providers (e.g. 智谱) omit the 'index' field
-              const blockType = event.content_block?.type;
-              if (blockType === 'text') {
-                currentTextIndex = contentBlocks.length;
-                contentBlocks.push({ type: 'text', text: '' });
-              } else if (blockType === 'tool_use') {
-                currentToolIndex = contentBlocks.length;
-                currentToolId = event.content_block?.id || `tool_${Date.now()}`;
-                currentToolName = event.content_block?.name || 'unknown';
-                currentToolJson = '';
-                contentBlocks.push({
-                  type: 'tool_use',
-                  id: currentToolId,
-                  name: currentToolName,
-                  input: {},
-                });
-              }
-              break;
-            }
-
-            case 'content_block_delta':
-              if (event.delta?.type === 'text_delta' && event.delta.text && currentTextIndex >= 0) {
-                const block = contentBlocks[currentTextIndex];
-                if (block.type === 'text') {
-                  block.text += event.delta.text;
-                }
-              } else if (event.delta?.type === 'input_json_delta' && event.delta.partial_json) {
-                currentToolJson += event.delta.partial_json;
-              }
-              break;
-
-            case 'content_block_stop':
-              // Finalize tool input JSON
-              if (currentToolIndex >= 0 && currentToolJson) {
-                const block = contentBlocks[currentToolIndex];
-                if (block.type === 'tool_use') {
-                  try {
-                    block.input = JSON.parse(currentToolJson);
-                  } catch {
-                    block.input = { raw: currentToolJson };
-                  }
-                }
-              }
-              // Reset tracking
-              currentTextIndex = -1;
-              currentToolIndex = -1;
-              currentToolId = '';
-              currentToolName = '';
-              currentToolJson = '';
-              break;
-
-            case 'message_delta':
-              // Some providers send extra usage fields (cache_read_input_tokens, server_tool_use, etc.)
-              // and may have empty delta. This is fine — just log it.
-              if (event.usage) {
-                console.error(`[DirectAPI SSE] usage: ${JSON.stringify(event.usage)}`);
-              }
-              break;
-
-            case 'message_stop':
-              // Stream complete
-              break;
-
-            case 'ping':
-              break;
-
-            case 'error':
-              // Some providers send error events in the stream
-              console.error(`[DirectAPI SSE] Error event in stream: ${JSON.stringify(event)}`);
-              break;
-
-            default:
-              // Unknown event type — don't crash, just log
-              console.error(`[DirectAPI SSE] Unknown event type: ${event.type}`);
-              break;
-          }
+          // Non-standard line — log but don't crash
+          console.error(`[DirectAPI SSE] Skipping non-data line: "${trimmed.slice(0, 100)}"`);
         }
       }
     } catch (e: any) {
@@ -453,13 +508,13 @@ export class ClaudeDirectClient {
       throw e; // Re-throw so sendMessage's catch handles it
     }
 
-    // Process any remaining buffer
-    if (buffer.trim().startsWith('data: ')) {
-      const jsonStr = buffer.trim().slice(6);
-      try {
-        const event = JSON.parse(jsonStr);
-        onEvent(event);
-      } catch {}
+    // Process any remaining pending data in buffer
+    if (pendingDataLines.length > 0) {
+      this.flushSSEEvent(
+        pendingDataLines, onEvent, contentBlocks,
+        { currentTextIndex, currentToolIndex, currentToolId, currentToolName, currentToolJson },
+        () => {},
+      );
     }
 
     return contentBlocks;
@@ -485,6 +540,10 @@ export class ClaudeDirectClient {
           const filePath = String(input.file_path || '');
           const content = String(input.content || '');
           const resolved = path.isAbsolute(filePath) ? filePath : path.join(this.projectPath, filePath);
+          // Warn (but don't block) writes outside the project directory
+          if (this.projectPath && !resolved.startsWith(path.resolve(this.projectPath))) {
+            console.warn(`[DirectAPI] Writing outside project directory: ${resolved}`);
+          }
           // Ensure directory exists
           const dir = path.dirname(resolved);
           fs.mkdirSync(dir, { recursive: true });
@@ -495,6 +554,13 @@ export class ClaudeDirectClient {
         case 'Bash': {
           const command = String(input.command || '');
           const description = String(input.description || command);
+          // Warn about dangerous commands without blocking them
+          for (const pattern of DANGEROUS_COMMAND_PATTERNS) {
+            if (pattern.test(command)) {
+              console.warn(`[DirectAPI] Potentially dangerous command detected: ${command.slice(0, 200)}`);
+              break;
+            }
+          }
           return new Promise<string>((resolve) => {
             const timeout = 120_000;
             const proc = spawn('bash', ['-c', command], {
@@ -533,43 +599,73 @@ export class ClaudeDirectClient {
           const pattern = String(input.pattern || '');
           const searchPath = String(input.path || this.projectPath);
           const include = String(input.include || '');
-          try {
-            const args = ['-rn', '--color=never', pattern, searchPath];
+          return new Promise<string>((resolve) => {
+            const args: string[] = ['-rn', '--color=never'];
             if (include) {
-              args.splice(1, 0, '--include', include);
+              args.push('--include', include);
             }
-            const result = execSync(`grep ${args.join(' ')}`, {
+            args.push(pattern, searchPath);
+            const proc = spawn('grep', args, {
               cwd: this.projectPath,
-              encoding: 'utf-8',
               timeout: 30_000,
-              maxBuffer: 1024 * 1024,
+              stdio: ['pipe', 'pipe', 'pipe'],
             });
-            return result || '(no matches)';
-          } catch (err: any) {
-            // grep returns non-zero when no matches — that's OK
-            return err.stdout || '(no matches)';
-          }
+            let stdout = '', stderr = '';
+            proc.stdout.on('data', (d: Buffer) => { stdout += d.toString(); });
+            proc.stderr.on('data', (d: Buffer) => { stderr += d.toString(); });
+            proc.on('close', () => {
+              // grep returns non-zero when no matches — that's OK
+              resolve(stdout || '(no matches)');
+            });
+            proc.on('error', (err) => {
+              resolve(`Error: ${err.message}`);
+            });
+          });
         }
 
         case 'Glob': {
           const pattern = String(input.pattern || '');
           const searchPath = String(input.path || this.projectPath);
-          try {
-            // Use find as a portable glob alternative
-            // Convert simple glob to find expression
-            const result = execSync(
-              `find "${searchPath}" -path "${searchPath}/${pattern}" -type f 2>/dev/null | head -200`,
-              {
-                cwd: this.projectPath,
-                encoding: 'utf-8',
-                timeout: 10_000,
-                maxBuffer: 1024 * 512,
-              },
-            );
-            return result.trim() || '(no matches)';
-          } catch {
-            return '(no matches)';
+          return new Promise<string>((resolve) => {
+            // Use find with argument array to prevent shell injection
+            const proc = spawn('find', [
+              searchPath,
+              '-path', path.join(searchPath, pattern),
+              '-type', 'f',
+            ], {
+              cwd: this.projectPath,
+              timeout: 10_000,
+              stdio: ['pipe', 'pipe', 'pipe'],
+            });
+            let stdout = '';
+            proc.stdout.on('data', (d: Buffer) => { stdout += d.toString(); });
+            proc.on('close', () => {
+              // Limit output to 200 results
+              const lines = stdout.split('\n').filter(Boolean).slice(0, 200);
+              resolve(lines.join('\n') || '(no matches)');
+            });
+            proc.on('error', (err) => {
+              resolve(`Error: ${err.message}`);
+            });
+          });
+        }
+
+        case 'Edit': {
+          const filePath = String(input.file_path || '');
+          const oldString = String(input.old_string || '');
+          const newString = String(input.new_string || '');
+          const resolved = path.isAbsolute(filePath) ? filePath : path.join(this.projectPath, filePath);
+          if (!fs.existsSync(resolved)) {
+            return `Error: File not found: ${resolved}`;
           }
+          const content = fs.readFileSync(resolved, 'utf-8');
+          const idx = content.indexOf(oldString);
+          if (idx === -1) {
+            return `Error: old_string not found in ${resolved}`;
+          }
+          const edited = content.slice(0, idx) + newString + content.slice(idx + oldString.length);
+          fs.writeFileSync(resolved, edited, 'utf-8');
+          return `Successfully edited ${resolved}`;
         }
 
         default:
@@ -582,6 +678,7 @@ export class ClaudeDirectClient {
 
   /**
    * Trim conversation history to maxContextMessages pairs (user+assistant).
+   * Ensures retained messages follow the API's role alternation requirement.
    */
   private trimMessages() {
     const max = this.config.maxContextMessages;
@@ -590,15 +687,22 @@ export class ClaudeDirectClient {
     // Keep the first user message (context) and last N pairs
     const firstMsg = this.messages[0];
     const recent = this.messages.slice(-(max * 2));
-    this.messages = [firstMsg, ...recent];
+
+    // Remove consecutive messages with the same role to satisfy API alternation
+    const filtered: ApiMessage[] = [firstMsg];
+    let lastRole = firstMsg.role;
+    for (const msg of recent) {
+      if (msg.role !== lastRole) {
+        filtered.push(msg);
+        lastRole = msg.role;
+      }
+    }
+    this.messages = filtered;
   }
 }
 
 // ── Config loader ──
 
-/**
- * Load API config from ~/.claude/settings.json env vars + process.env fallback.
- */
 /**
  * Load API config from ~/.claude/settings.json env vars + process.env.
  * Passes through ALL claude env vars for maximum compatibility with any provider.
@@ -614,7 +718,9 @@ export function loadDirectApiConfig(db?: any): DirectApiConfig | null {
     try {
       const data = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
       claudeEnv = (data.env || {}) as Record<string, string>;
-    } catch {}
+    } catch (e: any) {
+      console.warn(`[DirectAPI] Failed to read settings.json: ${e.message}`);
+    }
   }
 
   // Merge process.env overrides
@@ -632,7 +738,9 @@ export function loadDirectApiConfig(db?: any): DirectApiConfig | null {
       if (row?.value) {
         appSettings = JSON.parse(row.value);
       }
-    } catch {}
+    } catch (e: any) {
+      console.warn(`[DirectAPI] Failed to read app settings: ${e.message}`);
+    }
   }
 
   // API key: support all common env var names used by Claude Code and providers
