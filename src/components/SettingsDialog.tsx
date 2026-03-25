@@ -261,6 +261,47 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                     onChange={(e) => handleChange('maxTokens', parseInt(e.target.value, 10) || 8192)}
                   />
                 </SettingsField>
+                <SettingsField label="API 模式">
+                  <select
+                    className="sd-select"
+                    value={(localSettings as any).apiMode || 'direct'}
+                    onChange={(e) => handleChange('apiMode' as any, e.target.value as any)}
+                  >
+                    <option value="direct">Direct API（推荐，实时流式输出）</option>
+                    <option value="cli">Claude CLI（claude -p 模式）</option>
+                  </select>
+                </SettingsField>
+                {(localSettings as any).apiMode === 'direct' && (
+                  <>
+                    <SettingsField label="API Key">
+                      <input
+                        className="sd-input"
+                        type="password"
+                        value={(localSettings as any).directApiKey || ''}
+                        onChange={(e) => handleChange('directApiKey' as any, e.target.value)}
+                        placeholder="sk-ant-... 或从 ~/.claude/settings.json 自动读取"
+                      />
+                    </SettingsField>
+                    <SettingsField label="API Base URL">
+                      <input
+                        className="sd-input"
+                        type="text"
+                        value={(localSettings as any).directBaseUrl || ''}
+                        onChange={(e) => handleChange('directBaseUrl' as any, e.target.value)}
+                        placeholder="留空使用 https://api.anthropic.com"
+                      />
+                    </SettingsField>
+                    <SettingsField label="Direct API 模型">
+                      <input
+                        className="sd-input"
+                        type="text"
+                        value={(localSettings as any).directModel || ''}
+                        onChange={(e) => handleChange('directModel' as any, e.target.value)}
+                        placeholder="留空使用 Claude CLI 配置的模型"
+                      />
+                    </SettingsField>
+                  </>
+                )}
               </SettingsSection>
             )}
 
