@@ -858,6 +858,8 @@ interface ChatState {
   initPane: (paneId: string, projectPath: string, model?: string) => Promise<void>;
   sendMessage: (paneId: string, text: string) => Promise<void>;
   stopGeneration: (paneId: string) => void;
+  regenerateMessage: (paneId: string, messageId: string) => void;
+  editAndResend: (paneId: string, messageId: string, newContent: string) => void;
   clearPane: (paneId: string) => void;
   addSystemMessage: (paneId: string, content: string) => void;
   restoreMessages: (paneId: string, dbMessages: DbMessage[]) => void;
@@ -1082,6 +1084,66 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       });
     }
     stopCliTypingSimulation(paneId);
+  },
+
+  regenerateMessage: (paneId: string, messageId: string) => {
+    const paneState = get().panes.get(paneId);
+    if (!paneState) return;
+
+    const msgIndex = paneState.messages.findIndex(m => m.id === messageId);
+    if (msgIndex < 0) return;
+
+    // Find the preceding user message
+    let userContent = '';
+    for (let i = msgIndex - 1; i >= 0; i--) {
+      if (paneState.messages[i].role === 'user') {
+        userContent = paneState.messages[i].content;
+        break;
+      }
+    }
+    if (!userContent) return;
+
+    // Remove this message and all after it
+    const truncatedMessages = paneState.messages.slice(0, msgIndex);
+    set((s) => {
+      const pane = s.panes.get(paneId);
+      if (!pane) return s;
+      return {
+        panes: new Map(s.panes).set(paneId, {
+          ...pane,
+          messages: truncatedMessages,
+          isGenerating: false,
+        }),
+      };
+    });
+
+    // Re-send the original user message
+    get().sendMessage(paneId, userContent);
+  },
+
+  editAndResend: (paneId: string, messageId: string, newContent: string) => {
+    const paneState = get().panes.get(paneId);
+    if (!paneState) return;
+
+    const msgIndex = paneState.messages.findIndex(m => m.id === messageId);
+    if (msgIndex < 0) return;
+
+    // Remove this message and all after it
+    const truncatedMessages = paneState.messages.slice(0, msgIndex);
+    set((s) => {
+      const pane = s.panes.get(paneId);
+      if (!pane) return s;
+      return {
+        panes: new Map(s.panes).set(paneId, {
+          ...pane,
+          messages: truncatedMessages,
+          isGenerating: false,
+        }),
+      };
+    });
+
+    // Send the edited message
+    get().sendMessage(paneId, newContent);
   },
 
   addSystemMessage: (paneId: string, content: string) => {

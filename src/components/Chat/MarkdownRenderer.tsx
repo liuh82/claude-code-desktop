@@ -1,20 +1,48 @@
-import { type ComponentPropsWithoutRef, type ReactNode } from 'react';
+import { type ComponentPropsWithoutRef, lazy, Suspense, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { CodeBlock } from './CodeBlock';
 import { ChartBlock } from './ChartBlock';
-import { MermaidBlock } from './MermaidBlock';
 import { VisualizationCard } from './VisualizationCard';
 import { QuickVisualParser } from './QuickVisualParser';
+
+// Lazy load mermaid (~3MB) to keep initial bundle small
+const MermaidBlock = lazy(() =>
+  import('./MermaidBlock').then((m) => ({ default: m.MermaidBlock }))
+);
 
 interface MarkdownRendererProps {
   content: string;
   /** When true, skip QuickVisualParser to prevent infinite recursion */
   isNested?: boolean;
+  /** When true, treat unclosed mermaid blocks as regular code blocks */
+  isStreaming?: boolean;
 }
 
-function MarkdownRenderer({ content, isNested }: MarkdownRendererProps) {
+/**
+ * Detect whether a mermaid code block in the content is incomplete (unclosed).
+ * During streaming, an unclosed ```mermaid block means the AI is still generating.
+ */
+function isIncompleteMermaidBlock(content: string): boolean {
+  // Match opening ```mermaid that doesn't have a corresponding closing ```
+  const regex = /```mermaid\b([\s\S]*?)(?:```|$)/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    // If the block ends at EOF (no closing ```), it's incomplete
+    const blockEnd = match.index + match[0].length;
+    if (blockEnd === content.length && !match[0].endsWith('```')) {
+      return true;
+    }
+    // Also check: if the match was cut off (regex hit $), it's incomplete
+    if (!match[0].trimEnd().endsWith('```')) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function MarkdownRenderer({ content, isNested, isStreaming }: MarkdownRendererProps) {
   // If content contains quick-viz commands, use QuickVisualParser instead
   // Skip when nested to prevent infinite recursion (QVP → MarkdownRenderer → QVP)
   if (!isNested && /^@(arch|flow|compare|timeline)\b/m.test(content)) {
@@ -25,6 +53,9 @@ function MarkdownRenderer({ content, isNested }: MarkdownRendererProps) {
     );
   }
 
+  // Detect incomplete mermaid blocks during streaming
+  const hasIncompleteMermaid = isStreaming && isIncompleteMermaidBlock(content);
+
   return (
     <div className="markdown-body">
       <ReactMarkdown
@@ -32,7 +63,8 @@ function MarkdownRenderer({ content, isNested }: MarkdownRendererProps) {
         rehypePlugins={[rehypeHighlight]}
         components={{
         pre: PreBlock,
-        code: CodeElement,
+        code: (props: ComponentPropsWithoutRef<'code'> & { children?: ReactNode }) =>
+          CodeElement({ ...props, hasIncompleteMermaid }),
         p: Paragraph,
         a: Link,
         table: Table,
@@ -66,7 +98,7 @@ function PreBlock({ children }: { children?: ReactNode }) {
   );
 }
 
-function CodeElement({ children, className }: ComponentPropsWithoutRef<'code'> & { children?: ReactNode }) {
+function CodeElement({ children, className, hasIncompleteMermaid }: ComponentPropsWithoutRef<'code'> & { children?: ReactNode; hasIncompleteMermaid?: boolean }) {
   const match = /language-(\w+)/.exec(className || '');
   const isInline = !match && !className;
 
@@ -86,11 +118,30 @@ function CodeElement({ children, className }: ComponentPropsWithoutRef<'code'> &
     );
   }
 
-  // Render mermaid diagrams
+  // Render mermaid diagrams — only if the code block is complete (not streaming)
   if (lang === 'mermaid') {
+    // During streaming with an incomplete mermaid block, render as plain code
+    if (hasIncompleteMermaid) {
+      return (
+        <code className="codeBlock">
+          <div style={{ marginBottom: '6px', fontSize: '12px', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>pending</span>
+            Generating diagram...
+          </div>
+          <CodeBlock code={codeString} language="mermaid" />
+        </code>
+      );
+    }
+
     return (
       <code className="codeBlock">
-        <MermaidBlock code={codeString} />
+        <Suspense fallback={
+          <div style={{ padding: '16px', textAlign: 'center', color: '#94A3B8', fontSize: '13px' }}>
+            Rendering diagram...
+          </div>
+        }>
+          <MermaidBlock code={codeString} />
+        </Suspense>
       </code>
     );
   }

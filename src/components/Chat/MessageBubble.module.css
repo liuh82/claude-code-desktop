@@ -275,3 +275,15 @@
   align-items: flex-start;
 }
 
+/* Message actions — show on hover (mobile: always visible via md:hidden wrapper) */
+.message:hover .messageActions {
+  opacity: 1;
+}
+
+/* On mobile (< 768px), actions are always visible via md:hidden on wrapper */
+@media (max-width: 768px) {
+  .message .messageActions {
+    opacity: 1;
+  }
+}
+

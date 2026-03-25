@@ -121,3 +121,6 @@ function MermaidBlock({ code }: { code: string }) {
 }
 
 export { MermaidBlock };
+
+// Named export for React.lazy: default re-export
+export default MermaidBlock;

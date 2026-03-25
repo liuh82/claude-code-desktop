@@ -1,0 +1,106 @@
+/* Message action buttons — hover to reveal */
+
+.messageActions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  margin-top: 6px;
+}
+
+.messageActionsVisible {
+  opacity: 1;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.actionBtn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.actionBtn:active {
+  background: var(--bg-secondary);
+}
+
+.actionBtn .material-symbols-outlined {
+  font-size: 14px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.actionBtnCopied {
+  color: #16A34A;
+}
+
+/* Edit mode */
+.editContainer {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.editTextarea {
+  flex: 1;
+  min-height: 60px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: var(--line-height-relaxed);
+  resize: vertical;
+  outline: none;
+}
+
+.editTextarea:focus {
+  border-color: var(--accent);
+}
+
+.editBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+  white-space: nowrap;
+}
+
+.editBtnPrimary {
+  background: var(--brand-orange);
+  color: white;
+}
+
+.editBtnPrimary:hover {
+  opacity: 0.9;
+}
+
+.editBtnSecondary {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.editBtnSecondary:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}

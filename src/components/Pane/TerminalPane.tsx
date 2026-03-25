@@ -282,6 +282,19 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     return () => document.removeEventListener('mousedown', handler);
   }, [showMention, showSlash, showModelPicker]);
 
+  // ── Global shortcut: Ctrl+/ focus input ──
+  useEffect(() => {
+    if (!isActive) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === '/' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        textareaRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isActive]);
+
   // ── Consume file mention from ToolPanel click → add as chip ──
   useEffect(() => {
     if (!pendingFileMention) return;
@@ -483,7 +496,32 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     store.sendMessage(paneId, name);
   }, [paneId, paneState]);
 
+  const handleStop = useCallback(() => {
+    useChatStore.getState().stopGeneration(paneId);
+  }, [paneId]);
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Ctrl+Shift+C / Cmd+Shift+C — stop generation
+    if (e.key === 'C' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+      e.preventDefault();
+      handleStop();
+      return;
+    }
+
+    // Ctrl+/ — focus input (already focused, but re-focus in case)
+    if (e.key === '/' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      textareaRef.current?.focus();
+      return;
+    }
+
+    // Ctrl+Enter / Cmd+Enter — send message
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      handleSend();
+      return;
+    }
+
     // Handle slash command navigation
     if (showSlash && filteredCommands.length > 0) {
       if (e.key === 'ArrowDown') {
@@ -541,11 +579,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       e.preventDefault();
       handleSend();
     }
-  }, [showSlash, filteredCommands, slashIndex, handleSlashSelect, showMention, allMentionItems, mentionIndex, handleMentionSelect, handleSend]);
-
-  const handleStop = useCallback(() => {
-    useChatStore.getState().stopGeneration(paneId);
-  }, [paneId]);
+  }, [showSlash, filteredCommands, slashIndex, handleSlashSelect, showMention, allMentionItems, mentionIndex, handleMentionSelect, handleSend, handleStop]);
 
   const handleModelSelect = useCallback((modelId: string) => {
     setShowModelPicker(false);
@@ -669,6 +703,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               <MessageBubble
                 key={msg.id}
                 message={msg}
+                paneId={paneId}
                 onPermissionAllow={(_tc: ToolCall) => grantPermission()}
                 onPermissionDeny={(_tc: ToolCall) => denyPermission()}
               />
@@ -766,7 +801,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                 value={text}
                 onChange={handleTextChange}
                 onKeyDown={handleKeyDown}
-                placeholder={attachedFiles.length > 0 ? '' : '给 Claude 发送消息或询问代码问题...'}
+                placeholder={attachedFiles.length > 0 ? '' : '给 Claude 发送消息... (Enter 发送, Shift+Enter 换行)'}
                 spellCheck={false}
                 rows={2}
               />

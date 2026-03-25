@@ -1,12 +1,16 @@
+import { useCallback } from 'react';
 import type { ChatMessage, ToolCall } from '@/types/chat';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ToolCallBlock } from './ToolCallBlock';
 import { StreamingStatus } from './StreamingStatus';
 import { PermissionBlock } from './PermissionBlock';
+import { MessageActions } from './MessageActions';
+import { useChatStore } from '@/stores/useChatStore';
 import styles from './MessageBubble.module.css';
 
 interface MessageBubbleProps {
   message: ChatMessage;
+  paneId: string;
   onPermissionAllow?: (toolCall: ToolCall) => void;
   onPermissionDeny?: (toolCall: ToolCall) => void;
 }
@@ -25,10 +29,21 @@ function getPermissionInfo(toolCall: ToolCall): { toolName: string; toolIcon: st
   return { toolName: name.toUpperCase(), toolIcon: 'security', target: '', isDangerous: false };
 }
 
-function MessageBubble({ message, onPermissionAllow, onPermissionDeny }: MessageBubbleProps) {
+function MessageBubble({ message, paneId, onPermissionAllow, onPermissionDeny }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const roleLabel = isUser ? '你' : 'Claude Code';
   const timeStr = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const regenerateMessage = useChatStore((s) => s.regenerateMessage);
+  const editAndResend = useChatStore((s) => s.editAndResend);
+
+  const handleRegenerate = useCallback(() => {
+    regenerateMessage(paneId, message.id);
+  }, [paneId, message.id, regenerateMessage]);
+
+  const handleEditAndResend = useCallback((newContent: string) => {
+    editAndResend(paneId, message.id, newContent);
+  }, [paneId, message.id, editAndResend]);
 
   const avatar = isUser ? (
     <div className={styles.userAvatar}>
@@ -41,7 +56,9 @@ function MessageBubble({ message, onPermissionAllow, onPermissionDeny }: Message
   );
 
   return (
-    <div className={`${styles.message} ${isUser ? styles.messageUser : styles.messageAssistant}`}>
+    <div
+      className={`${styles.message} ${isUser ? styles.messageUser : styles.messageAssistant}`}
+    >
       {avatar}
       <div className={styles.messageBody}>
         <div className={styles.messageMeta}>
@@ -110,13 +127,24 @@ function MessageBubble({ message, onPermissionAllow, onPermissionDeny }: Message
                   )}
                   <div className={styles.messageContent}>
                     {message.content ? (
-                      <MarkdownRenderer key={`md-${message.id}`} content={message.content} />
+                      <MarkdownRenderer key={`md-${message.id}`} content={message.content} isStreaming={message.isStreaming} />
                     ) : null}
                   </div>
                 </>
               )}
             </div>
           </div>
+        )}
+
+        {/* Action buttons — show on hover (mobile: always visible) */}
+        {!message.isStreaming && message.content && (
+          <MessageActions
+            messageContent={message.content}
+            messageId={message.id}
+            isUserMessage={isUser}
+            onRegenerate={handleRegenerate}
+            onEditAndResend={handleEditAndResend}
+          />
         )}
       </div>
     </div>
