@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useId, useRef } from 'react';
+import React, { useEffect, useState, useId, useRef, useCallback } from 'react';
 import mermaid from 'mermaid';
 import DOMPurify from 'dompurify';
 import styles from './MermaidBlock.module.css';
@@ -20,14 +20,20 @@ mermaid.initialize({
 
 interface MermaidBlockProps {
   code: string;
+  /** Called when rendering fails — parent can use this to show a fallback */
+  onRenderError?: () => void;
 }
 
-const MermaidBlock: React.FC<MermaidBlockProps> = ({ code }) => {
+const MermaidBlock: React.FC<MermaidBlockProps> = ({ code, onRenderError }) => {
   const [svg, setSvg] = useState<string>('');
-  const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const uniqueId = useId();
   const renderRef = useRef(false);
+
+  const handleError = useCallback((_msg: string) => {
+    // Notify parent to show fallback (code block)
+    onRenderError?.();
+  }, [onRenderError]);
 
   useEffect(() => {
     if (!code || !code.trim()) return;
@@ -38,7 +44,6 @@ const MermaidBlock: React.FC<MermaidBlockProps> = ({ code }) => {
     const trimmed = code.trim();
 
     setLoading(true);
-    setError('');
     setSvg('');
 
     mermaid.render(id, trimmed).then(
@@ -48,7 +53,7 @@ const MermaidBlock: React.FC<MermaidBlockProps> = ({ code }) => {
       },
       (err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err);
-        setError('Mermaid render error: ' + msg);
+        handleError(msg);
         setLoading(false);
       },
     );
@@ -58,21 +63,13 @@ const MermaidBlock: React.FC<MermaidBlockProps> = ({ code }) => {
       const el = document.getElementById('d' + id);
       if (el) el.remove();
     };
-  }, [code, uniqueId]);
+  }, [code, uniqueId, handleError]);
 
   if (loading) {
     return (
       <div className={styles.loading}>
         <span className={styles.spinner} />
         Rendering diagram...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={styles.error}>
-        <strong>Mermaid Error:</strong> {error}
       </div>
     );
   }

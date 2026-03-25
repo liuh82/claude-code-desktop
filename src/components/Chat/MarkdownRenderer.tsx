@@ -1,4 +1,4 @@
-import { type ComponentPropsWithoutRef, lazy, Suspense, type ReactNode } from 'react';
+import { type ComponentPropsWithoutRef, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -7,10 +7,8 @@ import { ChartBlock } from './ChartBlock';
 import { VisualizationCard } from './VisualizationCard';
 import { QuickVisualParser } from './QuickVisualParser';
 
-// Lazy load mermaid (~3MB) to keep initial bundle small
-const MermaidBlock = lazy(() =>
-  import('./MermaidBlock')
-);
+// Mermaid rendering with graceful fallback on syntax errors
+import { MermaidSafe } from "./MermaidSafe";
 
 interface MarkdownRendererProps {
   content: string;
@@ -135,13 +133,7 @@ function CodeElement({ children, className, hasIncompleteMermaid }: ComponentPro
 
     return (
       <code className="codeBlock">
-        <Suspense fallback={
-          <div style={{ padding: '16px', textAlign: 'center', color: '#94A3B8', fontSize: '13px' }}>
-            Rendering diagram...
-          </div>
-        }>
-          <MermaidBlock code={codeString} />
-        </Suspense>
+        <MermaidSafe code={codeString} />
       </code>
     );
   }
