@@ -241,6 +241,19 @@
   align-items: flex-start;
 }
 
+/* Streaming raw text — preserves whitespace during markdown-free streaming */
+.streamingRawText {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 15px;
+  line-height: var(--line-height-relaxed);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .streamingRawText {
+  opacity: 0.90;
+}
+
 /* Streaming cursor */
 .streamingCursor::after {
   content: '\u258C';

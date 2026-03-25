@@ -74,7 +74,13 @@ function MessageBubble({ message, onPermissionAllow, onPermissionDeny }: Message
               </div>
             )}
             <div className={`${styles.messageContent} ${message.isStreaming ? styles.streamingCursor : ''}`}>
-              {message.content ? <MarkdownRenderer content={message.content} /> : null}
+              {message.content ? (
+                message.isStreaming ? (
+                  <div className={styles.streamingRawText}>{message.content}</div>
+                ) : (
+                  <MarkdownRenderer key={`md-${message.id}`} content={message.content} />
+                )
+              ) : null}
             </div>
           </div>
         )}
