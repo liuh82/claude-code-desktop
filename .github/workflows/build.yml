@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -31,3 +34,16 @@ jobs:
           name: CCDesk-windows
           path: release/*.exe
           retention-days: 30
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: v1.0.${{ github.run_number }}
+          body: |
+            ## CCDesk Windows Build
+            - Commit: ${{ github.sha }}
+            - Build: #${{ github.run_number }}
+          files: release/*.exe
+          draft: false
+          prerelease: false
