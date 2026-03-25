@@ -78,7 +78,7 @@ interface QuickVizCard {
 function parseArch(lines: string[]): QuickVizCard | null {
   // @arch [title]
   const titleLine = lines[0];
-  const title = titleLine.replace(/^@\w+\s*/, '').trim() || 'Architecture';
+  const title = titleLine.replace(/^[\/@]\w+\s*/, '').trim() || 'Architecture';
   const edgeLines = lines.slice(1).filter(l => l.trim());
 
   if (edgeLines.length === 0) return null;
@@ -108,7 +108,7 @@ function parseArch(lines: string[]): QuickVizCard | null {
 
 function parseFlow(lines: string[]): QuickVizCard | null {
   const titleLine = lines[0];
-  const title = titleLine.replace(/^@\w+\s*/, '').trim() || 'Data Flow';
+  const title = titleLine.replace(/^[\/@]\w+\s*/, '').trim() || 'Data Flow';
   const stepLines = lines.slice(1).filter(l => l.trim());
 
   if (stepLines.length === 0) return null;
@@ -128,7 +128,7 @@ function parseFlow(lines: string[]): QuickVizCard | null {
 
 function parseCompare(lines: string[]): QuickVizCard | null {
   const titleLine = lines[0];
-  const title = titleLine.replace(/^@\w+\s*/, '').trim() || 'Comparison';
+  const title = titleLine.replace(/^[\/@]\w+\s*/, '').trim() || 'Comparison';
   const dataLines = lines.slice(1).filter(l => l.trim());
 
   if (dataLines.length === 0) return null;
@@ -166,7 +166,7 @@ function parseCompare(lines: string[]): QuickVizCard | null {
 
 function parseTimeline(lines: string[]): QuickVizCard | null {
   const titleLine = lines[0];
-  const title = titleLine.replace(/^@\w+\s*/, '').trim() || 'Timeline';
+  const title = titleLine.replace(/^[\/@]\w+\s*/, '').trim() || 'Timeline';
   const dataLines = lines.slice(1).filter(l => l.trim());
 
   if (dataLines.length === 0) return null;
@@ -196,7 +196,7 @@ function parseTimeline(lines: string[]): QuickVizCard | null {
 
 /* ── Regex-based detection + block splitting ── */
 
-const QUICK_VIZ_RE = /^@(arch|flow|compare|timeline)\b/m;
+const QUICK_VIZ_RE = /^[\/@](arch|flow|compare|timeline)\b/m;
 
 interface QuickVizBlock {
   command: string;
@@ -222,7 +222,7 @@ function extractBlocks(content: string): QuickVizBlock[] {
       // Consume subsequent lines that are part of this block (indented or continuation)
       while (i < lines.length) {
         const trimmed = lines[i].trim();
-        if (trimmed === '' || trimmed.startsWith('```') || trimmed.startsWith('@') || trimmed.startsWith('#')) {
+        if (trimmed === '' || trimmed.startsWith('```') || trimmed.startsWith('@') || trimmed.startsWith('/') || trimmed.startsWith('#')) {
           break;
         }
         blockLines.push(lines[i]);
