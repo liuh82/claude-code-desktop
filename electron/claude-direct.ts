@@ -16,6 +16,8 @@ interface DirectApiConfig {
   model: string;
   maxTokens: number;
   maxContextMessages: number;
+  /** All claude env vars to pass through to API calls */
+  claudeEnv: Record<string, string>;
 }
 
 interface DirectSSEEvent {
@@ -187,15 +189,29 @@ export class ClaudeDirectClient {
           body.tools = TOOL_DEFINITIONS;
         }
 
-        const isAnthropic = this.config.baseUrl.includes('anthropic.com');
+        // Build headers: always pass claude env as base, override auth
         const headers: Record<string, string> = {
           'content-type': 'application/json',
         };
-        if (isAnthropic) {
+
+        // Claude Code uses x-api-key for Anthropic, Bearer for others
+        // Detect by checking if claude config has AUTH_TOKEN (third-party) vs API_KEY (Anthropic native)
+        const env = this.config.claudeEnv;
+        if (env.ANTHROPIC_AUTH_TOKEN && !env.ANTHROPIC_API_KEY) {
+          // Third-party provider (e.g. 智谱, OpenRouter, etc.)
+          headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+        } else {
+          // Anthropic native or Anthropic-compatible
           headers['x-api-key'] = this.config.apiKey;
           headers['anthropic-version'] = '2023-06-01';
-        } else {
-          headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+        }
+
+        // Pass through any additional headers from claude env
+        if (env.ANTHROPIC_API_HEADERS) {
+          try {
+            const extra = JSON.parse(env.ANTHROPIC_API_HEADERS);
+            Object.assign(headers, extra);
+          } catch {}
         }
 
         const response = await fetch(`${this.config.baseUrl}/v1/messages`, {
@@ -531,11 +547,15 @@ export class ClaudeDirectClient {
 /**
  * Load API config from ~/.claude/settings.json env vars + process.env fallback.
  */
+/**
+ * Load API config from ~/.claude/settings.json env vars + process.env.
+ * Passes through ALL claude env vars for maximum compatibility with any provider.
+ */
 export function loadDirectApiConfig(db?: any): DirectApiConfig | null {
   const home = process.env.HOME || process.env.USERPROFILE || '';
   if (!home) return null;
 
-  // Read Claude settings
+  // Read ALL env vars from Claude settings
   let claudeEnv: Record<string, string> = {};
   const settingsPath = path.join(home, '.claude', 'settings.json');
   if (fs.existsSync(settingsPath)) {
@@ -545,7 +565,14 @@ export function loadDirectApiConfig(db?: any): DirectApiConfig | null {
     } catch {}
   }
 
-  // Also check for app-level settings override
+  // Merge process.env overrides
+  for (const key of Object.keys(process.env)) {
+    if (key.startsWith('ANTHROPIC_') && process.env[key]) {
+      claudeEnv[key] = process.env[key] as string;
+    }
+  }
+
+  // App-level settings override
   let appSettings: Record<string, any> = {};
   if (db) {
     try {
@@ -556,13 +583,18 @@ export function loadDirectApiConfig(db?: any): DirectApiConfig | null {
     } catch {}
   }
 
-  const apiKey = claudeEnv.ANTHROPIC_API_KEY || claudeEnv.ANTHROPIC_AUTH_TOKEN || process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN || appSettings.directApiKey || '';
-  const baseUrl = claudeEnv.ANTHROPIC_BASE_URL || 'https://api.anthropic.com';
-  const model = claudeEnv.ANTHROPIC_MODEL || appSettings.directModel || 'claude-sonnet-4-6';
-  const maxTokens = appSettings.directMaxTokens || 8192;
-  const maxContextMessages = appSettings.maxContextMessages || 20;
+  // API key: support all common env var names used by Claude Code and providers
+  const apiKey = appSettings.directApiKey
+    || claudeEnv.ANTHROPIC_API_KEY
+    || claudeEnv.ANTHROPIC_AUTH_TOKEN
+    || '';
 
   if (!apiKey) return null;
 
-  return { apiKey, baseUrl, model, maxTokens, maxContextMessages };
+  const baseUrl = claudeEnv.ANTHROPIC_BASE_URL || 'https://api.anthropic.com';
+  const model = claudeEnv.ANTHROPIC_MODEL || claudeEnv.ANTHROPIC_DEFAULT_SONNET_MODEL || appSettings.directModel || 'claude-sonnet-4-6';
+  const maxTokens = appSettings.directMaxTokens || 8192;
+  const maxContextMessages = appSettings.maxContextMessages || 20;
+
+  return { apiKey, baseUrl, model, maxTokens, maxContextMessages, claudeEnv };
 }
