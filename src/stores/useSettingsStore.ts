@@ -26,6 +26,12 @@ export interface AppSettings {
   maxTokens: number;
   logLevel: 'debug' | 'info' | 'warn' | 'error';
   dataDirectory: string;
+  apiMode: 'cli' | 'direct';
+  directApiKey: string;
+  directModel: string;
+  directMaxTokens: number;
+  directBaseUrl: string;
+  maxContextMessages: number;
 }
 
 const STORAGE_KEY = 'claude-code-desktop-settings';
@@ -43,6 +49,12 @@ const DEFAULT_SETTINGS: AppSettings = {
   maxTokens: 8192,
   logLevel: 'info',
   dataDirectory: '',
+  apiMode: 'direct',
+  directApiKey: '',
+  directModel: '',
+  directMaxTokens: 8192,
+  directBaseUrl: '',
+  maxContextMessages: 20,
 };
 
 interface SettingsState {
