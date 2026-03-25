@@ -105,6 +105,7 @@
   flex-direction: column;
   gap: 0;
   min-width: 0;
+  contain: layout style;
 }
 
 /* Meta: role + time */
@@ -137,6 +138,7 @@
   line-height: var(--line-height-relaxed);
   color: var(--text-primary);
   word-break: break-word;
+  overflow-anchor: none;
 }
 
 [data-theme="dark"] .messageContent {
@@ -260,6 +262,7 @@
   font-size: 15px;
   line-height: var(--line-height-relaxed);
   color: var(--text-primary);
+  contain: content;
 }
 
 [data-theme="dark"] .streamingRawText {
@@ -267,6 +270,10 @@
 }
 
 /* Streaming cursor — blinking left-half block */
+.streamingCursor {
+  will-change: contents;
+}
+
 .streamingCursor::after {
   content: '\2588';
   animation: cursorBlink 1s step-end infinite;

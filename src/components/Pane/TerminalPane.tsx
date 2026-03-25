@@ -143,6 +143,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const [slashIndex, setSlashIndex] = useState(0);
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [dynamicCommands, setDynamicCommands] = useState<SlashCommand[]>([]);
+  const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputWrapperRef = useRef<HTMLDivElement>(null);
@@ -246,11 +247,16 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     };
   }, [paneId]);
 
-  // ── Scroll to bottom ──
+  // ── Scroll to bottom — smooth for new messages, instant for streaming updates ──
 
   const lastMsg = messages[messages.length - 1];
+  const prevMsgCountRef = useRef(messages.length);
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const isNewMessage = messages.length > prevMsgCountRef.current;
+    prevMsgCountRef.current = messages.length;
+    // New message or stream finished → smooth scroll; during streaming → instant to avoid jitter
+    const isStreaming = lastMsg?.isStreaming;
+    messagesEndRef.current?.scrollIntoView({ behavior: isNewMessage && !isStreaming ? 'smooth' : 'instant' });
   }, [messages.length, lastMsg?.content?.length, lastMsg?.isStreaming]);
 
   // ── Close dropdowns on outside click ──
@@ -268,22 +274,17 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     return () => document.removeEventListener('mousedown', handler);
   }, [showMention, showSlash, showModelPicker]);
 
-  // ── Consume file mention from ToolPanel click ──
+  // ── Consume file mention from ToolPanel click → add as chip ──
   useEffect(() => {
     if (!pendingFileMention) return;
     const filePath = useChatStore.getState().consumeFileMention();
-    if (!filePath || !textareaRef.current) return;
-    const textarea = textareaRef.current;
-    const insert = `@${filePath} `;
-    const pos = textarea.selectionStart;
-    const before = text.slice(0, pos) + insert;
-    const after = text.slice(pos);
-    setText(before + after);
-    setTimeout(() => {
-      textarea.setSelectionRange(before.length, before.length);
-      textarea.focus();
-    }, 0);
-  }, [pendingFileMention, text]);
+    if (!filePath) return;
+    setAttachedFiles(prev => {
+      if (prev.includes(filePath)) return prev;
+      return [...prev, filePath];
+    });
+    textareaRef.current?.focus();
+  }, [pendingFileMention]);
 
   // ── Handlers ──
 
@@ -292,41 +293,46 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   }, [isActive, tabId, paneId, setActivePane]);
 
   const handleMentionSelect = useCallback((item: typeof allMentionItems[0]) => {
-    if (!textareaRef.current) return;
-    const textarea = textareaRef.current;
-    const cursorPos = textarea.selectionStart;
-    const textBeforeCursor = text.slice(0, cursorPos);
-    const atMatch = textBeforeCursor.match(/@\S*$/);
-    if (!atMatch) return;
-
-    const insert = `@${item.path} `;
-
-    const before = text.slice(0, atMatch.index) + insert;
-    const after = text.slice(cursorPos);
-    const newPos = before.length;
-    setText(before + after);
+    // Remove the @query from textarea text
+    if (textareaRef.current) {
+      const textarea = textareaRef.current;
+      const cursorPos = textarea.selectionStart;
+      const textBeforeCursor = text.slice(0, cursorPos);
+      const atMatch = textBeforeCursor.match(/@\S*$/);
+      if (atMatch && atMatch.index !== undefined) {
+        const before = text.slice(0, atMatch.index);
+        const after = text.slice(cursorPos);
+        setText(before + after);
+      }
+    }
+    // Add as chip
+    setAttachedFiles(prev => {
+      if (prev.includes(item.path)) return prev;
+      return [...prev, item.path];
+    });
     setShowMention(false);
     setMentionQuery('');
     setMentionIndex(0);
-    setTimeout(() => {
-      textarea.setSelectionRange(newPos, newPos);
-      textarea.focus();
-    }, 0);
+    textareaRef.current?.focus();
   }, [text]);
 
   const handleSend = useCallback(() => {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed && attachedFiles.length === 0) return;
     if (trimmed.startsWith('/') && !trimmed.includes(' ')) {
       const cmd = allCommands.find(c => c.name === trimmed);
       if (cmd) { handleSlashSelect(cmd); return; }
     }
+    // Prepend attached files as @path format
+    const filePrefix = attachedFiles.map(f => `@${f}`).join(' ');
+    const fullMessage = attachedFiles.length > 0 ? `${filePrefix} ${trimmed}` : trimmed;
     setText('');
+    setAttachedFiles([]);
     setShowMention(false);
     setShowSlash(false);
     if (textareaRef.current) textareaRef.current.style.height = '44px';
-    useChatStore.getState().sendMessage(paneId, trimmed);
-  }, [text, paneId, allCommands]);
+    useChatStore.getState().sendMessage(paneId, fullMessage);
+  }, [text, paneId, allCommands, attachedFiles]);
 
   const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
@@ -498,14 +504,20 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     try {
       const files = await claudeApi.openFileDialog();
       if (files.length > 0) {
-        const fileRefs = files.map(f => {
-          const name = f.split('/').pop() || f;
-          return `@${name}`;
-        }).join(' ');
-        setText(prev => prev ? prev + ' ' + fileRefs : fileRefs);
+        setAttachedFiles(prev => {
+          const next = [...prev];
+          for (const f of files) {
+            if (!next.includes(f)) next.push(f);
+          }
+          return next;
+        });
         textareaRef.current?.focus();
       }
     } catch {}
+  }, []);
+
+  const removeAttachedFile = useCallback((filePath: string) => {
+    setAttachedFiles(prev => prev.filter(f => f !== filePath));
   }, []);
 
   const handleAttachImage = useCallback(async () => {
@@ -548,7 +560,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  const canSend = text.trim().length > 0 && !isGenerating;
+  const canSend = (text.trim().length > 0 || attachedFiles.length > 0) && !isGenerating;
   const shortProjectName = paneProjectPath ? paneProjectPath.split('/').filter(Boolean).pop() || '' : '';
 
   return (
@@ -693,10 +705,29 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                 value={text}
                 onChange={handleTextChange}
                 onKeyDown={handleKeyDown}
-                placeholder="给 Claude 发送消息或询问代码问题..."
+                placeholder={attachedFiles.length > 0 ? '' : '给 Claude 发送消息或询问代码问题...'}
                 spellCheck={false}
                 rows={2}
               />
+
+              {/* Attached file chips */}
+              {attachedFiles.length > 0 && (
+                <div className={styles.chipList}>
+                  {attachedFiles.map((filePath) => {
+                    const fileName = filePath.split('/').pop() || filePath;
+                    const fileIcon = getFileIcon(fileName);
+                    return (
+                      <div key={filePath} className={styles.chip}>
+                        <span className={`material-symbols-outlined ${fileIcon.colorClass}`} style={{ fontSize: 14 }}>{fileIcon.icon}</span>
+                        <span className={styles.chipName}>{fileName}</span>
+                        <button className={styles.chipRemove} onClick={() => removeAttachedFile(filePath)}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>close</span>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Bottom row: attach + image | mode selector | send */}
               <div className={styles.paneInputActions}>

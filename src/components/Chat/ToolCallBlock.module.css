@@ -1,72 +1,95 @@
-/* ═══ ToolCallBlock — Compact inline style (Stitch design) ═══ */
+/* ═══ ToolCallBlock — Inline card style (VSCode Claude Code reference) ═══ */
 
-/* Collapsed: single-line compact row */
+/* Collapsed: inline card row */
 .toolCall {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 2px 0;
+  padding: 6px 10px;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-primary);
   cursor: pointer;
   user-select: none;
   transition: background 150ms;
-  border-radius: 2px;
+  border-radius: 6px;
+  margin-bottom: 2px;
 }
 
 .toolCall:hover {
   background: var(--accent-muted);
 }
 
-/* ── Status-specific left border (from Stitch: border-l-2) ── */
+/* ── Status-specific left border accent ── */
 .toolCallRunning {
-  border-left: 2px solid var(--accent);
-  background: var(--accent-muted);
-  padding-left: 12px;
-  margin-left: -2px;
-  border-radius: 0 2px 2px 0;
+  border-left: 3px solid var(--accent);
+  background: rgba(0, 91, 192, 0.04);
+  padding-left: 10px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 0;
 }
 
 .toolCallCompleted {
-  border-left: 2px solid transparent;
-  padding-left: 0;
+  border-left: 3px solid transparent;
+  padding-left: 10px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 0;
+  opacity: 0.75;
 }
 
 .toolCallPending {
-  border-left: 2px solid transparent;
-  padding-left: 0;
-  opacity: 0.7;
+  border-left: 3px solid transparent;
+  padding-left: 10px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 0;
+  opacity: 0.5;
 }
 
 .toolCallError {
-  border-left: 2px solid var(--error);
-  padding-left: 12px;
-  margin-left: -2px;
-  border-radius: 0 2px 2px 0;
+  border-left: 3px solid var(--error);
+  background: rgba(239, 68, 68, 0.04);
+  padding-left: 10px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 0;
 }
 
-/* ── Icon ── */
+/* ── Tool-specific icon ── */
 .toolIcon {
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
   flex-shrink: 0;
+  background: var(--accent-muted);
 }
 
 .toolIcon .material-symbols-outlined {
-  font-size: 16px;
+  font-size: 14px;
+  color: var(--accent);
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20;
 }
 
-/* Completed: green check */
+/* Running: accent pulse background */
+.toolIconRunning {
+  background: rgba(0, 91, 192, 0.12);
+  animation: iconPulse 1.5s ease-in-out infinite;
+}
+
+.toolIconRunning .material-symbols-outlined {
+  color: var(--accent);
+  animation: spin 2s linear infinite;
+}
+
+/* Completed: green icon */
+.toolIconCompleted {
+  background: rgba(34, 197, 94, 0.10);
+}
+
 .toolIconCompleted .material-symbols-outlined {
   color: var(--success);
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
-}
-
-/* Running: accent + pulse */
-.toolIconRunning .material-symbols-outlined {
-  color: var(--accent);
-  animation: pulse 1.5s ease-in-out infinite;
 }
 
 /* Pending: muted */
@@ -74,29 +97,35 @@
   color: var(--text-muted);
 }
 
-/* Error: red */
+/* Error: red icon */
+.toolIconError {
+  background: rgba(239, 68, 68, 0.10);
+}
+
 .toolIconError .material-symbols-outlined {
   color: var(--error);
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
 }
 
-/* ── Tool name (bold mono) ── */
+/* ── Tool name label ── */
 .toolName {
   font-weight: 700;
   flex-shrink: 0;
+  font-size: 11px;
+  letter-spacing: 0.03em;
 }
 
 .toolNameCompleted {
-  color: var(--success);
+  color: var(--text-secondary);
 }
 
 .toolNameRunning {
   color: var(--accent);
-  animation: pulse 1.5s ease-in-out infinite;
+  animation: textPulse 1.5s ease-in-out infinite;
 }
 
 .toolNamePending {
-  color: var(--text-primary);
+  color: var(--text-muted);
 }
 
 .toolNameError {
@@ -111,6 +140,7 @@
   flex: 1;
   min-width: 0;
   opacity: 0.6;
+  font-size: 11px;
 }
 
 /* ── Right-side status badge ── */
@@ -123,12 +153,12 @@
 .toolStatusRunning {
   color: var(--accent);
   font-style: italic;
-  animation: pulse 1.5s ease-in-out infinite;
+  animation: textPulse 1.5s ease-in-out infinite;
 }
 
 .toolStatusCompleted {
-  color: var(--text-muted);
-  opacity: 0.5;
+  color: var(--success);
+  opacity: 0.6;
 }
 
 .toolStatusPending {
@@ -145,8 +175,8 @@
   align-items: center;
   flex-shrink: 0;
   margin-left: 4px;
-  opacity: 0.4;
-  transition: transform 200ms;
+  opacity: 0.3;
+  transition: transform 200ms, opacity 200ms;
 }
 
 .chevron .material-symbols-outlined {
@@ -156,16 +186,21 @@
 
 .chevronOpen {
   transform: rotate(90deg);
+  opacity: 0.6;
 }
 
 /* ── Expanded body ── */
 .toolCallBody {
-  padding: 8px 0 8px 16px;
+  padding: 8px 10px 8px 38px;
   font-size: var(--font-size-xs);
-  max-height: 120px;
+  max-height: 160px;
   overflow-y: auto;
-  border-left: 2px solid var(--accent-muted);
-  margin-left: -2px;
+  border-left: 3px solid var(--accent-muted);
+  margin-left: -1px;
+  margin-top: 2px;
+  margin-bottom: 4px;
+  border-radius: 0 6px 6px 0;
+  background: var(--accent-muted);
 }
 
 .toolCallLabel {
@@ -198,15 +233,39 @@
 
 /* ── Dark theme ── */
 [data-theme="dark"] .toolCallRunning {
-  background: rgba(173, 198, 255, 0.08);
+  background: rgba(173, 198, 255, 0.06);
 }
 
 [data-theme="dark"] .toolCall:hover {
   background: rgba(173, 198, 255, 0.06);
 }
 
+[data-theme="dark"] .toolCallError {
+  background: rgba(239, 68, 68, 0.06);
+}
+
+[data-theme="dark"] .toolIcon {
+  background: rgba(173, 198, 255, 0.10);
+}
+
+[data-theme="dark"] .toolIcon .material-symbols-outlined {
+  color: var(--accent);
+}
+
+[data-theme="dark"] .toolIconRunning {
+  background: rgba(173, 198, 255, 0.15);
+}
+
+[data-theme="dark"] .toolIconCompleted {
+  background: rgba(34, 197, 94, 0.12);
+}
+
+[data-theme="dark"] .toolIconError {
+  background: rgba(239, 68, 68, 0.12);
+}
+
 [data-theme="dark"] .toolNameCompleted {
-  color: var(--success);
+  color: var(--text-secondary);
 }
 
 [data-theme="dark"] .toolNameRunning {
@@ -214,11 +273,27 @@
 }
 
 [data-theme="dark"] .toolStatusCompleted {
-  color: var(--text-muted);
+  color: var(--success);
+  opacity: 0.5;
 }
 
-/* ── Pulse animation ── */
-@keyframes pulse {
+[data-theme="dark"] .toolCallBody {
+  background: rgba(173, 198, 255, 0.06);
+  border-left-color: rgba(173, 198, 255, 0.20);
+}
+
+/* ── Animations ── */
+@keyframes iconPulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes textPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

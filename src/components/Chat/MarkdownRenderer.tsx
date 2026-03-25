@@ -85,7 +85,7 @@ function CodeElement({ children, className }: ComponentPropsWithoutRef<'code'> &
 }
 
 function Paragraph({ children }: { children?: ReactNode }) {
-  return <p style={{ margin: '8px 0', lineHeight: '1.6' }}>{children}</p>;
+  return <p style={{ margin: '8px 0', lineHeight: 'var(--line-height-relaxed)' }}>{children}</p>;
 }
 
 function Link({ href, children }: ComponentPropsWithoutRef<'a'> & { children?: ReactNode }) {
@@ -137,11 +137,11 @@ function TableCell({ children }: { children?: ReactNode }) {
 }
 
 function UnorderedList({ children }: { children?: ReactNode }) {
-  return <ul style={{ margin: '8px 0', paddingLeft: '24px', lineHeight: '1.6' }}>{children}</ul>;
+  return <ul style={{ margin: '8px 0', paddingLeft: '24px', lineHeight: 'var(--line-height-relaxed)' }}>{children}</ul>;
 }
 
 function OrderedList({ children }: { children?: ReactNode }) {
-  return <ol style={{ margin: '8px 0', paddingLeft: '24px', lineHeight: '1.6' }}>{children}</ol>;
+  return <ol style={{ margin: '8px 0', paddingLeft: '24px', lineHeight: 'var(--line-height-relaxed)' }}>{children}</ol>;
 }
 
 function ListItem({ children }: { children?: ReactNode }) {

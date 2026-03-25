@@ -16,6 +16,16 @@ function getToolLabel(name: string): string {
   return name.toUpperCase().slice(0, 16);
 }
 
+function getToolIcon(name: string): string {
+  if (name === 'ReadFile' || name === 'Read') return 'description';
+  if (name === 'WriteFile' || name === 'Write') return 'edit_note';
+  if (name === 'Edit') return 'edit';
+  if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') return 'terminal';
+  if (name === 'SearchFiles' || name === 'Grep') return 'search';
+  if (name === 'Glob') return 'folder_search';
+  return 'build';
+}
+
 function getShortSummary(toolCall: ToolCall): string {
   const input = toolCall.input;
   if (input.file_path) return String(input.file_path);
@@ -44,6 +54,7 @@ function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
   const [expanded, setExpanded] = useState(false);
   const label = getToolLabel(toolCall.name);
   const summary = getShortSummary(toolCall);
+  const toolIcon = getToolIcon(toolCall.name);
   const statusIcon = getStatusIcon(toolCall.status);
   const statusCls = getStatusClass(toolCall.status);
 
@@ -72,11 +83,12 @@ function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
         onClick={toggleExpand}
       >
         <span className={`${styles.toolIcon} ${styles[`toolIcon${statusCls}`]}`}>
-          <span className="material-symbols-outlined">{statusIcon}</span>
+          <span className="material-symbols-outlined">{toolIcon}</span>
         </span>
         <span className={`${styles.toolName} ${styles[`toolName${statusCls}`]}`}>{label}</span>
         {summary && <span className={styles.toolPath}>{summary}</span>}
         <span className={`${styles.toolStatus} ${styles[`toolStatus${statusCls}`]}`}>
+          <span className="material-symbols-outlined" style={{ fontSize: 14, marginRight: 2 }}>{statusIcon}</span>
           {statusText}
         </span>
         <span className={`${styles.chevron} ${expanded ? styles.chevronOpen : ''}`}>
