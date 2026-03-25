@@ -3,24 +3,74 @@ import mermaid from 'mermaid';
 import DOMPurify from 'dompurify';
 import styles from './MermaidBlock.module.css';
 
-// Initialize mermaid once
+// Initialize mermaid once with polished theme
 mermaid.initialize({
   startOnLoad: false,
   theme: 'base',
   themeVariables: {
-    primaryColor: '#e8f0fe',
-    primaryTextColor: '#1d2129',
-    primaryBorderColor: '#c9d1d9',
-    lineColor: '#586069',
-    secondaryColor: '#f0f4ff',
-    tertiaryColor: '#fafafa',
+    // Background
+    primaryColor: '#EEF2FF',
+    primaryTextColor: '#1E293B',
+    primaryBorderColor: '#818CF8',
+    // Secondary
+    secondaryColor: '#F0FDF4',
+    secondaryTextColor: '#1E293B',
+    secondaryBorderColor: '#34D399',
+    // Tertiary
+    tertiaryColor: '#FFF7ED',
+    tertiaryTextColor: '#1E293B',
+    tertiaryBorderColor: '#FB923C',
+    // Lines & edges
+    lineColor: '#94A3B8',
+    // General
     fontSize: '14px',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    // Nodes
+    nodeBorder: '#CBD5E1',
+    nodeTextColor: '#1E293B',
+    mainBkg: '#EEF2FF',
+    // Edges
+    edgeLabelBackground: '#FFFFFF',
+    clusterBkg: '#F8FAFC',
+    clusterBorder: '#E2E8F0',
+    // Title
+    titleColor: '#0F172A',
+    // Actor (sequence diagrams)
+    actorBkg: '#EEF2FF',
+    actorBorder: '#818CF8',
+    actorTextColor: '#1E293B',
+    // Signal (sequence diagrams)
+    signalColor: '#64748B',
+    signalTextColor: '#1E293B',
+    // Label
+    labelBoxBkgColor: '#F8FAFC',
+    labelBoxBorderColor: '#E2E8F0',
+    labelTextColor: '#1E293B',
+    // Loop
+    loopTextColor: '#64748B',
+    // Activation
+    activationBkgColor: '#EEF2FF',
+    activationBorderColor: '#818CF8',
+    // Sequence
+    sequenceNumberColor: '#FFFFFF',
+  },
+  flowchart: {
+    useMaxWidth: true,
+    htmlLabels: true,
+    curve: 'basis',
+    padding: 15,
+  },
+  sequence: {
+    useMaxWidth: true,
+    wrap: true,
+    width: 180,
+    height: 50,
+    messageMargin: 35,
   },
 });
 
 interface MermaidBlockProps {
   code: string;
-  /** Called when rendering fails — parent can use this to show a fallback */
   onRenderError?: () => void;
 }
 
@@ -31,7 +81,6 @@ const MermaidBlock: React.FC<MermaidBlockProps> = ({ code, onRenderError }) => {
   const renderRef = useRef(false);
 
   const handleError = useCallback((_msg: string) => {
-    // Notify parent to show fallback (code block)
     onRenderError?.();
   }, [onRenderError]);
 
@@ -59,7 +108,6 @@ const MermaidBlock: React.FC<MermaidBlockProps> = ({ code, onRenderError }) => {
     );
 
     return () => {
-      // Clean up the temporary element mermaid creates
       const el = document.getElementById('d' + id);
       if (el) el.remove();
     };

@@ -1,19 +1,70 @@
 /* MermaidBlock styles */
 
 .container {
-  padding: 12px;
+  padding: 20px;
   background: var(--bg-primary, #FFFFFF);
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid var(--border, #E2E8F0);
   overflow: auto;
   max-width: 100%;
+  /* Center the diagram */
+  display: flex;
+  justify-content: center;
+}
+
+/* Style mermaid SVG internals */
+.container :global(.node) {
+  rx: 8;
+  ry: 8;
+}
+
+.container :global(.node rect),
+.container :global(.node polygon),
+.container :global(.node circle) {
+  stroke-width: 1.5px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
+.container :global(.edgeLabel) {
+  font-size: 12px;
+}
+
+.container :global(.label) {
+  font-weight: 500;
+}
+
+.container :global(.cluster rect) {
+  rx: 12;
+  ry: 12;
+  stroke-dasharray: 4 2;
+}
+
+/* Dark theme overrides */
+[data-theme="dark"] .container {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .container :global(.node rect),
+[data-theme="dark"] .container :global(.node polygon) {
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
 .loading {
-  padding: 16px;
+  padding: 24px;
   text-align: center;
   color: var(--text-muted, #94A3B8);
   font-size: 13px;
+}
+
+.spinner {
+  display: inline-block;
+  animation: mermaid-spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes mermaid-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .error {
