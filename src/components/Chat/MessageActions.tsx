@@ -5,29 +5,42 @@ interface MessageActionsProps {
   messageContent: string;
   messageId: string;
   isUserMessage: boolean;
+  isGenerating?: boolean;
   onRegenerate?: (messageId: string) => void;
   onEditAndResend?: (messageId: string, newContent: string) => void;
 }
 
-function MessageActions({ messageContent, messageId, isUserMessage, onRegenerate, onEditAndResend }: MessageActionsProps) {
+function MessageActions({ messageContent, messageId, isUserMessage, isGenerating, onRegenerate, onEditAndResend }: MessageActionsProps) {
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(messageContent);
-  const [isRegenerating, setIsRegenerating] = useState(false);
 
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(messageContent);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {}
+    } catch {
+      // Fallback for non-HTTPS or denied permission
+      const ta = document.createElement('textarea');
+      ta.value = messageContent;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch {}
+      document.body.removeChild(ta);
+    }
   }, [messageContent]);
 
   const handleRegenerate = useCallback(() => {
-    if (isRegenerating) return;
-    setIsRegenerating(true);
+    if (isGenerating) return;
     onRegenerate?.(messageId);
-  }, [messageId, onRegenerate, isRegenerating]);
+  }, [messageId, onRegenerate, isGenerating]);
 
   const handleEdit = useCallback(() => {
     setEditText(messageContent);
@@ -41,9 +54,10 @@ function MessageActions({ messageContent, messageId, isUserMessage, onRegenerate
   const handleSubmitEdit = useCallback(() => {
     const trimmed = editText.trim();
     if (!trimmed) return;
+    if (isGenerating) return;
     setIsEditing(false);
     onEditAndResend?.(messageId, trimmed);
-  }, [messageId, editText, onEditAndResend]);
+  }, [messageId, editText, onEditAndResend, isGenerating]);
 
   const handleEditKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
@@ -83,13 +97,13 @@ function MessageActions({ messageContent, messageId, isUserMessage, onRegenerate
         <button
           className={styles.actionBtn}
           onClick={handleRegenerate}
-          disabled={isRegenerating}
-          title="Regenerate"
+          disabled={isGenerating}
+          title="重新生成"
         >
           <span className="material-symbols-outlined">
-            {isRegenerating ? 'progress_activity' : 'refresh'}
+            {isGenerating ? 'progress_activity' : 'refresh'}
           </span>
-          <span>{isRegenerating ? 'Regenerating...' : 'Regenerate'}</span>
+          <span>{isGenerating ? '重新生成中...' : '重新生成'}</span>
         </button>
       )}
 
@@ -97,12 +111,12 @@ function MessageActions({ messageContent, messageId, isUserMessage, onRegenerate
       <button
         className={`${styles.actionBtn} ${copied ? styles.actionBtnCopied : ''}`}
         onClick={handleCopy}
-        title="Copy"
+        title="复制"
       >
         <span className="material-symbols-outlined">
           {copied ? 'check' : 'content_copy'}
         </span>
-        <span>{copied ? 'Copied' : 'Copy'}</span>
+        <span>{copied ? '已复制' : '复制'}</span>
       </button>
 
       {/* Edit: show on user messages */}
@@ -110,10 +124,10 @@ function MessageActions({ messageContent, messageId, isUserMessage, onRegenerate
         <button
           className={styles.actionBtn}
           onClick={handleEdit}
-          title="Edit"
+          title="编辑"
         >
           <span className="material-symbols-outlined">edit</span>
-          <span>Edit</span>
+          <span>编辑</span>
         </button>
       )}
     </div>

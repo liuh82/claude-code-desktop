@@ -45,7 +45,7 @@ describe('MessageActions', () => {
       />
     );
 
-    expect(screen.getByText('Copy')).toBeInTheDocument();
+    expect(screen.getByText('复制')).toBeInTheDocument();
   });
 
   it('renders Regenerate button for assistant messages', async () => {
@@ -60,7 +60,7 @@ describe('MessageActions', () => {
       />
     );
 
-    expect(screen.getByText('Regenerate')).toBeInTheDocument();
+    expect(screen.getByText('重新生成')).toBeInTheDocument();
   });
 
   it('does not render Regenerate button for user messages', async () => {
@@ -74,7 +74,7 @@ describe('MessageActions', () => {
       />
     );
 
-    expect(screen.queryByText('Regenerate')).not.toBeInTheDocument();
+    expect(screen.queryByText('重新生成')).not.toBeInTheDocument();
   });
 
   it('renders Edit button for user messages', async () => {
@@ -89,7 +89,7 @@ describe('MessageActions', () => {
       />
     );
 
-    expect(screen.getByText('Edit')).toBeInTheDocument();
+    expect(screen.getByText('编辑')).toBeInTheDocument();
   });
 
   it('copies content to clipboard when Copy is clicked', async () => {
@@ -103,7 +103,7 @@ describe('MessageActions', () => {
       />
     );
 
-    fireEvent.click(screen.getByText('Copy'));
+    fireEvent.click(screen.getByText('复制'));
 
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith('Copy this text');
   });
@@ -121,10 +121,10 @@ describe('MessageActions', () => {
     );
 
     await act(async () => {
-      fireEvent.click(screen.getByText('Copy'));
+      fireEvent.click(screen.getByText('复制'));
     });
 
-    expect(screen.getByText('Copied')).toBeInTheDocument();
+    expect(screen.getByText('已复制')).toBeInTheDocument();
 
     vi.useRealTimers();
   });
@@ -142,7 +142,7 @@ describe('MessageActions', () => {
       />
     );
 
-    fireEvent.click(screen.getByText('Regenerate'));
+    fireEvent.click(screen.getByText('重新生成'));
 
     expect(onRegenerate).toHaveBeenCalledWith('msg-7');
   });
@@ -158,7 +158,7 @@ describe('MessageActions', () => {
       />
     );
 
-    fireEvent.click(screen.getByText('Edit'));
+    fireEvent.click(screen.getByText('编辑'));
 
     // Should show a textarea for editing
     const textarea = screen.getByRole('textbox');
@@ -180,7 +180,7 @@ describe('MessageActions', () => {
     );
 
     // Enter edit mode
-    fireEvent.click(screen.getByText('Edit'));
+    fireEvent.click(screen.getByText('编辑'));
 
     // Change text
     const textarea = screen.getByRole('textbox');
@@ -206,7 +206,7 @@ describe('MessageActions', () => {
     );
 
     // Enter edit mode
-    fireEvent.click(screen.getByText('Edit'));
+    fireEvent.click(screen.getByText('编辑'));
     expect(screen.getByRole('textbox')).toBeInTheDocument();
 
     // Click cancel (second button is cancel)
@@ -215,5 +215,81 @@ describe('MessageActions', () => {
 
     // Should be back to normal mode — no textarea
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
+  // ── New test cases ──
+
+  it('does not call onRegenerate when isGenerating is true', async () => {
+    const onRegenerate = vi.fn();
+    const { MessageActions } = await import('../components/Chat/MessageActions');
+
+    render(
+      <MessageActions
+        messageContent="AI response"
+        messageId="msg-gen-1"
+        isUserMessage={false}
+        isGenerating={true}
+        onRegenerate={onRegenerate}
+      />
+    );
+
+    // Button should be disabled
+    const btn = screen.getByText('重新生成中...');
+    expect(btn.closest('button')).toBeDisabled();
+    fireEvent.click(btn);
+
+    expect(onRegenerate).not.toHaveBeenCalled();
+  });
+
+  it('does not submit edit when isGenerating is true', async () => {
+    const onEditAndResend = vi.fn();
+    const { MessageActions } = await import('../components/Chat/MessageActions');
+
+    render(
+      <MessageActions
+        messageContent="Original"
+        messageId="msg-gen-2"
+        isUserMessage={true}
+        isGenerating={true}
+        onEditAndResend={onEditAndResend}
+      />
+    );
+
+    // Enter edit mode
+    fireEvent.click(screen.getByText('编辑'));
+    const textarea = screen.getByRole('textbox');
+    fireEvent.change(textarea, { target: { value: 'Modified' } });
+
+    // Click submit
+    const buttons = screen.getAllByRole('button');
+    fireEvent.click(buttons[0]);
+
+    expect(onEditAndResend).not.toHaveBeenCalled();
+  });
+
+  it('falls back to execCommand when clipboard API fails', async () => {
+    // Make clipboard API reject
+    (navigator.clipboard.writeText as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Denied'));
+
+    // jsdom doesn't implement execCommand — mock it
+    const execSpy = vi.fn().mockReturnValue(true);
+    Object.defineProperty(document, 'execCommand', { value: execSpy, writable: true });
+
+    const { MessageActions } = await import('../components/Chat/MessageActions');
+
+    render(
+      <MessageActions
+        messageContent="Fallback text"
+        messageId="msg-fb-1"
+        isUserMessage={false}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('复制'));
+    });
+
+    expect(execSpy).toHaveBeenCalledWith('copy');
+    expect(screen.getByText('已复制')).toBeInTheDocument();
   });
 });

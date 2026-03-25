@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import mermaid from 'mermaid';
+import DOMPurify from 'dompurify';
+import styles from './MermaidBlock.module.css';
 
 // Initialize mermaid once with light theme
 mermaid.initialize({
@@ -35,16 +37,15 @@ mermaid.initialize({
   },
 });
 
-let renderCount = 0;
-
-function MermaidBlock({ code }: { code: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
+function MermaidBlock({ code, index }: { code: string; index?: number }) {
+  const renderCountRef = useRef(0);
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
 
+  const id = useMemo(() => `mermaid-${++renderCountRef.current}-${index ?? 0}`, [index]);
+
   useEffect(() => {
-    const id = `mermaid-${++renderCount}`;
     const trimmed = code.trim();
 
     if (!trimmed) {
@@ -72,19 +73,11 @@ function MermaidBlock({ code }: { code: string }) {
       const el = document.getElementById('d' + id);
       if (el) el.remove();
     };
-  }, [code]);
+  }, [code, id]);
 
   if (error) {
     return (
-      <div style={{
-        padding: '8px 12px',
-        borderRadius: '6px',
-        background: '#FEF2F2',
-        border: '1px solid #FECACA',
-        color: '#991B1B',
-        fontSize: '12px',
-        fontFamily: 'monospace',
-      }}>
+      <div className={styles.error}>
         {error}
       </div>
     );
@@ -92,30 +85,16 @@ function MermaidBlock({ code }: { code: string }) {
 
   if (loading || !svg) {
     return (
-      <div style={{
-        padding: '16px',
-        textAlign: 'center',
-        color: '#94A3B8',
-        fontSize: '13px',
-      }}>
-        Rendering diagram...
+      <div className={styles.loading}>
+        渲染图表中...
       </div>
     );
   }
 
   return (
     <div
-      ref={containerRef}
-      className="mermaid-container"
-      style={{
-        padding: '12px',
-        background: '#FFFFFF',
-        borderRadius: '8px',
-        border: '1px solid #E2E8F0',
-        overflow: 'auto',
-        maxWidth: '100%',
-      }}
-      dangerouslySetInnerHTML={{ __html: svg }}
+      className={styles.container}
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(svg) }}
     />
   );
 }

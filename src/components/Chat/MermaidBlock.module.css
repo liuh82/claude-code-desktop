@@ -1,0 +1,27 @@
+/* MermaidBlock styles */
+
+.container {
+  padding: 12px;
+  background: var(--bg-primary, #FFFFFF);
+  border-radius: 8px;
+  border: 1px solid var(--border, #E2E8F0);
+  overflow: auto;
+  max-width: 100%;
+}
+
+.loading {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted, #94A3B8);
+  font-size: 13px;
+}
+
+.error {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+  font-size: 12px;
+  font-family: monospace;
+}

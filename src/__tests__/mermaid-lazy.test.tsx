@@ -1,11 +1,18 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 
 // Mock mermaid — it's heavy and has DOM dependencies
 vi.mock('mermaid', () => ({
   default: {
     initialize: vi.fn(),
     render: vi.fn().mockResolvedValue({ svg: '<svg>mock</svg>' }),
+  },
+}));
+
+// Mock dompurify
+vi.mock('dompurify', () => ({
+  default: {
+    sanitize: vi.fn((html: string) => html),
   },
 }));
 
@@ -97,6 +104,27 @@ describe('Mermaid lazy loading and streaming protection', () => {
       const { container } = render(<MarkdownRenderer content={content} />);
 
       expect(container.textContent).toContain('Some text after.');
+    });
+  });
+
+  describe('MermaidBlock error handling', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('renders error state for invalid mermaid syntax', async () => {
+      const mermaid = (await import('mermaid')).default;
+      (mermaid.render as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error('Parse error on line 2')
+      );
+
+      const { MermaidBlock } = await import('../components/Chat/MermaidBlock');
+
+      render(<MermaidBlock code="INVALID SYNTAX" index={99} />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Mermaid render error/)).toBeInTheDocument();
+      });
     });
   });
 });

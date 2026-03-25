@@ -858,8 +858,8 @@ interface ChatState {
   initPane: (paneId: string, projectPath: string, model?: string) => Promise<void>;
   sendMessage: (paneId: string, text: string) => Promise<void>;
   stopGeneration: (paneId: string) => void;
-  regenerateMessage: (paneId: string, messageId: string) => void;
-  editAndResend: (paneId: string, messageId: string, newContent: string) => void;
+  regenerateMessage: (paneId: string, messageId: string) => Promise<void>;
+  editAndResend: (paneId: string, messageId: string, newContent: string) => Promise<void>;
   clearPane: (paneId: string) => void;
   addSystemMessage: (paneId: string, content: string) => void;
   restoreMessages: (paneId: string, dbMessages: DbMessage[]) => void;
@@ -1086,9 +1086,14 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     stopCliTypingSimulation(paneId);
   },
 
-  regenerateMessage: (paneId: string, messageId: string) => {
+  regenerateMessage: async (paneId: string, messageId: string) => {
     const paneState = get().panes.get(paneId);
     if (!paneState) return;
+
+    // Guard: stop any ongoing generation first
+    if (paneState.isGenerating) {
+      get().stopGeneration(paneId);
+    }
 
     const msgIndex = paneState.messages.findIndex(m => m.id === messageId);
     if (msgIndex < 0) return;
@@ -1101,7 +1106,10 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         break;
       }
     }
-    if (!userContent) return;
+    if (!userContent) {
+      get().addSystemMessage(paneId, '无法重新生成：找不到上一条用户消息');
+      return;
+    }
 
     // Remove this message and all after it
     const truncatedMessages = paneState.messages.slice(0, msgIndex);
@@ -1118,12 +1126,17 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     });
 
     // Re-send the original user message
-    get().sendMessage(paneId, userContent);
+    await get().sendMessage(paneId, userContent);
   },
 
-  editAndResend: (paneId: string, messageId: string, newContent: string) => {
+  editAndResend: async (paneId: string, messageId: string, newContent: string) => {
     const paneState = get().panes.get(paneId);
     if (!paneState) return;
+
+    // Guard: stop any ongoing generation first
+    if (paneState.isGenerating) {
+      get().stopGeneration(paneId);
+    }
 
     const msgIndex = paneState.messages.findIndex(m => m.id === messageId);
     if (msgIndex < 0) return;
@@ -1143,7 +1156,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     });
 
     // Send the edited message
-    get().sendMessage(paneId, newContent);
+    await get().sendMessage(paneId, newContent);
   },
 
   addSystemMessage: (paneId: string, content: string) => {

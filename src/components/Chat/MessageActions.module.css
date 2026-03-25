@@ -8,10 +8,6 @@
   margin-top: 6px;
 }
 
-.messageActionsVisible {
-  opacity: 1;
-}
-
 .actionBtn {
   display: flex;
   align-items: center;
