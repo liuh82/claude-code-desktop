@@ -110,7 +110,7 @@ function ArchitectureCard({ card }: { card: Extract<VizCard, { type: 'architectu
     <div className={styles.card}>
       <CardHeader title={card.title} subtitle={card.subtitle} label={card.label} icon={card.icon || 'account_tree'} />
       <div className={styles.moduleGrid}>
-        {card.modules.map((mod, i) => {
+        {(card.modules || []).map((mod, i) => {
           const colorClass = mod.color === 'secondary' ? styles.moduleSecondary
             : mod.color === 'tertiary' ? styles.moduleTertiary
             : styles.modulePrimary;
@@ -145,7 +145,7 @@ function DataFlowCard({ card }: { card: Extract<VizCard, { type: 'dataflow' }> }
       <div className={`${styles.card} ${styles.flowMain}`}>
         <CardHeader title={card.title} subtitle={card.subtitle} label={card.label || 'Active Stream'} />
         <div className={styles.flowSteps}>
-          {card.steps.map((step, i) => (
+          {(card.steps || []).map((step, i) => (
             <div key={i} className={`${styles.flowStep} ${step.active ? styles.flowStepActive : ''}`}>
               <div className={`${styles.flowDot} ${step.active ? styles.flowDotActive : step.success ? styles.flowDotSuccess : ''}`} />
               <span className={styles.flowEndpoint}>{step.method ? `${step.method} ` : ''}{step.endpoint}</span>
@@ -181,7 +181,7 @@ function ComparisonCard({ card }: { card: Extract<VizCard, { type: 'comparison' 
     <div className={styles.card}>
       <CardHeader title={card.title} subtitle={card.subtitle} label={card.label || 'A/B Intelligence'} />
       <div className={styles.compareGrid}>
-        {card.sides.map((side, i) => (
+        {(card.sides || []).map((side, i) => (
           <div key={i} className={`${styles.compareSide} ${side.badgeVariant === 'highlight' ? styles.compareSideHighlight : ''}`}>
             <div className={styles.compareSideHeader}>
               <div className={styles.compareSideIcon}>
@@ -195,7 +195,7 @@ function ComparisonCard({ card }: { card: Extract<VizCard, { type: 'comparison' 
               )}
             </div>
             <ul className={styles.compareRows}>
-              {side.rows.map((row, j) => (
+              {(side.rows || []).map((row, j) => (
                 <li key={j} className={styles.compareRow}>
                   <span className={styles.compareRowLabel}>{row.label}</span>
                   <span className={`${styles.compareRowValue} ${row.highlight ? styles.compareRowHighlight : ''}`}>
@@ -224,7 +224,7 @@ function StatisticsCard({ card }: { card: Extract<VizCard, { type: 'statistics' 
     <div className={styles.card}>
       <CardHeader title={card.title} subtitle={card.subtitle} label={card.label || 'Performance Index'} />
       <div className={styles.statsGrid}>
-        {card.stats.map((stat, i) => (
+        {(card.stats || []).map((stat, i) => (
           <div key={i} className={styles.statItem}>
             <div className={styles.statLabel}>{stat.label}</div>
             <div className={`${styles.statValue} ${stat.label.toLowerCase().includes('error') ? styles.statError : ''}`}>
@@ -243,7 +243,7 @@ function StatisticsCard({ card }: { card: Extract<VizCard, { type: 'statistics' 
         <div className={styles.barsSection}>
           <div className={styles.barsLabel}>Performance History</div>
           <div className={styles.barsContainer}>
-            {card.bars.values.map((v, i) => (
+            {((card.bars && card.bars.values) || []).map((v, i) => (
               <div
                 key={i}
                 className={styles.bar}
@@ -266,7 +266,7 @@ function TimelineCard({ card }: { card: Extract<VizCard, { type: 'timeline' }> }
       <div className={styles.timeline}>
         <div className={styles.timelineLine} />
         <div className={styles.timelineSteps}>
-          {card.steps.map((step, i) => {
+          {(card.steps || []).map((step, i) => {
             const dotClass = step.status === 'completed' ? styles.timelineDotCompleted
               : step.status === 'active' ? styles.timelineDotActive
               : styles.timelineDotPending;
