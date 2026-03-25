@@ -120,7 +120,15 @@ const TOOL_DEFINITIONS = [
 
 // ── System prompt ──
 
-const CCDESK_SYSTEM_PROMPT = `CCDesk 桌面客户端支持以下扩展语法，请在需要可视化数据时使用：
+const CCDESK_SYSTEM_PROMPT = `你拥有以下工具可以操作用户的本地文件系统和执行命令：
+- Read: 读取文件内容（绝对路径或相对路径）
+- Write: 写入/创建文件
+- Bash: 执行 shell 命令
+- Grep: 在文件中搜索正则表达式
+- Glob: 查找匹配 glob 模式的文件
+- Edit: 通过搜索替换编辑文件
+
+当你需要查看文件内容时，请使用 Read 工具。你一定可以读取用户的文件系统，不要说"无法读取"。当你需要执行命令时，请使用 Bash 工具。请主动使用这些工具来完成任务，不要直接回复说做不到。
 
 ## 可视化输出
 当你的回复中需要描述以下内容时，请使用 \`\`\`visual 代码块自动输出可视化卡片（JSON 格式）：
@@ -258,22 +266,30 @@ export class ClaudeDirectClient {
       this.trimMessages();
 
       try {
-        const hasTools = this.messages.some(m =>
-          m.content.some(b => b.type === 'tool_result')
-        );
-
         const body: Record<string, unknown> = {
           model: this.config.model,
           max_tokens: this.config.maxTokens,
           stream: true,
           system: CCDESK_SYSTEM_PROMPT,
           messages: this.messages,
+          tools: TOOL_DEFINITIONS,
         };
 
-        // Only include tools when there are tool_result messages (otherwise they confuse the model)
-        if (hasTools || round > 1) {
-          body.tools = TOOL_DEFINITIONS;
+        // Sanitize tool definitions for maximum API compatibility
+        // (strip TypeScript artifacts, ensure clean JSON shapes)
+        if (body.tools) {
+          body.tools = (body.tools as any[]).map((t: any) => ({
+            name: t.name,
+            description: t.description,
+            input_schema: {
+              type: 'object',
+              properties: t.input_schema?.properties,
+              required: t.input_schema?.required,
+            },
+          }));
         }
+
+        console.error(`[DirectAPI] Request body: tools=${(body.tools as any[])?.length || 0}, messages=${this.messages.length}`);
 
         // Build headers: always pass claude env as base, override auth
         const headers: Record<string, string> = {
@@ -354,6 +370,7 @@ export class ClaudeDirectClient {
           // Request permission before executing
           const granted = await this.requestPermission(toolBlock.id, toolBlock.name, toolBlock.input);
           if (!granted) {
+            console.error(`[DirectAPI] Tool ${toolBlock.name}: granted=false (denied)`);
             toolResults.push({
               type: 'tool_result',
               tool_use_id: toolBlock.id,
@@ -373,6 +390,7 @@ export class ClaudeDirectClient {
             result = `Error: ${err.message}`;
             this.onToolExecution?.({ id: toolBlock.id, name: toolBlock.name, status: 'error', output: result });
             toolResults.push({ type: 'tool_result', tool_use_id: toolBlock.id, content: result });
+            console.error(`[DirectAPI] Tool ${toolBlock.name}: granted=true, error=${err.message}`);
             continue;
           }
 
@@ -383,6 +401,7 @@ export class ClaudeDirectClient {
             tool_use_id: toolBlock.id,
             content: result,
           });
+          console.error(`[DirectAPI] Tool ${toolBlock.name}: granted=true, result_len=${result.length}`);
         }
 
         // Add tool results as a new user message
@@ -443,6 +462,9 @@ export class ClaudeDirectClient {
 
       case 'content_block_start': {
         const blockType = event.content_block?.type;
+        if (blockType === 'tool_use') {
+          console.error(`[DirectAPI] Tool use detected: name=${event.content_block?.name}, id=${event.content_block?.id}`);
+        }
         if (blockType === 'text') {
           state.currentTextIndex = contentBlocks.length;
           contentBlocks.push({ type: 'text', text: '' });
