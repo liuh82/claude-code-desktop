@@ -3,7 +3,6 @@ import type { ChatMessage, ToolCall } from '@/types/chat';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ToolCallBlock } from './ToolCallBlock';
 import { StreamingStatus } from './StreamingStatus';
-import { PermissionBlock } from './PermissionBlock';
 import { MessageActions } from './MessageActions';
 import { useChatStore } from '@/stores/useChatStore';
 import styles from './MessageBubble.module.css';
@@ -11,8 +10,6 @@ import styles from './MessageBubble.module.css';
 interface MessageBubbleProps {
   message: ChatMessage;
   paneId: string;
-  onPermissionAllow?: (toolCall: ToolCall) => void;
-  onPermissionDeny?: (toolCall: ToolCall) => void;
 }
 
 function getPermissionInfo(toolCall: ToolCall): { toolName: string; toolIcon: string; target: string; isDangerous?: boolean } {
@@ -29,7 +26,7 @@ function getPermissionInfo(toolCall: ToolCall): { toolName: string; toolIcon: st
   return { toolName: name.toUpperCase(), toolIcon: 'security', target: '', isDangerous: false };
 }
 
-function MessageBubble({ message, paneId, onPermissionAllow, onPermissionDeny }: MessageBubbleProps) {
+function MessageBubble({ message, paneId }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const roleLabel = isUser ? '你' : 'Claude Code';
   const timeStr = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -80,15 +77,11 @@ function MessageBubble({ message, paneId, onPermissionAllow, onPermissionDeny }:
                         if (tc.status === 'pending_permission') {
                           const info = getPermissionInfo(tc);
                           return (
-                            <PermissionBlock
-                              key={tc.id}
-                              toolName={info.toolName}
-                              toolIcon={info.toolIcon}
-                              target={info.target}
-                              isDangerous={info.isDangerous}
-                              onAllow={() => onPermissionAllow?.(tc)}
-                              onDeny={() => onPermissionDeny?.(tc)}
-                            />
+                            <div key={tc.id} className={styles.permissionPending}>
+                              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>hourglass_top</span>
+                              <span>{info.toolName}</span>
+                              <span className={styles.permissionPendingLabel}>等待权限确认...</span>
+                            </div>
                           );
                         }
                         return null;
@@ -110,15 +103,11 @@ function MessageBubble({ message, paneId, onPermissionAllow, onPermissionDeny }:
                         if (tc.status === 'pending_permission') {
                           const info = getPermissionInfo(tc);
                           return (
-                            <PermissionBlock
-                              key={tc.id}
-                              toolName={info.toolName}
-                              toolIcon={info.toolIcon}
-                              target={info.target}
-                              isDangerous={info.isDangerous}
-                              onAllow={() => onPermissionAllow?.(tc)}
-                              onDeny={() => onPermissionDeny?.(tc)}
-                            />
+                            <div key={tc.id} className={styles.permissionPending}>
+                              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>hourglass_top</span>
+                              <span>{info.toolName}</span>
+                              <span className={styles.permissionPendingLabel}>等待权限确认...</span>
+                            </div>
                           );
                         }
                         return <ToolCallBlock key={tc.id} toolCall={tc} />;

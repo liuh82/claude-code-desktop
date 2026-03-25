@@ -287,3 +287,31 @@
   }
 }
 
+/* Compact pending-permission indicator in message flow */
+.permissionPending {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-ghost);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.permissionPending .material-symbols-outlined {
+  font-size: 14px;
+  color: var(--brand-orange);
+}
+
+[data-theme="dark"] .permissionPending .material-symbols-outlined {
+  color: var(--accent);
+}
+
+.permissionPendingLabel {
+  opacity: 0.6;
+}
+

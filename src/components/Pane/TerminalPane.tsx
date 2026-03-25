@@ -4,9 +4,25 @@ import { useChatStore } from '@/stores/useChatStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { MessageBubble } from '@/components/Chat/MessageBubble';
+import { PermissionBar } from '@/components/Chat/PermissionBar';
 import { claudeApi, isElectron } from '@/lib/claude-api';
-import type { FileNode, ToolCall } from '@/types/chat';
+import type { FileNode } from '@/types/chat';
 import styles from './TerminalPane.module.css';
+
+// ── Permission info helper ──
+
+function getPermissionInfo(name: string, input: Record<string, unknown>): { toolName: string; toolIcon: string; target: string; isDangerous: boolean } {
+  if (name === 'ReadFile' || name === 'Read') {
+    return { toolName: 'READ', toolIcon: 'description', target: String(input.file_path || ''), isDangerous: false };
+  }
+  if (name === 'WriteFile' || name === 'Write' || name === 'Edit') {
+    return { toolName: 'WRITE', toolIcon: 'edit_note', target: String(input.file_path || ''), isDangerous: false };
+  }
+  if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') {
+    return { toolName: 'EXEC', toolIcon: 'terminal', target: String(input.command || ''), isDangerous: true };
+  }
+  return { toolName: name.toUpperCase(), toolIcon: 'security', target: '', isDangerous: false };
+}
 
 // ── Slash command types ──
 
@@ -140,6 +156,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const grantPermission = useChatStore((s) => s.grantPermission);
   const denyPermission = useChatStore((s) => s.denyPermission);
   const setPermissionMode = useChatStore((s) => s.setPermissionMode);
+  const pendingPermission = useChatStore((s) => s.pendingPermission);
 
   const [text, setText] = useState('');
   const [editMode, setEditMode] = useState<'plan' | 'auto' | 'confirm'>('confirm');
@@ -704,8 +721,6 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                 key={msg.id}
                 message={msg}
                 paneId={paneId}
-                onPermissionAllow={(_tc: ToolCall) => grantPermission()}
-                onPermissionDeny={(_tc: ToolCall) => denyPermission()}
               />
             ))}
             <div ref={messagesEndRef} />
@@ -714,6 +729,21 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
 
         {/* Input — Stitch design: all-in-one rounded box */}
         <div className={styles.paneInput}>
+          {/* Permission bar — floats above input when a tool needs approval */}
+          {pendingPermission && (() => {
+            const info = getPermissionInfo(pendingPermission.name, pendingPermission.input);
+            return (
+              <PermissionBar
+                toolName={info.toolName}
+                toolIcon={info.toolIcon}
+                target={info.target}
+                isDangerous={info.isDangerous}
+                onAllow={() => grantPermission()}
+                onDeny={() => denyPermission()}
+              />
+            );
+          })()}
+
           <div className={styles.paneInputOuter} ref={inputWrapperRef}>
             {/* @ Mention dropdown — special contexts + files */}
             {showMention && allMentionItems.length > 0 && (

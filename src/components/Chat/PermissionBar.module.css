@@ -1,0 +1,275 @@
+/* ═══ PermissionBar — Compact floating bar above input (VSCode-style) ═══ */
+
+/* Main bar container */
+.bar {
+  max-width: min(896px, 92%);
+  margin: 0 auto 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-ghost);
+  border-radius: 12px;
+  padding: 10px 14px;
+  animation: slideUpFadeIn 200ms ease-out;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .bar {
+  background: var(--bg-tertiary);
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* Dangerous variant: red tinted border */
+.barDangerous {
+  border-color: rgba(239, 68, 68, 0.40);
+}
+
+[data-theme="dark"] .barDangerous {
+  border-color: rgba(239, 68, 68, 0.30);
+}
+
+/* Content row: icon+text on left, buttons on right */
+.barContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.barLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.barIcon {
+  font-size: 18px;
+  color: var(--brand-orange);
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .barIcon {
+  color: var(--accent);
+}
+
+.barDangerous .barIcon {
+  color: var(--error);
+}
+
+.barText {
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barTarget {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent);
+  background: var(--accent-muted);
+  padding: 1px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+
+/* ── Buttons ── */
+
+.barButtons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btnAllow {
+  padding: 5px 14px;
+  background: var(--brand-orange);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: filter 150ms;
+  white-space: nowrap;
+}
+
+.btnAllow:hover {
+  filter: brightness(1.1);
+}
+
+.btnAllow:active {
+  transform: scale(0.97);
+}
+
+[data-theme="dark"] .btnAllow {
+  background: var(--accent);
+  color: var(--text-inverse);
+}
+
+.btnMuted {
+  padding: 5px 14px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border-ghost);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 150ms;
+  white-space: nowrap;
+}
+
+.btnMuted:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .btnMuted {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .btnMuted:hover {
+  background: var(--bg-hover);
+}
+
+.btnSecondary {
+  padding: 5px 14px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border-ghost);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 150ms;
+  white-space: nowrap;
+}
+
+.btnSecondary:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .btnSecondary {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .btnSecondary:hover {
+  background: var(--bg-hover);
+}
+
+.btnBlock {
+  padding: 5px 14px;
+  background: var(--error);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: filter 150ms;
+  white-space: nowrap;
+}
+
+.btnBlock:hover {
+  filter: brightness(1.1);
+}
+
+.btnBlock:active {
+  transform: scale(0.97);
+}
+
+/* ── Diff section ── */
+
+.diffSection {
+  margin-top: 8px;
+  border-top: 1px solid var(--border-divider);
+  padding-top: 6px;
+}
+
+.diffToggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 0;
+  transition: color 150ms;
+}
+
+.diffToggle:hover {
+  color: var(--accent);
+}
+
+.diffPreview {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border-divider);
+}
+
+.diffLine {
+  padding: 1px 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.diffAdd {
+  background: var(--diff-add-bg);
+  color: var(--diff-add-text);
+}
+
+.diffDel {
+  background: var(--diff-del-bg);
+  color: var(--diff-del-text);
+}
+
+.diffLineNum {
+  opacity: 0.4;
+  min-width: 20px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.diffLineContent {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.diffShowMore {
+  padding: 4px 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-align: center;
+  background: var(--bg-elevated);
+  font-family: var(--font-family);
+}
+
+/* ── Animation ── */
+
+@keyframes slideUpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
