@@ -326,6 +326,12 @@ function handleDirectApiEvent(paneId: string, _sessionId: string, event: DirectS
 
   switch (event.type) {
     case 'message_start': {
+      // If we already have an active assistant message, this is a continuation
+      // after tool execution — finalize previous message and mark tools completed
+      if (ds.assistantId) {
+        finalizeDirectStream(paneId);
+      }
+
       // Extract model name
       if (event.message?.model) {
         ds.model = event.message.model;
@@ -511,9 +517,21 @@ function finalizeDirectStream(paneId: string) {
     return {
       panes: new Map(s.panes).set(paneId, {
         ...pane,
-        messages: pane.messages.map(m =>
-          m.id === ds.assistantId ? { ...m, isStreaming: false } : m
-        ),
+        messages: pane.messages.map(m => {
+          if (m.id !== ds.assistantId) return m;
+          return {
+            ...m,
+            isStreaming: false,
+            toolCalls: (m.toolCalls || []).map(tc => {
+              if (tc.status === 'running') {
+                const now = Date.now();
+                const startTime = tc.startTime || now;
+                return { ...tc, status: 'completed' as const, duration: now - startTime };
+              }
+              return tc;
+            }),
+          };
+        }),
       }),
     };
   });

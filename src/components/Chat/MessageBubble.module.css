@@ -96,7 +96,7 @@
   flex-direction: column;
   align-items: flex-start;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Inner wrapper for tool calls + text — stable DOM during streaming updates */
@@ -188,7 +188,7 @@
   border: none;
   border-radius: 8px;
   padding: 0;
-  overflow: hidden;
+  overflow-x: auto;
   margin: 12px 0;
 }
 
