@@ -60,10 +60,17 @@ function guessIcon(name: string): string {
   return 'widgets';
 }
 
-function guessModuleColor(index: number): 'primary' | 'secondary' | 'tertiary' {
+function guessModuleColor(index: number, _layerIndex?: number): 'primary' | 'secondary' | 'tertiary' {
   if (index === 0) return 'primary';
   if (index === 1) return 'primary';
   return 'secondary';
+}
+
+function guessLayerColor(layerIndex: number): 'primary' | 'secondary' | 'tertiary' {
+  // Cycle through colors by layer depth
+  if (layerIndex === 0) return 'primary';
+  if (layerIndex === 1) return 'secondary';
+  return 'tertiary';
 }
 
 /* ── Parsers ── */
@@ -83,20 +90,62 @@ function parseArch(lines: string[]): QuickVizCard | null {
 
   if (edgeLines.length === 0) return null;
 
+  // Detect layer format: "LayerName: ModuleA, ModuleB" or "LayerName → ModuleA → ModuleB"
+  const hasLayers = edgeLines.some(line => {
+    const colonIdx = line.indexOf(':');
+    if (colonIdx === -1) return false;
+    const prefix = line.slice(0, colonIdx).trim();
+    // Distinguish layer name (no arrow before colon) from arrow format
+    return !prefix.includes('→') && prefix.length > 0 && prefix.length < 30;
+  });
+
+  if (hasLayers) {
+    // Parse as layered architecture
+    const layers = edgeLines.map(line => {
+      const colonIdx = line.indexOf(':');
+      const layerName = line.slice(0, colonIdx).trim();
+      const rest = line.slice(colonIdx + 1).trim();
+
+      // Support both "Layer: A, B" and "Layer: A → B → C" formats
+      const parts = rest.includes('→')
+        ? rest.split('→').map(s => s.trim()).filter(Boolean)
+        : rest.split(',').map(s => s.trim()).filter(Boolean);
+
+      return {
+        name: layerName,
+        modules: parts.map((name) => ({
+          name,
+          icon: guessIcon(name),
+          color: guessLayerColor(0), // Will be overridden by layer color below
+        })),
+      };
+    }).filter(layer => layer.modules.length > 0);
+
+    // Apply layer-based colors: color all modules in a layer the same
+    layers.forEach((layer, layerIdx) => {
+      const layerColor = guessLayerColor(layerIdx);
+      layer.modules.forEach(mod => {
+        mod.color = layerColor;
+      });
+    });
+
+    if (layers.length === 0) return null;
+    return { type: 'architecture', title, icon: 'account_tree', label: 'Architecture', layers };
+  }
+
+  // Backward compat: flat format (arrows or plain names)
   const nodeSet = new Set<string>();
   const edges: Array<{ from: string; to: string }> = [];
 
   for (const line of edgeLines) {
     const parts = line.split('→').map(s => s.trim());
     if (parts.length >= 2) {
-      // Arrow format: "A → B → C"
       const from = parts[0];
       const to = parts[parts.length - 1];
       nodeSet.add(from);
       nodeSet.add(to);
       edges.push({ from, to });
     } else if (parts.length === 1 && parts[0]) {
-      // Plain name without arrows — treat as a standalone node
       nodeSet.add(parts[0]);
     }
   }

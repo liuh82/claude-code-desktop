@@ -48,8 +48,13 @@ interface VizBarData {
   highlight?: number;
 }
 
+interface ArchLayer {
+  name?: string;
+  modules: VizModule[];
+}
+
 type VizCard =
-  | { type: 'architecture'; title: string; subtitle?: string; icon?: string; label?: string; modules: VizModule[]; }
+  | { type: 'architecture'; title: string; subtitle?: string; icon?: string; label?: string; modules?: VizModule[]; layers?: ArchLayer[]; }
   | { type: 'dataflow'; title: string; subtitle?: string; label?: string; steps: VizFlowStep[]; metric?: { value: string; label: string }; sidebar?: { title: string; description: string; saturation: number }; }
   | { type: 'comparison'; title: string; subtitle?: string; label?: string; sides: [VizCompareSide, VizCompareSide]; insight?: string; }
   | { type: 'statistics'; title: string; subtitle?: string; label?: string; stats: VizStat[]; bars?: VizBarData; }
@@ -97,7 +102,8 @@ const VALID_ICONS = new Set([
   'public', 'language', 'swap_horiz', 'settings_ethernet', 'receipt_long',
   'monitor_heart', 'build', 'commit', 'search', 'psychology', 'model_training',
   'store', 'data_object', 'settings', 'edit_note', 'edit', 'folder_open',
-  'progress_activity', 'auto_awesome', 'build',
+  'progress_activity', 'auto_awesome', 'build', 'expand_more', 'sync', 'security',
+  'code', 'terminal',
 ]);
 
 function safeIcon(icon?: string, fallback = 'widgets'): string {
@@ -124,33 +130,65 @@ function CardHeader({ title, subtitle, label, icon }: { title: string; subtitle?
 
 /* ── 1. Architecture Card ── */
 
-function ArchitectureCard({ card }: { card: Extract<VizCard, { type: 'architecture' }> }) {
+function ModuleItem({ mod }: { mod: VizModule }) {
+  const colorClass = mod.color === 'secondary' ? styles.moduleSecondary
+    : mod.color === 'tertiary' ? styles.moduleTertiary
+    : styles.modulePrimary;
   return (
-    <div className={styles.card}>
-      <CardHeader title={card.title} subtitle={card.subtitle} label={card.label} icon={card.icon || 'account_tree'} />
-      <div className={styles.moduleGrid}>
-        {(card.modules || []).map((mod, i) => {
-          const colorClass = mod.color === 'secondary' ? styles.moduleSecondary
-            : mod.color === 'tertiary' ? styles.moduleTertiary
-            : styles.modulePrimary;
-          return (
-            <div key={i} className={`${styles.module} ${colorClass}`}>
-              <div className={styles.moduleIconWrap}>
-                <span className="material-symbols-outlined">{mod.icon || 'widgets'}</span>
+    <div className={`${styles.module} ${colorClass}`}>
+      <div className={styles.moduleIconWrap}>
+        <span className="material-symbols-outlined">{safeIcon(mod.icon, 'widgets')}</span>
+      </div>
+      <div className={styles.moduleName}>{mod.name}</div>
+      {mod.detail && <div className={styles.moduleDetail}>{mod.detail}</div>}
+      {mod.children && mod.children.length > 0 && (
+        <div className={styles.moduleChildren}>
+          {mod.children.map((c, j) => {
+            const label = typeof c === 'string' ? c : (c.name || '');
+            return label ? <span key={j} className={styles.moduleChild}>{label}</span> : null;
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ArchitectureCard({ card }: { card: Extract<VizCard, { type: 'architecture' }> }) {
+  // Layered layout (new format)
+  if (card.layers && card.layers.length > 0) {
+    return (
+      <div className={styles.card}>
+        <CardHeader title={card.title} subtitle={card.subtitle} label={card.label} icon={card.icon || 'account_tree'} />
+        <div className={styles.archLayers}>
+          {card.layers.map((layer, i) => (
+            <div key={i}>
+              {layer.name && <div className={styles.archLayerName}>{layer.name}</div>}
+              <div className={styles.archLayerModules}>
+                {layer.modules.map((mod, j) => (
+                  <ModuleItem key={j} mod={mod} />
+                ))}
               </div>
-              <div className={styles.moduleName}>{mod.name}</div>
-              {mod.detail && <div className={styles.moduleDetail}>{mod.detail}</div>}
-              {mod.children && mod.children.length > 0 && (
-                <div className={styles.moduleChildren}>
-                  {mod.children.map((c, j) => {
-                    const label = typeof c === 'string' ? c : (c.name || '');
-                    return label ? <span key={j} className={styles.moduleChild}>{label}</span> : null;
-                  })}
+              {i < (card.layers?.length || 0) - 1 && (
+                <div className={styles.archArrow}>
+                  <span className="material-symbols-outlined">expand_more</span>
                 </div>
               )}
             </div>
-          );
-        })}
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Flat layout (backward compat)
+  const modules = card.modules || [];
+  return (
+    <div className={styles.card}>
+      <CardHeader title={card.title} subtitle={card.subtitle} label={card.label} icon={card.icon || 'account_tree'} />
+      <div className={styles.archModuleGrid}>
+        {modules.map((mod, i) => (
+          <ModuleItem key={i} mod={mod} />
+        ))}
       </div>
     </div>
   );

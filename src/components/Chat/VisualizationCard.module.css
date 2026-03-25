@@ -94,10 +94,53 @@
 
 /* ═══ 1. Architecture Card ═══ */
 
-.moduleGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+/* Layered layout container */
+.archLayers {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Single layer strip */
+.archLayerModules {
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
+  padding: 8px 0;
+  justify-content: center;
+}
+
+/* Layer name label */
+.archLayerName {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--card-label);
+  text-align: center;
+  padding-bottom: 2px;
+}
+
+/* Downward arrow between layers */
+.archArrow {
+  display: flex;
+  justify-content: center;
+  padding: 2px 0;
+  color: var(--card-label);
+  opacity: 0.4;
+  font-size: 18px;
+}
+
+.archArrow .material-symbols-outlined {
+  font-size: 18px;
+}
+
+/* Flat module grid (backward compat) */
+.archModuleGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
 }
 
 .module {
@@ -695,8 +738,12 @@
 /* ═══ Responsive ═══ */
 
 @media (max-width: 640px) {
-  .moduleGrid {
-    grid-template-columns: 1fr;
+  .archModuleGrid {
+    flex-direction: column;
+  }
+
+  .archLayerModules {
+    flex-direction: column;
   }
 
   .flowLayout {
