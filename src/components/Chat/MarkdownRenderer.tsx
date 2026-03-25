@@ -19,7 +19,7 @@ interface MarkdownRendererProps {
  * Detect whether a mermaid code block in the content is incomplete (unclosed).
  * During streaming, an unclosed ```mermaid block means the AI is still generating.
  */
-function isIncompleteMermaidBlock(content: string): boolean {
+export function isIncompleteMermaidBlock(content: string): boolean {
   // Match opening ```mermaid that doesn't have a corresponding closing ```
   const regex = /```mermaid\b([\s\S]*?)(?:```|$)/g;
   let match;
@@ -37,37 +37,81 @@ function isIncompleteMermaidBlock(content: string): boolean {
   return false;
 }
 
+type ContentBlock =
+  | { type: 'markdown'; content: string }
+  | { type: 'htmlslide'; html: string }
+  | { type: 'htmlslide-incomplete'; content: string };
+
+export function splitHtmlSlideBlocks(content: string, _isStreaming?: boolean): ContentBlock[] {
+  const regex = /(```htmlslide\b[\s\S]*?```|```htmlslide\b[\s\S]*$)/g;
+  const parts: ContentBlock[] = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: 'markdown', content: content.slice(lastIndex, match.index) });
+    }
+
+    const block = match[0];
+    const isClosed = block.trimEnd().endsWith('```');
+
+    if (isClosed) {
+      const html = block.replace(/^```htmlslide\s*\n/, '').replace(/\n```\s*$/, '');
+      parts.push({ type: 'htmlslide', html });
+    } else {
+      parts.push({ type: 'htmlslide-incomplete', content: block });
+    }
+
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < content.length) {
+    parts.push({ type: 'markdown', content: content.slice(lastIndex) });
+  }
+
+  if (parts.length === 0) {
+    parts.push({ type: 'markdown', content });
+  }
+
+  return parts;
+}
+
 function MarkdownRenderer({ content, isStreaming }: MarkdownRendererProps) {
-  // Detect incomplete mermaid blocks during streaming
+  const blocks = splitHtmlSlideBlocks(content, !!isStreaming);
   const hasIncompleteMermaid = isStreaming && isIncompleteMermaidBlock(content);
 
   return (
     <div className="markdown-body">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
-        components={{
-        pre: PreBlock,
-        code: (props: ComponentPropsWithoutRef<'code'> & { children?: ReactNode }) =>
-          CodeElement({ ...props, hasIncompleteMermaid }),
-        p: Paragraph,
-        a: Link,
-        table: Table,
-        th: TableHeader,
-        td: TableCell,
-        ul: UnorderedList,
-        ol: OrderedList,
-        li: ListItem,
-        h1: Heading1,
-        h2: Heading2,
-        h3: Heading3,
-        blockquote: BlockQuote,
-        hr: HorizontalRule,
-        strong: Strong,
-      }}
-    >
-        {content}
-      </ReactMarkdown>
+      {blocks.map((block, i) => {
+        if (block.type === 'htmlslide') {
+          return <HtmlSlideBlock key={i} html={block.html} />;
+        }
+        if (block.type === 'htmlslide-incomplete') {
+          return (
+            <ReactMarkdown key={i} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}
+              components={{ pre: PreBlock, code: CodeElement, p: Paragraph, a: Link, table: Table, th: TableHeader, td: TableCell, ul: UnorderedList, ol: OrderedList, li: ListItem, h1: Heading1, h2: Heading2, h3: Heading3, blockquote: BlockQuote, hr: HorizontalRule, strong: Strong }}
+            >
+              {block.content}
+            </ReactMarkdown>
+          );
+        }
+        return (
+          <ReactMarkdown key={i} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}
+            components={{
+              pre: PreBlock,
+              code: (props: ComponentPropsWithoutRef<'code'> & { children?: ReactNode }) =>
+                CodeElement({ ...props, hasIncompleteMermaid }),
+              p: Paragraph, a: Link, table: Table, th: TableHeader, td: TableCell,
+              ul: UnorderedList, ol: OrderedList, li: ListItem,
+              h1: Heading1, h2: Heading2, h3: Heading3,
+              blockquote: BlockQuote, hr: HorizontalRule, strong: Strong,
+            }}
+          >
+            {block.content}
+          </ReactMarkdown>
+        );
+      })}
     </div>
   );
 }
@@ -121,16 +165,6 @@ function CodeElement({ children, className, hasIncompleteMermaid }: ComponentPro
     return (
       <code className="codeBlock">
         <MermaidSafe code={codeString} />
-      </code>
-    );
-  }
-
-  // 检测 ```htmlslide 代码块，用 sandbox iframe 渲染
-  if (lang === 'htmlslide') {
-    const htmlContent = String(children);
-    return (
-      <code className="codeBlock">
-        <HtmlSlideBlock html={htmlContent} />
       </code>
     );
   }
