@@ -195,6 +195,36 @@ const DANGEROUS_COMMAND_PATTERNS = [
   /\breboot\b/,
 ];
 
+// ── API URL resolution ──
+
+/**
+ * Check if a base URL points to Anthropic's official API domain.
+ */
+function isAnthropicNativeDomain(baseUrl: string): boolean {
+  try {
+    const host = new URL(baseUrl).hostname.toLowerCase();
+    return host === 'api.anthropic.com';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Smart URL resolution for Anthropic-compatible providers.
+ * Handles various URL formats:
+ * - `https://api.anthropic.com` → appends `/v1/messages`
+ * - `https://open.bigmodel.cn/api/anthropic` → appends `/v1/messages`
+ * - `https://proxy.com/v1/messages` → already complete, use as-is
+ * - `https://openrouter.ai/api/v1` → appends `/messages`
+ * - Trailing slashes are stripped before processing.
+ */
+export function resolveApiUrl(baseUrl: string): string {
+  const trimmed = baseUrl.replace(/\/+$/, '');
+  if (trimmed.endsWith('/messages')) return trimmed;
+  if (trimmed.endsWith('/v1')) return `${trimmed}/messages`;
+  return `${trimmed}/v1/messages`;
+}
+
 // ── Client class ──
 
 export type PermissionMode = 'bypass' | 'auto' | 'ask';
@@ -327,15 +357,22 @@ export class ClaudeDirectClient {
           'content-type': 'application/json',
         };
 
-        // Claude Code uses x-api-key for Anthropic, Bearer for others
-        // Detect by checking if claude config has AUTH_TOKEN (third-party) vs API_KEY (Anthropic native)
+        // Auth strategy: env var explicit config wins, then detect by domain
         const env = this.config.claudeEnv;
-        if (env.ANTHROPIC_AUTH_TOKEN && !env.ANTHROPIC_API_KEY) {
-          // Third-party provider (e.g. 智谱, OpenRouter, etc.)
-          headers['Authorization'] = `Bearer ${this.config.apiKey}`;
-        } else {
-          // Anthropic native or Anthropic-compatible
+        const anthropicNative = isAnthropicNativeDomain(this.config.baseUrl);
+
+        if (env.ANTHROPIC_API_KEY) {
+          // Explicit API_KEY env → always use x-api-key (Anthropic native auth)
           headers['x-api-key'] = this.config.apiKey;
+        } else if (env.ANTHROPIC_AUTH_TOKEN) {
+          // AUTH_TOKEN without API_KEY → Bearer (third-party provider)
+          headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+        } else if (anthropicNative) {
+          // No env hint + Anthropic domain → default to x-api-key
+          headers['x-api-key'] = this.config.apiKey;
+        } else {
+          // No env hint + non-Anthropic domain → default to Bearer
+          headers['Authorization'] = `Bearer ${this.config.apiKey}`;
         }
         // Always send anthropic-version — third-party providers may require it too
         headers['anthropic-version'] = '2023-06-01';
@@ -355,7 +392,7 @@ export class ClaudeDirectClient {
           }
         }
 
-        const apiUrl = `${this.config.baseUrl}/v1/messages`;
+        const apiUrl = resolveApiUrl(this.config.baseUrl);
         console.error(`[DirectAPI] Round ${round}: POST ${apiUrl} model=${this.config.model} msgs=${this.messages.length}`);
 
         // Automatic timeout for fetch (5 minutes) — abort controller handles cancellation
@@ -983,10 +1020,15 @@ export function loadDirectApiConfig(db?: any): DirectApiConfig | null {
 
   if (!apiKey) return null;
 
-  const baseUrl = claudeEnv.ANTHROPIC_BASE_URL || 'https://api.anthropic.com';
+  // baseUrl priority: appSettings.directBaseUrl > env > default
+  const baseUrl = appSettings.directBaseUrl
+    || claudeEnv.ANTHROPIC_BASE_URL
+    || 'https://api.anthropic.com';
   const model = claudeEnv.ANTHROPIC_MODEL || claudeEnv.ANTHROPIC_DEFAULT_SONNET_MODEL || appSettings.directModel || 'claude-sonnet-4-6';
   const maxTokens = appSettings.directMaxTokens || 8192;
   const maxContextMessages = appSettings.maxContextMessages || 20;
+
+  console.error(`[DirectAPI] Config loaded: baseUrl=${baseUrl}, model=${model}, anthNative=${isAnthropicNativeDomain(baseUrl)}`);
 
   return { apiKey, baseUrl, model, maxTokens, maxContextMessages, claudeEnv };
 }

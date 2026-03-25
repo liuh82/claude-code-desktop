@@ -148,6 +148,13 @@
   gap: 4px;
 }
 
+.sd-field__helper {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
 .sd-row {
   display: flex;
   gap: 8px;

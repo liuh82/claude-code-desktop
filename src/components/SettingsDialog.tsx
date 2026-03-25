@@ -288,8 +288,9 @@ function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                         type="text"
                         value={(localSettings as any).directBaseUrl || ''}
                         onChange={(e) => handleChange('directBaseUrl' as any, e.target.value)}
-                        placeholder="留空使用 https://api.anthropic.com"
+                        placeholder="https://api.anthropic.com（默认）"
                       />
+                      <span className="sd-field__helper">Anthropic 官方留空即可；智谱填 https://open.bigmodel.cn/api/anthropic；自定义代理可填完整路径</span>
                     </SettingsField>
                     <SettingsField label="Direct API 模型">
                       <input
