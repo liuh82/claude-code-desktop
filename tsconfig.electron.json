@@ -2,7 +2,9 @@
   "compilerOptions": {
     "target": "ES2021",
     "module": "CommonJS",
-    "lib": ["ES2021"],
+    "lib": [
+      "ES2021"
+    ],
     "moduleResolution": "node",
     "outDir": "dist-electron",
     "rootDir": "electron",
@@ -14,5 +16,11 @@
     "sourceMap": true,
     "allowImportingTsExtensions": false
   },
-  "include": ["electron/**/*"]
+  "include": [
+    "electron/**/*"
+  ],
+  "exclude": [
+    "electron/**/*.test.*",
+    "electron/**/__tests__"
+  ]
 }
