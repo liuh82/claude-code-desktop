@@ -1,21 +1,63 @@
-/* ═══ VisualizationCard — Compact Editorial Infographic Cards ═══ */
-/* Design tokens from: .stitch-cards/ccdesk_prism/DESIGN.md */
-/* Optimized for chat message inline display */
+/* ═══ VisualizationCard — PPT-Style Dual-Theme Cards ═══ */
+/* Business: white/blue, clean, professional */
+/* Tech: dark/purple, gradients, cyberpunk glow */
 
-/* ── Base card ── */
+/* ── Stable wrapper ── */
 
-/* Stable wrapper — prevents React #301 when card type changes during streaming */
 .vizWrapper {
   display: contents;
 }
 
+/* ── Animations ── */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes subtlePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes techGlow {
+  0% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.1); }
+  100% { box-shadow: 0 0 25px rgba(139, 92, 246, 0.2), 0 0 40px rgba(6, 182, 212, 0.05); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(139, 92, 246, 0); }
+}
+
+@keyframes breathingGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(139, 92, 246, 0.15); }
+  50% { box-shadow: 0 0 16px rgba(139, 92, 246, 0.3); }
+}
+
+@keyframes iconRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BUSINESS THEME (default — white/blue, professional)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Base card ── */
+
 .card {
-  background: var(--card-bg);
-  border-radius: var(--card-radius);
+  background: #FFFFFF;
+  border-radius: 12px;
   padding: 16px 20px;
   margin: 8px 0;
-  box-shadow: var(--card-shadow);
-  animation: fadeIn 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cardHeader {
@@ -31,28 +73,28 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--card-label);
+  color: #3B82F6;
   margin-bottom: 2px;
 }
 
 .cardTitle {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--card-title);
+  font-size: 17px;
+  font-weight: 800;
+  color: #1A1A2E;
   line-height: 1.3;
   margin: 0;
 }
 
 .cardSubtitle {
-  font-size: 11px;
-  color: var(--card-label);
+  font-size: 12px;
+  color: #6B7280;
   margin-top: 2px;
 }
 
 .cardIcon {
-  color: var(--accent);
-  font-size: 20px;
-  opacity: 0.6;
+  color: #3B82F6;
+  font-size: 24px;
+  opacity: 0.3;
 }
 
 .cardInsight {
@@ -60,20 +102,20 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: var(--card-info-bg);
+  background: #F0F9FF;
   border-radius: 6px;
   margin-top: 12px;
 }
 
 .cardInsight .material-symbols-outlined {
-  color: var(--accent);
+  color: #3B82F6;
   font-size: 14px;
   flex-shrink: 0;
 }
 
 .cardInsight p {
   font-size: 11px;
-  color: var(--card-label);
+  color: #6B7280;
   margin: 0;
   line-height: 1.4;
 }
@@ -85,67 +127,63 @@
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  background: var(--error-bg);
+  background: #FEF2F2;
   border-radius: 6px;
-  color: var(--error-text);
+  color: #DC2626;
   font-size: 12px;
   margin: 8px 0;
 }
 
-/* ═══ 1. Architecture Card ═══ */
+/* ═══ 1. Architecture Card — Business ═══ */
 
-/* Layered layout container */
 .archLayers {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-/* Single layer strip */
 .archLayerModules {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
   padding: 8px 0;
   justify-content: center;
 }
 
-/* Layer name label */
 .archLayerName {
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--card-label);
+  color: #3B82F6;
   text-align: center;
   padding-bottom: 2px;
 }
 
-/* Downward arrow between layers */
 .archArrow {
   display: flex;
   justify-content: center;
   padding: 2px 0;
-  color: var(--card-label);
-  opacity: 0.4;
+  color: #94A3B8;
+  opacity: 0.5;
   font-size: 18px;
+  border-top: 1px dashed #CBD5E1;
 }
 
 .archArrow .material-symbols-outlined {
   font-size: 18px;
 }
 
-/* Flat module grid (backward compat) */
 .archModuleGrid {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
   justify-content: center;
 }
 
 .module {
-  background: var(--card-surface);
-  border-radius: 6px;
+  background: #FFFFFF;
+  border-radius: 10px;
   padding: 14px 12px;
   display: flex;
   flex-direction: column;
@@ -154,60 +192,92 @@
   text-align: center;
   gap: 6px;
   min-height: auto;
+  min-width: 120px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .modulePrimary {
-  color: var(--accent);
-  background: var(--accent);
+  border-left: 3px solid #3B82F6;
 }
 
 .modulePrimary .moduleIconWrap {
-  background: rgba(255, 255, 255, 0.2);
+  background: #EFF6FF;
 }
 
-.modulePrimary .moduleName,
-.modulePrimary .moduleDetail,
-.modulePrimary .moduleChild {
-  color: #ffffff;
+.modulePrimary .moduleIconWrap .material-symbols-outlined {
+  color: #3B82F6;
+}
+
+.modulePrimary .moduleName {
+  color: #1A1A2E;
 }
 
 .modulePrimary .moduleDetail {
-  opacity: 0.9;
+  color: #6B7280;
+}
+
+.modulePrimary .moduleChild {
+  background: #DBEAFE;
+  color: #3B82F6;
 }
 
 .moduleSecondary {
-  background: var(--card-secondary-bg);
-  color: var(--card-secondary-text);
+  background: #F0F9FF;
+  border-left: 3px solid #60A5FA;
 }
 
 .moduleSecondary .moduleIconWrap {
-  background: rgba(255, 255, 255, 0.15);
+  background: #DBEAFE;
 }
 
-.moduleSecondary .moduleName,
-.moduleSecondary .moduleDetail,
+.moduleSecondary .moduleIconWrap .material-symbols-outlined {
+  color: #60A5FA;
+}
+
+.moduleSecondary .moduleName {
+  color: #1A1A2E;
+}
+
+.moduleSecondary .moduleDetail {
+  color: #6B7280;
+}
+
 .moduleSecondary .moduleChild {
-  color: var(--card-secondary-text);
+  background: #DBEAFE;
+  color: #60A5FA;
 }
 
 .moduleTertiary {
-  background: var(--card-surface);
-  color: var(--card-title);
+  background: #F8FAFC;
+  border-left: 3px solid #94A3B8;
 }
 
 .moduleTertiary .moduleIconWrap {
-  background: var(--card-tertiary-bg);
+  background: #F1F5F9;
 }
 
 .moduleTertiary .moduleIconWrap .material-symbols-outlined {
-  color: var(--card-tertiary-text);
+  color: #94A3B8;
+}
+
+.moduleTertiary .moduleName {
+  color: #1A1A2E;
+}
+
+.moduleTertiary .moduleDetail {
+  color: #6B7280;
+}
+
+.moduleTertiary .moduleChild {
+  background: #E2E8F0;
+  color: #64748B;
 }
 
 .moduleIconWrap {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: var(--accent-surface);
+  background: #EFF6FF;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -215,20 +285,20 @@
 
 .moduleIconWrap .material-symbols-outlined {
   font-size: 16px;
-  color: var(--accent);
+  color: #3B82F6;
 }
 
 .moduleName {
   font-size: 13px;
   font-weight: 700;
-  color: var(--card-title);
+  color: #1A1A2E;
   line-height: 1.3;
 }
 
 .moduleDetail {
   font-size: 10px;
-  color: var(--card-label);
-  font-family: var(--card-mono);
+  color: #6B7280;
+  font-family: var(--card-mono, monospace);
 }
 
 .moduleChildren {
@@ -240,15 +310,15 @@
 
 .moduleChild {
   font-size: 9px;
-  font-family: var(--card-mono);
+  font-family: var(--card-mono, monospace);
   padding: 1px 6px;
-  border-radius: 3px;
-  background: var(--card-tag-bg);
-  color: var(--card-tag-text);
+  border-radius: 4px;
+  background: #DBEAFE;
+  color: #3B82F6;
   font-weight: 500;
 }
 
-/* ═══ 2. Data Flow Card ═══ */
+/* ═══ 2. Data Flow Card — Business ═══ */
 
 .flowLayout {
   display: grid;
@@ -275,48 +345,50 @@
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  background: var(--card-surface);
+  background: #F8FAFC;
   border-radius: 6px;
+  border-left: 3px solid transparent;
   transition: background 150ms;
 }
 
 .flowStepActive {
-  background: var(--card-tertiary-bg);
+  background: #EFF6FF;
+  border-left-color: #3B82F6;
 }
 
 .flowDot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #3B82F6;
   flex-shrink: 0;
 }
 
 .flowDotActive {
-  background: var(--card-tertiary-text);
+  background: #3B82F6;
   animation: pulse 2s infinite;
 }
 
 .flowDotSuccess {
-  background: var(--card-tertiary-text);
+  background: #10B981;
 }
 
 .flowEndpoint {
   flex: 1;
   font-size: 12px;
-  font-family: var(--card-mono);
-  color: var(--card-title);
+  font-family: var(--card-mono, monospace);
+  color: #1A1A2E;
 }
 
 .flowStepActive .flowEndpoint {
   font-weight: 700;
-  color: var(--card-tertiary-text);
+  color: #3B82F6;
 }
 
 .flowDuration {
   font-size: 10px;
-  font-family: var(--card-mono);
-  color: var(--card-label);
+  font-family: var(--card-mono, monospace);
+  color: #6B7280;
 }
 
 .flowMetric {
@@ -329,8 +401,8 @@
 .flowMetricValue {
   font-size: 22px;
   font-weight: 900;
-  font-family: var(--card-mono);
-  color: var(--card-tertiary-text);
+  font-family: var(--card-mono, monospace);
+  color: #1A1A2E;
   line-height: 1;
 }
 
@@ -339,15 +411,13 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 700;
-  color: var(--card-label);
+  color: #6B7280;
 }
 
-/* Flow sidebar */
-
 .flowSidebar {
-  background: var(--card-secondary-bg);
-  color: var(--card-secondary-text);
-  border-radius: 6px;
+  background: #F1F5F9;
+  color: #475569;
+  border-radius: 8px;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -358,6 +428,7 @@
   font-size: 14px;
   font-weight: 700;
   margin: 0 0 4px;
+  color: #1A1A2E;
 }
 
 .flowSidebarDesc {
@@ -365,13 +436,14 @@
   opacity: 0.9;
   line-height: 1.5;
   margin: 0 0 14px;
+  color: #475569;
 }
 
 .flowBar {
   height: 3px;
   width: 100%;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.2);
+  background: #E2E8F0;
   overflow: hidden;
 }
 
@@ -379,7 +451,7 @@
   height: 100%;
   width: 75%;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.9);
+  background: #3B82F6;
 }
 
 .flowBarLabel {
@@ -388,27 +460,27 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-top: 6px;
-  opacity: 0.8;
+  color: #6B7280;
 }
 
-/* ═══ 3. Comparison Card ═══ */
+/* ═══ 3. Comparison Card — Business ═══ */
 
 .compareGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
-  background: var(--card-divider);
+  background: #E5E7EB;
 }
 
 .compareSide {
-  background: var(--card-surface);
+  background: #FFFFFF;
   padding: 16px;
 }
 
 .compareSideHighlight {
-  background: var(--accent);
+  background: #3B82F6;
   color: #ffffff;
 }
 
@@ -422,8 +494,8 @@
 .compareSideIcon {
   width: 28px;
   height: 28px;
-  border-radius: 5px;
-  background: var(--card-tag-bg);
+  border-radius: 6px;
+  background: #EFF6FF;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -432,7 +504,7 @@
 
 .compareSideIcon .material-symbols-outlined {
   font-size: 13px;
-  color: var(--card-label);
+  color: #3B82F6;
 }
 
 .compareSideHighlight .compareSideIcon {
@@ -446,7 +518,7 @@
 .compareSideName {
   font-weight: 700;
   font-size: 14px;
-  color: var(--card-title);
+  color: #1A1A2E;
   flex: 1;
 }
 
@@ -459,14 +531,14 @@
   font-weight: 900;
   letter-spacing: 0.08em;
   padding: 2px 6px;
-  border-radius: 3px;
-  background: var(--card-tag-bg);
-  color: var(--card-label);
+  border-radius: 4px;
+  background: #DBEAFE;
+  color: #3B82F6;
 }
 
 .compareBadgeHighlight {
   background: #ffffff;
-  color: var(--accent);
+  color: #3B82F6;
 }
 
 .compareRows {
@@ -483,7 +555,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid var(--card-divider);
+  border-bottom: 1px solid #E5E7EB;
 }
 
 .compareRow:last-child {
@@ -492,7 +564,7 @@
 }
 
 .compareSideHighlight .compareRow {
-  border-bottom-color: rgba(255, 255, 255, 0.1);
+  border-bottom-color: rgba(255, 255, 255, 0.15);
 }
 
 .compareRowLabel {
@@ -500,7 +572,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--card-label);
+  color: #6B7280;
 }
 
 .compareSideHighlight .compareRowLabel {
@@ -509,9 +581,9 @@
 
 .compareRowValue {
   font-size: 12px;
-  font-family: var(--card-mono);
+  font-family: var(--card-mono, monospace);
   font-weight: 500;
-  color: var(--card-title);
+  color: #1A1A2E;
 }
 
 .compareSideHighlight .compareRowValue {
@@ -520,11 +592,11 @@
 }
 
 .compareRowHighlight {
-  color: var(--card-tertiary-text);
+  color: #10B981;
   font-weight: 700;
 }
 
-/* ═══ 4. Statistics Card ═══ */
+/* ═══ 4. Statistics Card — Business ═══ */
 
 .statsGrid {
   display: grid;
@@ -544,19 +616,19 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--card-label);
+  color: #6B7280;
 }
 
 .statValue {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 900;
-  color: var(--card-title);
+  color: #1A1A2E;
   line-height: 1.2;
-  font-family: var(--card-mono);
+  font-family: var(--card-mono, monospace);
 }
 
 .statError {
-  color: var(--card-error-text);
+  color: #DC2626;
 }
 
 .statTrend {
@@ -565,7 +637,7 @@
   gap: 3px;
   font-size: 10px;
   font-weight: 700;
-  color: var(--card-label);
+  color: #6B7280;
 }
 
 .statTrend .material-symbols-outlined {
@@ -573,14 +645,12 @@
 }
 
 .trendSuccess {
-  color: var(--card-tertiary-text);
+  color: #10B981;
 }
 
 .trendSecondary {
-  color: var(--card-secondary-bg);
+  color: #3B82F6;
 }
-
-/* Bar chart */
 
 .barsSection {
   margin-top: 8px;
@@ -599,7 +669,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--card-label);
+  color: #6B7280;
 }
 
 .barsContainer {
@@ -613,16 +683,16 @@
 .bar {
   flex: 1;
   border-radius: 4px 4px 0 0;
-  background: var(--card-bar-bg);
+  background: linear-gradient(to top, #3B82F6, #60A5FA);
   min-height: 3px;
   transition: background 150ms;
 }
 
 .bar:last-child {
-  background: var(--accent);
+  background: linear-gradient(to top, #2563EB, #3B82F6);
 }
 
-/* ═══ 5. Timeline Card ═══ */
+/* ═══ 5. Timeline Card — Business ═══ */
 
 .timeline {
   position: relative;
@@ -634,7 +704,7 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background: var(--card-divider);
+  background: #E5E7EB;
 }
 
 .timelineSteps {
@@ -664,8 +734,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: var(--card-surface);
-  box-shadow: 0 0 0 3px var(--card-bg);
+  background: #F8FAFC;
+  box-shadow: 0 0 0 3px #FFFFFF;
 }
 
 .timelineDot .material-symbols-outlined {
@@ -673,7 +743,7 @@
 }
 
 .timelineDotCompleted {
-  background: var(--accent);
+  background: #3B82F6;
   color: #ffffff;
 }
 
@@ -682,15 +752,17 @@
 }
 
 .timelineDotActive {
-  background: var(--accent);
+  background: #3B82F6;
   color: #ffffff;
-  border: 3px solid var(--card-bg);
-  box-shadow: none;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 0 0 3px #3B82F6, 0 0 0 6px rgba(59, 130, 246, 0.2);
+  animation: pulseGlow 2s infinite;
 }
 
 .timelineDotPending {
-  background: var(--card-surface);
-  color: var(--card-label);
+  background: #F1F5F9;
+  color: #94A3B8;
+  border: 2px dashed #CBD5E1;
 }
 
 .timelineDotPulse {
@@ -710,29 +782,522 @@
 .timelineTitle {
   font-size: 12px;
   font-weight: 700;
-  color: var(--card-title);
+  color: #1A1A2E;
 }
 
 .timelineDotActive + .timelineContent .timelineTitle,
 .timelineItem:has(.timelineDotActive) .timelineTitle {
-  color: var(--accent);
+  color: #3B82F6;
 }
 
 .timelineDesc {
   font-size: 11px;
-  color: var(--card-label);
+  color: #6B7280;
   line-height: 1.4;
 }
 
 .timelineDetail {
   font-size: 9px;
-  font-family: var(--card-mono);
-  color: var(--accent);
+  font-family: var(--card-mono, monospace);
+  color: #3B82F6;
   margin-top: 4px;
 }
 
 .timelineItemPending .timelineDetail {
-  color: var(--card-label);
+  color: #94A3B8;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TECH THEME — dark/purple, gradients, cyberpunk glow
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Base card — Tech ── */
+
+[data-viz-theme="tech"] .card {
+  background: #1E1E2E;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 8px 0;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.1), 0 4px 16px rgba(0, 0, 0, 0.3);
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+             techGlow 3s ease-in-out infinite alternate;
+}
+
+[data-viz-theme="tech"] .cardHeader {
+  margin-bottom: 16px;
+}
+
+[data-viz-theme="tech"] .cardLabel {
+  color: #A78BFA;
+  letter-spacing: 0.12em;
+}
+
+[data-viz-theme="tech"] .cardTitle {
+  color: #E2E8F0;
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+[data-viz-theme="tech"] .cardSubtitle {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .cardIcon {
+  color: #A78BFA;
+  opacity: 1;
+}
+
+[data-viz-theme="tech"] .cardInsight {
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+[data-viz-theme="tech"] .cardInsight .material-symbols-outlined {
+  color: #8B5CF6;
+}
+
+[data-viz-theme="tech"] .cardInsight p {
+  color: #94A3B8;
+}
+
+/* ── Error — Tech ── */
+
+[data-viz-theme="tech"] .error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #FCA5A5;
+}
+
+/* ═══ 1. Architecture Card — Tech ═══ */
+
+[data-viz-theme="tech"] .archLayers {
+  gap: 0;
+}
+
+[data-viz-theme="tech"] .archLayerModules {
+  gap: 12px;
+}
+
+[data-viz-theme="tech"] .archLayerName {
+  color: #A78BFA;
+}
+
+[data-viz-theme="tech"] .archArrow {
+  color: rgba(139, 92, 246, 0.4);
+  border-top: 1px solid transparent;
+  background: linear-gradient(to right, transparent, rgba(139, 92, 246, 0.3), transparent);
+  height: 1px;
+}
+
+[data-viz-theme="tech"] .archModuleGrid {
+  gap: 12px;
+}
+
+[data-viz-theme="tech"] .module {
+  background: #2D2D3F;
+  border-radius: 10px;
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  min-width: 120px;
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+
+[data-viz-theme="tech"] .module:hover {
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+[data-viz-theme="tech"] .modulePrimary {
+  border-left: 3px solid #8B5CF6;
+  background: #2D2D3F;
+}
+
+[data-viz-theme="tech"] .modulePrimary .moduleIconWrap {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(6, 182, 212, 0.3));
+}
+
+[data-viz-theme="tech"] .modulePrimary .moduleIconWrap .material-symbols-outlined {
+  color: #E2E8F0;
+}
+
+[data-viz-theme="tech"] .modulePrimary:hover .moduleIconWrap .material-symbols-outlined {
+  animation: iconRotate 4s linear infinite;
+}
+
+[data-viz-theme="tech"] .modulePrimary .moduleName {
+  color: #E2E8F0;
+}
+
+[data-viz-theme="tech"] .modulePrimary .moduleDetail {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .modulePrimary .moduleChild {
+  background: rgba(139, 92, 246, 0.2);
+  color: #C4B5FD;
+}
+
+[data-viz-theme="tech"] .moduleSecondary {
+  background: #2D2D3F;
+  border-left: 3px solid #06B6D4;
+}
+
+[data-viz-theme="tech"] .moduleSecondary .moduleIconWrap {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(139, 92, 246, 0.2));
+}
+
+[data-viz-theme="tech"] .moduleSecondary .moduleIconWrap .material-symbols-outlined {
+  color: #06B6D4;
+}
+
+[data-viz-theme="tech"] .moduleSecondary:hover .moduleIconWrap .material-symbols-outlined {
+  animation: iconRotate 4s linear infinite;
+}
+
+[data-viz-theme="tech"] .moduleSecondary .moduleName {
+  color: #E2E8F0;
+}
+
+[data-viz-theme="tech"] .moduleSecondary .moduleDetail {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .moduleSecondary .moduleChild {
+  background: rgba(6, 182, 212, 0.15);
+  color: #67E8F9;
+}
+
+[data-viz-theme="tech"] .moduleTertiary {
+  background: #2D2D3F;
+  border-left: 3px solid #64748B;
+}
+
+[data-viz-theme="tech"] .moduleTertiary .moduleIconWrap {
+  background: rgba(100, 116, 139, 0.2);
+}
+
+[data-viz-theme="tech"] .moduleTertiary .moduleIconWrap .material-symbols-outlined {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .moduleTertiary .moduleName {
+  color: #CBD5E1;
+}
+
+[data-viz-theme="tech"] .moduleTertiary .moduleDetail {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .moduleTertiary .moduleChild {
+  background: rgba(100, 116, 139, 0.15);
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .moduleIconWrap {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(6, 182, 212, 0.3));
+}
+
+[data-viz-theme="tech"] .moduleIconWrap .material-symbols-outlined {
+  color: #E2E8F0;
+}
+
+[data-viz-theme="tech"] .moduleName {
+  color: #E2E8F0;
+}
+
+[data-viz-theme="tech"] .moduleDetail {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .moduleChild {
+  background: rgba(139, 92, 246, 0.2);
+  color: #C4B5FD;
+}
+
+/* ═══ 2. Data Flow Card — Tech ═══ */
+
+[data-viz-theme="tech"] .flowLayout {
+  gap: 10px;
+}
+
+[data-viz-theme="tech"] .flowSteps {
+  gap: 6px;
+  border-left: 2px solid transparent;
+  border-image: linear-gradient(to bottom, #8B5CF6, #06B6D4) 1;
+}
+
+[data-viz-theme="tech"] .flowStep {
+  background: #2D2D3F;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  border-left: 3px solid rgba(139, 92, 246, 0.3);
+}
+
+[data-viz-theme="tech"] .flowStepActive {
+  background: rgba(139, 92, 246, 0.1);
+  border-left-color: #8B5CF6;
+  animation: breathingGlow 2s ease-in-out infinite;
+}
+
+[data-viz-theme="tech"] .flowDot {
+  background: #8B5CF6;
+  box-shadow: 0 0 6px rgba(139, 92, 246, 0.4);
+}
+
+[data-viz-theme="tech"] .flowDotActive {
+  background: #F472B6;
+  box-shadow: 0 0 8px rgba(244, 114, 182, 0.5);
+}
+
+[data-viz-theme="tech"] .flowDotSuccess {
+  background: #06B6D4;
+  box-shadow: 0 0 6px rgba(6, 182, 212, 0.4);
+}
+
+[data-viz-theme="tech"] .flowEndpoint {
+  color: #E2E8F0;
+}
+
+[data-viz-theme="tech"] .flowStepActive .flowEndpoint {
+  color: #F472B6;
+}
+
+[data-viz-theme="tech"] .flowDuration {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .flowMetricValue {
+  background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-viz-theme="tech"] .flowMetricLabel {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .flowSidebar {
+  background: linear-gradient(135deg, #2D2D3F, #1E1E2E);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  color: #CBD5E1;
+}
+
+[data-viz-theme="tech"] .flowSidebarTitle {
+  color: #E2E8F0;
+}
+
+[data-viz-theme="tech"] .flowSidebarDesc {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .flowBar {
+  background: rgba(139, 92, 246, 0.15);
+}
+
+[data-viz-theme="tech"] .flowBarFill {
+  background: linear-gradient(to right, #8B5CF6, #06B6D4);
+}
+
+[data-viz-theme="tech"] .flowBarLabel {
+  color: #94A3B8;
+}
+
+/* ═══ 3. Comparison Card — Tech ═══ */
+
+[data-viz-theme="tech"] .compareGrid {
+  background: rgba(139, 92, 246, 0.15);
+  border-radius: 8px;
+}
+
+[data-viz-theme="tech"] .compareSide {
+  background: #2D2D3F;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+[data-viz-theme="tech"] .compareSideHighlight {
+  background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+  border: none;
+}
+
+[data-viz-theme="tech"] .compareSideIcon {
+  background: rgba(139, 92, 246, 0.2);
+}
+
+[data-viz-theme="tech"] .compareSideIcon .material-symbols-outlined {
+  color: #A78BFA;
+}
+
+[data-viz-theme="tech"] .compareSideHighlight .compareSideIcon {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+[data-viz-theme="tech"] .compareSideHighlight .compareSideIcon .material-symbols-outlined {
+  color: #ffffff;
+}
+
+[data-viz-theme="tech"] .compareSideName {
+  color: #E2E8F0;
+}
+
+[data-viz-theme="tech"] .compareSideHighlight .compareSideName {
+  color: #ffffff;
+}
+
+[data-viz-theme="tech"] .compareBadge {
+  background: rgba(139, 92, 246, 0.2);
+  color: #C4B5FD;
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.15);
+}
+
+[data-viz-theme="tech"] .compareBadgeHighlight {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+[data-viz-theme="tech"] .compareRow {
+  border-bottom-color: rgba(139, 92, 246, 0.1);
+}
+
+[data-viz-theme="tech"] .compareSideHighlight .compareRow {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-viz-theme="tech"] .compareRowLabel {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .compareSideHighlight .compareRowLabel {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+[data-viz-theme="tech"] .compareRowValue {
+  color: #E2E8F0;
+}
+
+[data-viz-theme="tech"] .compareSideHighlight .compareRowValue {
+  color: #ffffff;
+}
+
+[data-viz-theme="tech"] .compareRowHighlight {
+  color: #06B6D4;
+}
+
+/* ═══ 4. Statistics Card — Tech ═══ */
+
+[data-viz-theme="tech"] .statsGrid {
+  gap: 16px;
+}
+
+[data-viz-theme="tech"] .statLabel {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .statValue {
+  background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-viz-theme="tech"] .statError {
+  background: linear-gradient(135deg, #EF4444, #F472B6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-viz-theme="tech"] .statTrend {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .trendSuccess {
+  color: #06B6D4;
+}
+
+[data-viz-theme="tech"] .trendSecondary {
+  color: #8B5CF6;
+}
+
+[data-viz-theme="tech"] .barsLabel::before {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .bar {
+  background: linear-gradient(to top, #8B5CF6, #06B6D4);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+  border-radius: 4px 4px 0 0;
+}
+
+[data-viz-theme="tech"] .bar:last-child {
+  background: linear-gradient(to top, #A78BFA, #8B5CF6);
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.5);
+}
+
+/* ═══ 5. Timeline Card — Tech ═══ */
+
+[data-viz-theme="tech"] .timelineLine {
+  background: linear-gradient(to right, #8B5CF6, rgba(139, 92, 246, 0.1));
+}
+
+[data-viz-theme="tech"] .timelineSteps {
+  gap: 16px;
+}
+
+[data-viz-theme="tech"] .timelineItemPending {
+  opacity: 0.5;
+}
+
+[data-viz-theme="tech"] .timelineDot {
+  background: #2D2D3F;
+  box-shadow: 0 0 0 3px #1E1E2E;
+}
+
+[data-viz-theme="tech"] .timelineDotCompleted {
+  background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+}
+
+[data-viz-theme="tech"] .timelineDotActive {
+  background: #8B5CF6;
+  color: #ffffff;
+  border: 3px solid #1E1E2E;
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.3), 0 0 20px rgba(139, 92, 246, 0.2);
+  animation: pulseGlow 2s infinite;
+}
+
+[data-viz-theme="tech"] .timelineDotPending {
+  background: transparent;
+  color: #64748B;
+  border: 2px dashed rgba(139, 92, 246, 0.3);
+  box-shadow: none;
+}
+
+[data-viz-theme="tech"] .timelineDotPulse {
+  background: #F472B6;
+  box-shadow: 0 0 8px rgba(244, 114, 182, 0.5);
+}
+
+[data-viz-theme="tech"] .timelineTitle {
+  color: #E2E8F0;
+}
+
+[data-viz-theme="tech"] .timelineDotActive + .timelineContent .timelineTitle,
+[data-viz-theme="tech"] .timelineItem:has(.timelineDotActive) .timelineTitle {
+  color: #A78BFA;
+}
+
+[data-viz-theme="tech"] .timelineDesc {
+  color: #94A3B8;
+}
+
+[data-viz-theme="tech"] .timelineDetail {
+  color: #A78BFA;
+}
+
+[data-viz-theme="tech"] .timelineItemPending .timelineDetail {
+  color: #64748B;
 }
 
 /* ═══ Responsive ═══ */
@@ -768,12 +1333,11 @@
   }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+/* ═══ Reduced motion ═══ */
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

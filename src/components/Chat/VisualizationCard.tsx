@@ -82,13 +82,16 @@ function VisualizationCard({ code }: { code: string }) {
 }
 
 function VizCardInner({ card }: { card: VizCard }) {
-  switch (card.type) {
-    case 'architecture': return <ArchitectureCard card={card} />;
-    case 'dataflow': return <DataFlowCard card={card} />;
-    case 'comparison': return <ComparisonCard card={card} />;
-    case 'statistics': return <StatisticsCard card={card} />;
-    case 'timeline': return <TimelineCard card={card} />;
-  }
+  const theme = (card as Record<string, unknown>).theme === 'tech' ? 'tech' : 'business';
+  return (
+    <div data-viz-theme={theme}>
+      {card.type === 'architecture' && <ArchitectureCard card={card} />}
+      {card.type === 'dataflow' && <DataFlowCard card={card} />}
+      {card.type === 'comparison' && <ComparisonCard card={card} />}
+      {card.type === 'statistics' && <StatisticsCard card={card} />}
+      {card.type === 'timeline' && <TimelineCard card={card} />}
+    </div>
+  );
 }
 
 /* ── Icon validation ── */

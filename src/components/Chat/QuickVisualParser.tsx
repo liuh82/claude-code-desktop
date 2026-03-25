@@ -250,10 +250,11 @@ function parseTimeline(lines: string[]): QuickVizCard | null {
 
 /* ── Regex-based detection + block splitting ── */
 
-const QUICK_VIZ_RE = /^[\/@](arch|flow|compare|timeline)\b/m;
+const QUICK_VIZ_RE = /^[\/@](arch|flow|compare|timeline)(?:-tech)?\b/m;
 
 interface QuickVizBlock {
   command: string;
+  fullCommand: string;
   lines: string[];
   fullText: string;
   startIndex: number;
@@ -268,7 +269,8 @@ function extractBlocks(content: string): QuickVizBlock[] {
   while (i < lines.length) {
     const match = QUICK_VIZ_RE.exec(lines[i]);
     if (match) {
-      const command = match[1];
+      const fullCommand = match[0].replace(/^[\/@]/, '');
+      const command = fullCommand.replace(/-tech$/, '') as 'arch' | 'flow' | 'compare' | 'timeline';
       const startLine = i;
       const blockLines: string[] = [lines[i]];
       i++;
@@ -286,6 +288,7 @@ function extractBlocks(content: string): QuickVizBlock[] {
       const fullText = blockLines.join('\n');
       blocks.push({
         command,
+        fullCommand,
         lines: blockLines,
         fullText,
         startIndex: startLine,
@@ -300,13 +303,19 @@ function extractBlocks(content: string): QuickVizBlock[] {
 }
 
 function parseBlock(block: QuickVizBlock): QuickVizCard | null {
-  switch (block.command) {
-    case 'arch': return parseArch(block.lines);
-    case 'flow': return parseFlow(block.lines);
-    case 'compare': return parseCompare(block.lines);
-    case 'timeline': return parseTimeline(block.lines);
-    default: return null;
+  const card = (() => {
+    switch (block.command) {
+      case 'arch': return parseArch(block.lines);
+      case 'flow': return parseFlow(block.lines);
+      case 'compare': return parseCompare(block.lines);
+      case 'timeline': return parseTimeline(block.lines);
+      default: return null;
+    }
+  })();
+  if (card && block.fullCommand.endsWith('-tech')) {
+    card.theme = 'tech';
   }
+  return card;
 }
 
 /* ── Split content into text segments and viz blocks ── */
