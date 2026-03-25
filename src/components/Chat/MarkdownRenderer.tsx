@@ -5,12 +5,22 @@ import rehypeHighlight from 'rehype-highlight';
 import { CodeBlock } from './CodeBlock';
 import { ChartBlock } from './ChartBlock';
 import { VisualizationCard } from './VisualizationCard';
+import { QuickVisualParser } from './QuickVisualParser';
 
 interface MarkdownRendererProps {
   content: string;
 }
 
 function MarkdownRenderer({ content }: MarkdownRendererProps) {
+  // If content contains quick-viz commands, use QuickVisualParser instead
+  if (/^@(arch|flow|compare|timeline)\b/m.test(content)) {
+    return (
+      <div className="markdown-body">
+        <QuickVisualParser content={content} />
+      </div>
+    );
+  }
+
   return (
     <div className="markdown-body">
       <ReactMarkdown

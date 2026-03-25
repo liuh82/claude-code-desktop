@@ -121,8 +121,26 @@ const TOOL_DEFINITIONS = [
 // ── System prompt ──
 
 const CCDESK_SYSTEM_PROMPT = `CCDesk 桌面客户端支持以下扩展语法，请在需要可视化数据时使用：
-1. 图表可视化：使用 \`\`\`chart 代码块，内容为 ECharts JSON 配置。支持折线图、柱状图、饼图、散点图、雷达图等所有类型。
-2. 文件引用：用户消息中的 @path/to/file 表示引用项目文件。`;
+
+## 可视化输出
+当你的回复中需要描述以下内容时，请使用 \`\`\`visual 代码块自动输出可视化卡片（JSON 格式）：
+
+1. **架构图** — 系统架构、模块关系 → type: "architecture"
+2. **数据流** — 流程、数据走向 → type: "dataflow"
+3. **对比** — 方案对比、优缺点 → type: "comparison"
+4. **统计** — 数据展示、指标 → type: "statistics"
+5. **时间线** — 计划、里程碑 → type: "timeline"
+
+visual 代码块示例：
+\`\`\`visual
+{"type": "architecture", "title": "系统架构", "icon": "account_tree", "label": "Architecture", "modules": [{"name": "前端", "icon": "web", "color": "primary"}, {"name": "API 网关", "icon": "router", "color": "primary"}, {"name": "后端", "icon": "dns", "color": "secondary"}, {"name": "数据库", "icon": "storage", "color": "secondary"}]}
+\`\`\`
+
+用户也可以使用简短指令触发可视化：@arch、@flow、@compare、@timeline
+
+## 其他语法
+- 图表可视化：使用 \`\`\`chart 代码块，内容为 ECharts JSON 配置。支持折线图、柱状图、饼图、散点图、雷达图等所有类型。
+- 文件引用：用户消息中的 @path/to/file 表示引用项目文件。`;
 
 // ── Dangerous command patterns (log warning, don't block) ──
 
