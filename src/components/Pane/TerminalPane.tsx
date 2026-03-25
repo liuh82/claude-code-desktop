@@ -75,6 +75,22 @@ function getFileIcon(filename: string): { icon: string; colorClass: string } {
 
 // ── Props & helpers ──
 
+// Directories and files to exclude from @mention file list
+const MENTION_EXCLUDED_DIRS = new Set([
+  'node_modules', '.git', 'dist', 'build', 'out', '.next', '.nuxt',
+  '.turbo', '.cache', 'coverage', '.nyc_output', '.terraform',
+]);
+const MENTION_EXCLUDED_PATTERNS = /^[._]/;  // hidden dirs/files (starting with . or _)
+
+function shouldExcludeFromMention(path: string): boolean {
+  const segments = path.split('/');
+  for (const seg of segments) {
+    if (MENTION_EXCLUDED_DIRS.has(seg)) return true;
+    if (MENTION_EXCLUDED_PATTERNS.test(seg)) return true;
+  }
+  return false;
+}
+
 interface TerminalPaneProps {
   tabId: string;
   paneId: string;
@@ -85,7 +101,11 @@ function flattenTree(nodes: FileNode[], prefix = ''): FileNode[] {
   const result: FileNode[] = [];
   for (const node of nodes) {
     const p = prefix ? `${prefix}/${node.name}` : node.name;
+    // Skip excluded directories entirely (don't recurse into them)
+    if (node.type === 'directory' && MENTION_EXCLUDED_DIRS.has(node.name)) continue;
     if (node.type === 'file') {
+      // Skip hidden files/files in hidden dirs
+      if (shouldExcludeFromMention(p)) continue;
       result.push({ ...node, path: p });
     }
     if (node.children) {
@@ -109,6 +129,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const messages = paneState?.messages ?? [];
   const isGenerating = paneState?.isGenerating ?? false;
   const fileTree = useChatStore((s) => s.fileTree);
+  const pendingFileMention = useChatStore((s) => s.pendingFileMention);
   const tokenUsage = paneState?.tokenUsage ?? { input: 0, output: 0 };
   const currentModel = useChatStore((s) => s.currentModel) || 'claude-sonnet-4-6';
 
@@ -249,6 +270,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
 
   // ── Consume file mention from ToolPanel click ──
   useEffect(() => {
+    if (!pendingFileMention) return;
     const filePath = useChatStore.getState().consumeFileMention();
     if (!filePath || !textareaRef.current) return;
     const textarea = textareaRef.current;
@@ -261,7 +283,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       textarea.setSelectionRange(before.length, before.length);
       textarea.focus();
     }, 0);
-  }, [useChatStore.getState().pendingFileMention]);
+  }, [pendingFileMention, text]);
 
   // ── Handlers ──
 

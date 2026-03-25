@@ -90,9 +90,21 @@
   align-items: flex-start;
 }
 
-/* Stable wrapper for assistant content — prevents React #301 during streaming */
+/* Stable wrapper for assistant content — preserves layout during streaming */
 .assistantBody {
-  display: contents;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Inner wrapper for tool calls + text — stable DOM during streaming updates */
+.assistantContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
 }
 
 /* Meta: role + time */
@@ -254,14 +266,20 @@
   opacity: 0.90;
 }
 
-/* Streaming cursor */
+/* Streaming cursor — blinking left-half block */
 .streamingCursor::after {
-  content: '\u258C';
-  animation: blink 1s step-end infinite;
+  content: '\2588';
+  animation: cursorBlink 1s step-end infinite;
   color: var(--accent);
   margin-left: 1px;
+  font-weight: normal;
 }
 
 [data-theme="dark"] .streamingCursor::after {
   color: var(--accent);
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }

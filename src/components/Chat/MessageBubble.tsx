@@ -52,35 +52,37 @@ function MessageBubble({ message, onPermissionAllow, onPermissionDeny }: Message
           <div className={styles.messageContent}>{message.content}</div>
         ) : (
           <div className={styles.assistantBody}>
-            {(message.toolCalls && message.toolCalls.length > 0) && (
-              <div className={styles.toolCallList}>
-                {message.toolCalls.map((tc) => {
-                  if (tc.status === 'pending_permission') {
-                    const info = getPermissionInfo(tc);
-                    return (
-                      <PermissionBlock
-                        key={tc.id}
-                        toolName={info.toolName}
-                        toolIcon={info.toolIcon}
-                        target={info.target}
-                        isDangerous={info.isDangerous}
-                        onAllow={() => onPermissionAllow?.(tc)}
-                        onDeny={() => onPermissionDeny?.(tc)}
-                      />
-                    );
-                  }
-                  return <ToolCallBlock key={tc.id} toolCall={tc} />;
-                })}
+            <div className={styles.assistantContent}>
+              {(message.toolCalls && message.toolCalls.length > 0) && (
+                <div className={styles.toolCallList}>
+                  {message.toolCalls.map((tc) => {
+                    if (tc.status === 'pending_permission') {
+                      const info = getPermissionInfo(tc);
+                      return (
+                        <PermissionBlock
+                          key={tc.id}
+                          toolName={info.toolName}
+                          toolIcon={info.toolIcon}
+                          target={info.target}
+                          isDangerous={info.isDangerous}
+                          onAllow={() => onPermissionAllow?.(tc)}
+                          onDeny={() => onPermissionDeny?.(tc)}
+                        />
+                      );
+                    }
+                    return <ToolCallBlock key={tc.id} toolCall={tc} />;
+                  })}
+                </div>
+              )}
+              <div className={`${styles.messageContent} ${message.isStreaming ? styles.streamingCursor : ''}`}>
+                {message.content ? (
+                  message.isStreaming ? (
+                    <div className={styles.streamingRawText}>{message.content}</div>
+                  ) : (
+                    <MarkdownRenderer key={`md-${message.id}`} content={message.content} />
+                  )
+                ) : null}
               </div>
-            )}
-            <div className={`${styles.messageContent} ${message.isStreaming ? styles.streamingCursor : ''}`}>
-              {message.content ? (
-                message.isStreaming ? (
-                  <div className={styles.streamingRawText}>{message.content}</div>
-                ) : (
-                  <MarkdownRenderer key={`md-${message.id}`} content={message.content} />
-                )
-              ) : null}
             </div>
           </div>
         )}
