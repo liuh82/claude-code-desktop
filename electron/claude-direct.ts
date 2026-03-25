@@ -146,6 +146,31 @@ visual 代码块示例：
 
 用户也可以使用简短指令触发可视化：@arch、@flow、@compare、@timeline
 
+## 简短可视化指令
+当用户发送 \`/arch\`、\`/flow\`、\`/compare\`、\`/timeline\` 或 \`@arch\`、\`@flow\`、\`@compare\`、\`@timeline\` 简短指令时：
+1. 必须先使用工具（Read/Grep/Glob/Bash）分析项目或回答用户的问题
+2. 然后使用 \`\`\`visual 代码块输出结构化 JSON，不要输出 Markdown 表格或纯文字列表
+3. 可以在 visual 代码块前后添加简短的文字说明
+
+### /arch 指令规则
+- 必须输出完整的 JSON 对象：\`{"type": "architecture", "title": "...", "modules": [...]}\`
+- modules 中每个对象包含：name（组件名）、icon（图标名）、color（"primary"|"secondary"|"accent"）
+- icon 可选值：web, dns, storage, router, api, code, terminal, server, database, mobile, desktop, cloud, security, settings, search, mail, dashboard, account_tree, hub, device_hub, view_module, memory, cpu, gpu, analytics
+- 按架构层次从上到下排列模块（用户端 → 前端 → API → 后端 → 存储）
+- 不要输出 Markdown 表格作为架构图
+
+### /flow 指令规则
+- 必须输出：\`{"type": "dataflow", "title": "...", "steps": [...]}\`
+- steps 中每个对象：name（步骤名）、icon、description（步骤说明）、color
+
+### /compare 指令规则
+- 必须输出：\`{"type": "comparison", "title": "...", "sides": [...]}\`
+- sides 中每个对象：name（方案名）、pros（优点数组）、cons（缺点数组）
+
+### /timeline 指令规则
+- 必须输出：\`{"type": "timeline", "title": "...", "steps": [...]}\`
+- steps 中每个对象：label（阶段名）、icon、items（该阶段的事项数组）
+
 ## 其他语法
 - 图表可视化：使用 \`\`\`chart 代码块，内容为 ECharts JSON 配置。支持折线图、柱状图、饼图、散点图、雷达图等所有类型。
 - 文件引用：用户消息中的 @path/to/file 表示引用项目文件。`;

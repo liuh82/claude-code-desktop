@@ -88,12 +88,17 @@ function parseArch(lines: string[]): QuickVizCard | null {
 
   for (const line of edgeLines) {
     const parts = line.split('→').map(s => s.trim());
-    if (parts.length < 2) continue;
-    const from = parts[0];
-    const to = parts[parts.length - 1];
-    nodeSet.add(from);
-    nodeSet.add(to);
-    edges.push({ from, to });
+    if (parts.length >= 2) {
+      // Arrow format: "A → B → C"
+      const from = parts[0];
+      const to = parts[parts.length - 1];
+      nodeSet.add(from);
+      nodeSet.add(to);
+      edges.push({ from, to });
+    } else if (parts.length === 1 && parts[0]) {
+      // Plain name without arrows — treat as a standalone node
+      nodeSet.add(parts[0]);
+    }
   }
 
   const nodes = Array.from(nodeSet);
