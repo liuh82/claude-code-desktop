@@ -570,15 +570,14 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
       <div className={styles.paneBody}>
         <div className={styles.paneMessages}>
           <div className={styles.paneMessagesInner}>
-            {messages.length === 0 ? (
+            {messages.length === 0 && (
               <div className={styles.paneEmpty}>
                 Claude Code 终端 — 输入消息开始
               </div>
-            ) : (
-              messages.map((msg) => (
-                <MessageBubble key={msg.id} message={msg} />
-              ))
             )}
+            {messages.map((msg) => (
+              <MessageBubble key={msg.id} message={msg} />
+            ))}
             <div ref={messagesEndRef} />
           </div>
         </div>
@@ -705,20 +704,16 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                     </button>
                   ))}
                 </div>
-                {isGenerating ? (
-                  <button className={styles.paneSendBtn} onClick={handleStop} title="停止生成">
-                    <span className="material-symbols-outlined">stop_circle</span>
-                  </button>
-                ) : (
-                  <button
-                    className={`${styles.paneSendBtn} ${canSend ? styles.paneSendBtnActive : ''}`}
-                    onClick={handleSend}
-                    disabled={!canSend}
-                    title="发送 (⌘Enter)"
-                  >
-                    <span className="material-symbols-outlined">arrow_upward</span>
-                  </button>
-                )}
+                <button
+                  className={`${styles.paneSendBtn} ${isGenerating ? '' : canSend ? styles.paneSendBtnActive : ''}`}
+                  onClick={isGenerating ? handleStop : handleSend}
+                  disabled={!isGenerating && !canSend}
+                  title={isGenerating ? '停止生成' : '发送 (⌘Enter)'}
+                >
+                  <span className="material-symbols-outlined">
+                    {isGenerating ? 'stop_circle' : 'arrow_upward'}
+                  </span>
+                </button>
               </div>
             </div>
           </div>

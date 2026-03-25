@@ -4,6 +4,11 @@
 
 /* ── Base card ── */
 
+/* Stable wrapper — prevents React #301 when card type changes during streaming */
+.vizWrapper {
+  display: contents;
+}
+
 .card {
   background: var(--card-bg);
   border-radius: var(--card-radius);

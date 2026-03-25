@@ -89,10 +89,10 @@ function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
           <div className={styles.toolCallLabel}>输入</div>
           <div className={styles.toolCallContent}>{inputStr}</div>
           {toolCall.output && (
-            <>
+            <div className={styles.toolCallOutputSection}>
               <div className={`${styles.toolCallLabel} ${styles.toolCallLabelOutput}`}>输出</div>
               <div className={styles.toolCallContent}>{toolCall.output}</div>
-            </>
+            </div>
           )}
         </div>
       )}

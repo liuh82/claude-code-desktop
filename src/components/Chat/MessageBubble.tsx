@@ -51,8 +51,8 @@ function MessageBubble({ message, onPermissionAllow, onPermissionDeny }: Message
         {isUser ? (
           <div className={styles.messageContent}>{message.content}</div>
         ) : (
-          <>
-            {message.toolCalls && message.toolCalls.length > 0 && (
+          <div className={styles.assistantBody}>
+            {(message.toolCalls && message.toolCalls.length > 0) && (
               <div className={styles.toolCallList}>
                 {message.toolCalls.map((tc) => {
                   if (tc.status === 'pending_permission') {
@@ -73,12 +73,10 @@ function MessageBubble({ message, onPermissionAllow, onPermissionDeny }: Message
                 })}
               </div>
             )}
-            {message.content && (
-              <div className={`${styles.messageContent} ${message.isStreaming ? styles.streamingCursor : ''}`}>
-                <MarkdownRenderer content={message.content} />
-              </div>
-            )}
-          </>
+            <div className={`${styles.messageContent} ${message.isStreaming ? styles.streamingCursor : ''}`}>
+              {message.content ? <MarkdownRenderer content={message.content} /> : null}
+            </div>
+          </div>
         )}
       </div>
     </div>

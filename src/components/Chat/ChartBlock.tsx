@@ -64,7 +64,7 @@ function ChartBlock({ code }: ChartBlockProps) {
     );
   }
 
-  if (!option) return null;
+  if (!option) return <div className="chartBlockEmpty" />;
 
   return (
     <div

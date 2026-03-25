@@ -60,15 +60,23 @@ type VizCard =
 function VisualizationCard({ code }: { code: string }) {
   const card = useMemo(() => parseCard(code), [code]);
 
-  if (!card) {
-    return (
-      <div className={styles.error}>
-        <span className="material-symbols-outlined">error</span>
-        Visualization card JSON parse error
-      </div>
-    );
-  }
+  // Always return a stable <div> wrapper to avoid React #301 when card type changes
+  // during streaming (e.g., incomplete JSON parsing differently on each render).
+  return (
+    <div className={styles.vizWrapper}>
+      {!card ? (
+        <div className={styles.error}>
+          <span className="material-symbols-outlined">error</span>
+          Visualization card JSON parse error
+        </div>
+      ) : (
+        <VizCardInner card={card} />
+      )}
+    </div>
+  );
+}
 
+function VizCardInner({ card }: { card: VizCard }) {
   switch (card.type) {
     case 'architecture': return <ArchitectureCard card={card} />;
     case 'dataflow': return <DataFlowCard card={card} />;

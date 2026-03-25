@@ -90,6 +90,11 @@
   align-items: flex-start;
 }
 
+/* Stable wrapper for assistant content — prevents React #301 during streaming */
+.assistantBody {
+  display: contents;
+}
+
 /* Meta: role + time */
 .messageMeta {
   display: flex;

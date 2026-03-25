@@ -42,7 +42,10 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
 }
 
 function PreBlock({ children }: { children?: ReactNode }) {
-  return <>{children}</>;
+  // Always render a stable <pre> wrapper to avoid DOM node type changes during streaming.
+  // react-markdown wraps code blocks in <pre>; returning a Fragment causes React #301
+  // when the child tree structure changes between renders.
+  return <pre>{children}</pre>;
 }
 
 function CodeElement({ children, className }: ComponentPropsWithoutRef<'code'> & { children?: ReactNode }) {
@@ -58,15 +61,27 @@ function CodeElement({ children, className }: ComponentPropsWithoutRef<'code'> &
 
   // Render chart code blocks as interactive ECharts
   if (lang === 'chart' || lang === 'echarts') {
-    return <ChartBlock code={codeString} />;
+    return (
+      <code className="codeBlock">
+        <ChartBlock code={codeString} />
+      </code>
+    );
   }
 
   // Render visualization card code blocks
   if (lang === 'visual' || lang === 'card') {
-    return <VisualizationCard code={codeString} />;
+    return (
+      <code className="codeBlock">
+        <VisualizationCard code={codeString} />
+      </code>
+    );
   }
 
-  return <CodeBlock code={codeString} language={lang || undefined} />;
+  return (
+    <code className="codeBlock">
+      <CodeBlock code={codeString} language={lang || undefined} />
+    </code>
+  );
 }
 
 function Paragraph({ children }: { children?: ReactNode }) {
