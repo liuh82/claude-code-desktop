@@ -98,6 +98,122 @@ const paneToolStartTimes = new Map<string, Map<string, number>>();
 // Map sessionId → paneId (for IPC routing)
 const sessionIdToPaneId = new Map<string, string>();
 
+
+// CLI stream simulation per pane (since claude -p sends full text in one event)
+const cliStreamSimulation = new Map<string, {
+  timer: ReturnType<typeof setInterval> | null;
+  targetText: string;
+  revealedIndex: number;
+  assistantId: string | null;
+  chunkSize: number;
+  speed: number;
+}>();
+
+/**
+ * Start CLI typing simulation for a pane.
+ * Reveals text character by character at ~60 chars/15ms intervals.
+ */
+function startCliTypingSimulation(paneId: string, assistantId: string, fullText: string) {
+  // Stop any existing simulation for this pane
+  stopCliTypingSimulation(paneId);
+
+  const sim = {
+    timer: null as ReturnType<typeof setInterval> | null,
+    targetText: fullText,
+    revealedIndex: 0,
+    assistantId,
+    chunkSize: 3,
+    speed: 15,
+  };
+
+  cliStreamSimulation.set(paneId, sim);
+
+  // If text is short (< 50 chars), reveal faster
+  if (fullText.length < 50) {
+    sim.chunkSize = 8;
+    sim.speed = 8;
+  }
+
+  sim.timer = setInterval(() => {
+    const state = useChatStore.getState();
+    const pane = state.panes.get(paneId);
+    if (!pane || !pane.isGenerating) {
+      // Pane no longer generating — show remaining text and stop
+      finishCliSimulation(paneId);
+      return;
+    }
+
+    sim.revealedIndex = Math.min(sim.revealedIndex + sim.chunkSize, sim.targetText.length);
+
+    const partialText = sim.targetText.slice(0, sim.revealedIndex);
+    useChatStore.setState((s) => {
+      const next = new Map(s.panes);
+      const p = next.get(paneId);
+      if (!p) return s;
+      return {
+        panes: new Map(s.panes).set(paneId, {
+          ...p,
+          messages: p.messages.map(m =>
+            m.id === assistantId ? { ...m, content: partialText } : m
+          ),
+        }),
+      };
+    });
+
+    if (sim.revealedIndex >= sim.targetText.length) {
+      finishCliSimulation(paneId);
+    }
+  }, sim.speed);
+}
+
+/**
+ * Update the target text of an ongoing CLI simulation (e.g., when a new assistant event arrives with more text).
+ */
+function updateCliSimulationTarget(paneId: string, newText: string) {
+  const sim = cliStreamSimulation.get(paneId);
+  if (!sim) return;
+  sim.targetText = newText;
+}
+
+/**
+ * Finish CLI simulation immediately — reveal all remaining text.
+ */
+function finishCliSimulation(paneId: string) {
+  const sim = cliStreamSimulation.get(paneId);
+  if (!sim) return;
+  if (sim.timer) {
+    clearInterval(sim.timer);
+    sim.timer = null;
+  }
+  const aid = sim.assistantId;
+  if (aid && sim.revealedIndex < sim.targetText.length) {
+    useChatStore.setState((s) => {
+      const next = new Map(s.panes);
+      const p = next.get(paneId);
+      if (!p) return s;
+      return {
+        panes: new Map(s.panes).set(paneId, {
+          ...p,
+          messages: p.messages.map(m =>
+            m.id === aid ? { ...m, content: sim.targetText } : m
+          ),
+        }),
+      };
+    });
+  }
+  cliStreamSimulation.delete(paneId);
+}
+
+function stopCliTypingSimulation(paneId: string) {
+  const sim = cliStreamSimulation.get(paneId);
+  if (!sim) return;
+  if (sim.timer) {
+    clearInterval(sim.timer);
+    sim.timer = null;
+  }
+  cliStreamSimulation.delete(paneId);
+}
+
 // Direct API streaming state per pane
 const directStreamState = new Map<string, {
   assistantId: string | null;
@@ -167,6 +283,9 @@ function stopListening() {
 }
 
 function finalizeAssistantForPane(paneId: string) {
+  // Finish any CLI typing simulation
+  finishCliSimulation(paneId);
+
   const streaming = paneStreamingState.get(paneId);
   if (!streaming?.assistantId) return;
 
@@ -554,11 +673,11 @@ function handleClaudeOutput(line: string, sessionId: string) {
           const aid = currentStreaming?.assistantId || generateId();
 
           if (!currentStreaming?.assistantId) {
-            // First block — create new assistant message, REPLACE content
+            // First text block — create assistant message with empty content
             const assistantMsg: ChatMessage = {
               id: aid,
               role: 'assistant',
-              content: block.text,
+              content: '',
               toolCalls: [],
               timestamp: Date.now(),
               isStreaming: true,
@@ -570,14 +689,12 @@ function handleClaudeOutput(line: string, sessionId: string) {
               streamMessageId: currentStreaming?.streamMessageId || streamMsgId,
               currentModel: pane.currentModel,
             });
+
+            // Start CLI typing simulation (claude -p sends full text at once)
+            startCliTypingSimulation(paneId, aid, block.text);
           } else {
-            // Same message — REPLACE content (stream gives complete text each time)
-            next.set(paneId, {
-              ...pane,
-              messages: pane.messages.map(m =>
-                m.id === aid ? { ...m, content: block.text } : m
-              ),
-            });
+            // Same message — update simulation target (claude -p may send updated full text)
+            updateCliSimulationTarget(paneId, block.text);
           }
           return { panes: next };
         });
@@ -913,6 +1030,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         return { panes: new Map(s.panes).set(paneId, { ...pane, isGenerating: false }) };
       });
     }
+    stopCliTypingSimulation(paneId);
   },
 
   addSystemMessage: (paneId: string, content: string) => {
@@ -936,6 +1054,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     }
     paneStreamingState.delete(paneId);
     directStreamState.delete(paneId);
+    stopCliTypingSimulation(paneId);
     set((s) => ({
       panes: new Map(s.panes).set(paneId, emptyPaneState()),
     }));
