@@ -12,10 +12,11 @@ interface MarkdownRendererProps {
 
 function MarkdownRenderer({ content }: MarkdownRendererProps) {
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      rehypePlugins={[rehypeHighlight]}
-      components={{
+    <div className="markdown-body">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeHighlight]}
+        components={{
         pre: PreBlock,
         code: CodeElement,
         p: Paragraph,
@@ -34,8 +35,9 @@ function MarkdownRenderer({ content }: MarkdownRendererProps) {
         strong: Strong,
       }}
     >
-      {content}
-    </ReactMarkdown>
+        {content}
+      </ReactMarkdown>
+    </div>
   );
 }
 
