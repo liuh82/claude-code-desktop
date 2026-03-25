@@ -1,69 +1,54 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useState, useId, useRef } from 'react';
 import mermaid from 'mermaid';
 import DOMPurify from 'dompurify';
 import styles from './MermaidBlock.module.css';
 
-// Initialize mermaid once with light theme
+// Initialize mermaid once
 mermaid.initialize({
   startOnLoad: false,
   theme: 'base',
   themeVariables: {
-    primaryColor: '#E3F2FD',
-    primaryTextColor: '#1E293B',
-    primaryBorderColor: '#3B82F6',
-    lineColor: '#94A3B8',
-    secondaryColor: '#F0FDF4',
-    tertiaryColor: '#FAF5FF',
-    background: '#FFFFFF',
-    mainBkg: '#E3F2FD',
-    nodeBorder: '#3B82F6',
-    clusterBkg: '#F8FAFC',
-    titleColor: '#1E293B',
-    edgeLabelBackground: '#FFFFFF',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    fontSize: '13px',
-  },
-  flowchart: {
-    htmlLabels: true,
-    curve: 'basis',
-    padding: 15,
-    nodeSpacing: 50,
-    rankSpacing: 50,
-  },
-  sequence: {
-    actorMargin: 50,
-    messageMargin: 40,
-    mirrorActors: false,
+    primaryColor: '#e8f0fe',
+    primaryTextColor: '#1d2129',
+    primaryBorderColor: '#c9d1d9',
+    lineColor: '#586069',
+    secondaryColor: '#f0f4ff',
+    tertiaryColor: '#fafafa',
+    fontSize: '14px',
   },
 });
 
-function MermaidBlock({ code, index }: { code: string; index?: number }) {
-  const renderCountRef = useRef(0);
+interface MermaidBlockProps {
+  code: string;
+}
+
+const MermaidBlock: React.FC<MermaidBlockProps> = ({ code }) => {
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true);
-
-  const id = useMemo(() => `mermaid-${++renderCountRef.current}-${index ?? 0}`, [index]);
+  const [loading, setLoading] = useState(false);
+  const uniqueId = useId();
+  const renderRef = useRef(false);
 
   useEffect(() => {
-    const trimmed = code.trim();
+    if (!code || !code.trim()) return;
+    if (renderRef.current) return;
+    renderRef.current = true;
 
-    if (!trimmed) {
-      setLoading(false);
-      return;
-    }
+    const id = uniqueId.replace(/:/g, '_');
+    const trimmed = code.trim();
 
     setLoading(true);
     setError('');
     setSvg('');
 
     mermaid.render(id, trimmed).then(
-      ({ svg }) => {
-        setSvg(svg);
+      (result: { svg: string }) => {
+        setSvg(result.svg);
         setLoading(false);
       },
-      (err) => {
-        setError('Mermaid render error: ' + (err?.message || String(err)));
+      (err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        setError('Mermaid render error: ' + msg);
         setLoading(false);
       },
     );
@@ -73,23 +58,26 @@ function MermaidBlock({ code, index }: { code: string; index?: number }) {
       const el = document.getElementById('d' + id);
       if (el) el.remove();
     };
-  }, [code, id]);
+  }, [code, uniqueId]);
+
+  if (loading) {
+    return (
+      <div className={styles.loading}>
+        <span className={styles.spinner} />
+        Rendering diagram...
+      </div>
+    );
+  }
 
   if (error) {
     return (
       <div className={styles.error}>
-        {error}
+        <strong>Mermaid Error:</strong> {error}
       </div>
     );
   }
 
-  if (loading || !svg) {
-    return (
-      <div className={styles.loading}>
-        渲染图表中...
-      </div>
-    );
-  }
+  if (!svg) return null;
 
   return (
     <div
@@ -97,9 +85,6 @@ function MermaidBlock({ code, index }: { code: string; index?: number }) {
       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(svg) }}
     />
   );
-}
+};
 
-export { MermaidBlock };
-
-// Named export for React.lazy: default re-export
 export default MermaidBlock;

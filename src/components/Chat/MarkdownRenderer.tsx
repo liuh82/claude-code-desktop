@@ -9,7 +9,7 @@ import { QuickVisualParser } from './QuickVisualParser';
 
 // Lazy load mermaid (~3MB) to keep initial bundle small
 const MermaidBlock = lazy(() =>
-  import('./MermaidBlock').then((m) => ({ default: m.MermaidBlock }))
+  import('./MermaidBlock')
 );
 
 interface MarkdownRendererProps {
