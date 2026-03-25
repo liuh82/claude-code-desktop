@@ -1,9 +1,11 @@
+import { useMemo } from 'react';
 import type { ToolCall } from '@/types/chat';
 import styles from './StreamingStatus.module.css';
 
 interface StreamingStatusProps {
   toolCalls: ToolCall[];
   hasTextContent: boolean;
+  textContent?: string;
 }
 
 function getToolIcon(name: string): string {
@@ -73,11 +75,20 @@ function StatusLine({ toolCall }: { toolCall: ToolCall }) {
   );
 }
 
-function StreamingStatus({ toolCalls, hasTextContent }: StreamingStatusProps) {
+function StreamingStatus({ toolCalls, hasTextContent, textContent }: StreamingStatusProps) {
   // Filter out pending_permission — those are shown as PermissionBlock separately
   const statusCalls = toolCalls.filter(
     (tc) => tc.status !== 'pending_permission'
   );
+
+  // Show last non-empty line of text as a preview, capped at 80 chars
+  const textPreview = useMemo(() => {
+    if (!textContent) return '';
+    const lines = textContent.split('\n').filter(Boolean);
+    const last = lines[lines.length - 1];
+    if (!last) return '';
+    return last.length > 80 ? last.slice(0, 80) + '…' : last;
+  }, [textContent]);
 
   return (
     <div className={styles.container}>
@@ -89,7 +100,9 @@ function StreamingStatus({ toolCalls, hasTextContent }: StreamingStatusProps) {
           <span className={styles.statusIcon}>
             <span className="material-symbols-outlined">auto_awesome</span>
           </span>
-          <span className={styles.generatingText}>正在生成回复...</span>
+          <span className={styles.generatingText}>
+            {textPreview || '正在生成回复...'}
+          </span>
           <span className={styles.spinner}>
             <span className="material-symbols-outlined">progress_activity</span>
           </span>

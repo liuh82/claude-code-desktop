@@ -7,7 +7,7 @@ interface VizModule {
   name: string;
   color?: 'primary' | 'secondary' | 'tertiary';
   icon?: string;
-  children?: string[];
+  children?: (string | { name?: string; icon?: string })[];
   detail?: string;
 }
 
@@ -121,11 +121,12 @@ function ArchitectureCard({ card }: { card: Extract<VizCard, { type: 'architectu
               </div>
               <div className={styles.moduleName}>{mod.name}</div>
               {mod.detail && <div className={styles.moduleDetail}>{mod.detail}</div>}
-              {mod.children && (
+              {mod.children && mod.children.length > 0 && (
                 <div className={styles.moduleChildren}>
-                  {mod.children.map((c, j) => (
-                    <span key={j} className={styles.moduleChild}>{c}</span>
-                  ))}
+                  {mod.children.map((c, j) => {
+                    const label = typeof c === 'string' ? c : (c.name || '');
+                    return label ? <span key={j} className={styles.moduleChild}>{label}</span> : null;
+                  })}
                 </div>
               )}
             </div>
