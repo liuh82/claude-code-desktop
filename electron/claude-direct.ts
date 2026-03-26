@@ -686,8 +686,8 @@ export class ClaudeDirectClient {
     dataLines: string[],
     onEvent: (event: DirectSSEEvent) => void,
     contentBlocks: ApiContentBlock[],
-    state: { currentTextIndex: number; currentToolIndex: number; currentToolId: string; currentToolName: string; currentToolJson: string },
-    sync: (s: { currentTextIndex: number; currentToolIndex: number; currentToolId: string; currentToolName: string; currentToolJson: string }) => void,
+    state: { currentTextIndex: number; currentToolIndex: number; currentToolId: string; currentToolName: string; currentToolJson: string; messageStopReceived: boolean },
+    sync: (s: { currentTextIndex: number; currentToolIndex: number; currentToolId: string; currentToolName: string; currentToolJson: string; messageStopReceived: boolean }) => void,
   ) {
     const jsonStr = dataLines.join('');
     if (jsonStr === '[DONE]') return;
@@ -782,6 +782,7 @@ export class ClaudeDirectClient {
         break;
 
       case 'message_stop':
+        sync({ currentTextIndex: state.currentTextIndex, currentToolIndex: state.currentToolIndex, currentToolId: state.currentToolId, currentToolName: state.currentToolName, currentToolJson: state.currentToolJson, messageStopReceived: true });
         logInfo('DirectAPI', `Stream complete: ${contentBlocks.length} blocks (${contentBlocks.map(b => b.type).join(', ')})`);
         break;
 
@@ -823,6 +824,7 @@ export class ClaudeDirectClient {
     let currentToolId = '';
     let currentToolName = '';
     let currentToolJson = '';
+    let messageStopReceived = false;
 
     try {
       while (true) {
@@ -843,13 +845,14 @@ export class ClaudeDirectClient {
             if (pendingDataLines.length > 0) {
               this.flushSSEEvent(
                 pendingDataLines, onEvent, contentBlocks,
-                { currentTextIndex, currentToolIndex, currentToolId, currentToolName, currentToolJson },
+                { currentTextIndex, currentToolIndex, currentToolId, currentToolName, currentToolJson, messageStopReceived },
                 (state) => {
                   currentTextIndex = state.currentTextIndex;
                   currentToolIndex = state.currentToolIndex;
                   currentToolId = state.currentToolId;
                   currentToolName = state.currentToolName;
                   currentToolJson = state.currentToolJson;
+                  messageStopReceived = state.messageStopReceived;
                 },
               );
               pendingDataLines = [];
@@ -877,11 +880,18 @@ export class ClaudeDirectClient {
       throw e; // Re-throw so sendMessage's catch handles it
     }
 
+    // Detect abnormal stream termination (no message_stop event)
+    if (!messageStopReceived && contentBlocks.length > 0) {
+      logError('DirectAPI', `[DirectAPI SSE] Stream terminated without message_stop! ${contentBlocks.length} blocks received. Possible API disconnect.`);
+    } else if (!messageStopReceived && contentBlocks.length === 0) {
+      logWarn('DirectAPI', '[DirectAPI SSE] Stream ended with no events received');
+    }
+
     // Process any remaining pending data in buffer
     if (pendingDataLines.length > 0) {
       this.flushSSEEvent(
         pendingDataLines, onEvent, contentBlocks,
-        { currentTextIndex, currentToolIndex, currentToolId, currentToolName, currentToolJson },
+        { currentTextIndex, currentToolIndex, currentToolId, currentToolName, currentToolJson, messageStopReceived },
         () => {},
       );
     }
