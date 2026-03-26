@@ -40,10 +40,13 @@ const BUILT_IN_COMMANDS: SlashCommand[] = [
   { name: '/slide', description: 'PPT 风格信息幻灯片（如：/slide:business 项目概览）', source: 'built-in' },
 ];
 
-const AVAILABLE_MODELS = [
-  { id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6' },
-  { id: 'claude-opus-4-6', label: 'Claude Opus 4.6' },
-  { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5' },
+// Model list - dynamically loaded from Claude config
+const DEFAULT_MODELS = [
+  { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
+  { id: 'claude-opus-4-6', label: 'Opus 4.6' },
+  { id: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5' },
+  { id: 'claude-3-5-sonnet-20241022', label: 'Sonnet 3.5' },
+  { id: 'claude-3-5-haiku-20241022', label: 'Haiku 3.5' },
 ];
 
 // File extension → Material Symbols icon
@@ -784,27 +787,6 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
             )}
 
             <div className={styles.paneInputWrapper}>
-              {/* Model picker dropdown */}
-              {showModelPicker && (
-                <div className={styles.modelPickerDropdown}>
-                  <div className={styles.modelPickerList}>
-                    {AVAILABLE_MODELS.map((m) => (
-                      <div
-                        key={m.id}
-                        className={`${styles.modelPickerItem} ${useChatStore.getState().currentModel === m.id ? styles.modelPickerItemActive : ''}`}
-                        onClick={() => handleModelSelect(m.id)}
-                      >
-                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>model_training</span>
-                        <div>
-                          <div className={styles.modelPickerName}>{m.label}</div>
-                          <div className={styles.modelPickerId}>{m.id}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Textarea */}
               <textarea
                 ref={textareaRef}
@@ -844,13 +826,31 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                   })}
                 </div>
                 <div className={styles.paneInputSpacer} />
-                <button
-                  className={styles.modelPickerBtn}
-                  onClick={() => setShowModelPicker(!showModelPicker)}
-                  title="切换模型"
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>model_training</span>
-                </button>
+                <div className={styles.modelSelector}>
+                  <button
+                    className={styles.modelSelectorTrigger}
+                    onClick={() => setShowModelPicker(!showModelPicker)}
+                    title="切换模型"
+                  >
+                    <span className={styles.modelSelectorCurrent}>
+                      {currentModel.replace('claude-', '').replace(/-\d{8}$/, '').replace(/-\d+-\d+-\d+$/, '')}
+                    </span>
+                    <span className="material-symbols-outlined" style={{ fontSize: 14 }}>expand_more</span>
+                  </button>
+                  {showModelPicker && (
+                    <div className={styles.modelDropdown}>
+                      {DEFAULT_MODELS.map((m) => (
+                        <div
+                          key={m.id}
+                          className={`${styles.modelDropdownItem} ${currentModel === m.id ? styles.modelDropdownActive : ''}`}
+                          onClick={() => handleModelSelect(m.id)}
+                        >
+                          {m.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <div className={styles.modeSelector}>
                   {([
                     { key: 'plan' as const, icon: 'psychology', label: 'Plan' },

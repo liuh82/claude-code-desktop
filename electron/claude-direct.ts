@@ -209,6 +209,11 @@ gantt
 当用户需要信息密集的可视化展示（对比分析、统计面板、KPI 概览、系统总览等）时，
 使用 \`\`\`htmlslide 代码块输出完整的 HTML+CSS 页面。内容会直接在当前对话面板内以 Shadow DOM 渲染显示，不是在浏览器中打开。不要说"已在浏览器中打开"或类似的话。
 
+**重要规则：**
+- htmlslide 块内只写纯 HTML+CSS，**不要**在 htmlslide 内嵌套 markdown 语法（如 \`\`\` 代码块）
+- 如果需要展示代码片段，直接用 <pre><code> 标签，并自行添加高亮颜色
+- 不要在 htmlslide 内使用 mermaid 或其他代码块语法
+
 输出格式示例：
 \`\`\`htmlslide
 <!DOCTYPE html>
