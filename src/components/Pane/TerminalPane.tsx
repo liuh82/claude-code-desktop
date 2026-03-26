@@ -156,7 +156,8 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const fileTree = useChatStore((s) => s.fileTree);
   const pendingFileMention = useChatStore((s) => s.pendingFileMention);
   const tokenUsage = paneState?.tokenUsage ?? { input: 0, output: 0 };
-  const currentModel = paneState?.currentModel || useChatStore((s) => s.currentModel) || 'claude-sonnet-4-6';
+  const globalCurrentModel = useChatStore((s) => s.currentModel);
+  const currentModel = paneState?.currentModel || globalCurrentModel || 'claude-sonnet-4-6';
   const setPermissionMode = useChatStore((s) => s.setPermissionMode);
   const permissionMode = useChatStore((s) => s.permissionMode);
   const grantPermission = useChatStore((s) => s.grantPermission);
