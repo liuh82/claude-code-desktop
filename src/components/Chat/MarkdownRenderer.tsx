@@ -77,6 +77,57 @@ export function splitHtmlSlideBlocks(content: string, _isStreaming?: boolean): C
   return parts;
 }
 
+/** Simple hash for stable React keys */
+function stableKey(str: string, fallback: number): string {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+  }
+  return `b${fallback}-${h}`;
+}
+
+/** Inline loading indicator for streaming htmlslide blocks */
+function HtmlSlideLoading() {
+  return (
+    <div style={{
+      padding: '16px 20px',
+      margin: '8px 0',
+      background: 'var(--bg-tertiary, #1e1e2e)',
+      borderRadius: '8px',
+      border: '1px solid var(--border, #2e2e3e)',
+      color: 'var(--text-secondary, #94a3b8)',
+      fontSize: '13px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+    }}>
+      <span className="material-symbols-outlined" style={{ fontSize: 16, animation: 'pulse 1.5s infinite' }}>
+        pending
+      </span>
+      Rendering visualization...
+    </div>
+  );
+}
+
+const sharedComponents = {
+  pre: PreBlock,
+  code: CodeElement,
+  p: Paragraph,
+  a: Link,
+  table: Table,
+  th: TableHeader,
+  td: TableCell,
+  ul: UnorderedList,
+  ol: OrderedList,
+  li: ListItem,
+  h1: Heading1,
+  h2: Heading2,
+  h3: Heading3,
+  blockquote: BlockQuote,
+  hr: HorizontalRule,
+  strong: Strong,
+};
+
 function MarkdownRenderer({ content, isStreaming }: MarkdownRendererProps) {
   const blocks = splitHtmlSlideBlocks(content, !!isStreaming);
   const hasIncompleteMermaid = isStreaming && isIncompleteMermaidBlock(content);
@@ -85,27 +136,19 @@ function MarkdownRenderer({ content, isStreaming }: MarkdownRendererProps) {
     <div className="markdown-body">
       {blocks.map((block, i) => {
         if (block.type === 'htmlslide') {
-          return <HtmlSlideBlock key={i} html={block.html} />;
+          return <HtmlSlideBlock key={stableKey(block.html, i)} html={block.html} />;
         }
         if (block.type === 'htmlslide-incomplete') {
-          return (
-            <ReactMarkdown key={i} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}
-              components={{ pre: PreBlock, code: CodeElement, p: Paragraph, a: Link, table: Table, th: TableHeader, td: TableCell, ul: UnorderedList, ol: OrderedList, li: ListItem, h1: Heading1, h2: Heading2, h3: Heading3, blockquote: BlockQuote, hr: HorizontalRule, strong: Strong }}
-            >
-              {block.content}
-            </ReactMarkdown>
-          );
+          // During streaming, show a lightweight placeholder instead of raw code
+          // This prevents layout jumps when the block closes
+          return <HtmlSlideLoading key={`hslide-loading-${i}`} />;
         }
         return (
-          <ReactMarkdown key={i} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}
+          <ReactMarkdown key={stableKey(block.content, i)} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}
             components={{
-              pre: PreBlock,
+              ...sharedComponents,
               code: (props: ComponentPropsWithoutRef<'code'> & { children?: ReactNode }) =>
                 CodeElement({ ...props, hasIncompleteMermaid }),
-              p: Paragraph, a: Link, table: Table, th: TableHeader, td: TableCell,
-              ul: UnorderedList, ol: OrderedList, li: ListItem,
-              h1: Heading1, h2: Heading2, h3: Heading3,
-              blockquote: BlockQuote, hr: HorizontalRule, strong: Strong,
             }}
           >
             {block.content}

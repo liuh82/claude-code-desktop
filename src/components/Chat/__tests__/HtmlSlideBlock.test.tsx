@@ -1,13 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, act } from '@testing-library/react';
 import { HtmlSlideBlock } from '../HtmlSlideBlock';
-
-// Mock DOMPurify — by default pass through HTML unchanged
-vi.mock('dompurify', () => ({
-  default: {
-    sanitize: vi.fn((html: string) => html),
-  },
-}));
 
 describe('HtmlSlideBlock', () => {
   beforeEach(() => {
@@ -25,12 +18,7 @@ describe('HtmlSlideBlock', () => {
     expect(shadow!.innerHTML).toContain('Hello World');
   });
 
-  it('filters out script tags via DOMPurify', async () => {
-    const { default: dompurify } = await import('dompurify');
-    vi.mocked(dompurify.sanitize).mockImplementation((html: string) => {
-      return html.replace(/<script[\s\S]*?<\/script>/gi, '');
-    });
-
+  it('filters out script tags', async () => {
     const html = '<div>safe</div><script>alert("xss")</script>';
     const { container } = render(<HtmlSlideBlock html={html} />);
 
@@ -40,12 +28,7 @@ describe('HtmlSlideBlock', () => {
     expect(shadow.innerHTML).toContain('safe');
   });
 
-  it('filters out onclick attributes via DOMPurify', async () => {
-    const { default: dompurify } = await import('dompurify');
-    vi.mocked(dompurify.sanitize).mockImplementation((html: string) => {
-      return html.replace(/\s*onclick="[^"]*"/gi, '');
-    });
-
+  it('filters out onclick attributes', async () => {
     const html = '<button onclick="alert(1)">Click me</button>';
     const { container } = render(<HtmlSlideBlock html={html} />);
 
@@ -56,9 +39,6 @@ describe('HtmlSlideBlock', () => {
   });
 
   it('allows style tags', async () => {
-    const { default: dompurify } = await import('dompurify');
-    vi.mocked(dompurify.sanitize).mockImplementation((html: string) => html);
-
     const html = '<style>.red { color: red; }</style><div class="red">Styled</div>';
     const { container } = render(<HtmlSlideBlock html={html} />);
 
@@ -66,6 +46,16 @@ describe('HtmlSlideBlock', () => {
     const shadow = host.shadowRoot!;
     expect(shadow.innerHTML).toContain('<style>');
     expect(shadow.innerHTML).toContain('Styled');
+  });
+
+  it('removes javascript: URLs', async () => {
+    const html = '<a href="javascript:alert(1)">evil</a><a href="https://example.com">good</a>';
+    const { container } = render(<HtmlSlideBlock html={html} />);
+
+    const host = container.firstElementChild as HTMLElement;
+    const shadow = host.shadowRoot!;
+    expect(shadow.innerHTML).not.toContain('javascript:');
+    expect(shadow.innerHTML).toContain('https://example.com');
   });
 
   it('renders unclosed htmlslide as markdown code block (not slide)', async () => {

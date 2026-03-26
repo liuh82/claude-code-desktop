@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '@/lib/html-sanitize';
 import styles from './HtmlSlideBlock.module.css';
 
 interface HtmlSlideBlockProps {
@@ -19,15 +19,7 @@ function HtmlSlideBlock({ html }: HtmlSlideBlockProps) {
     }
 
     const shadow = container.attachShadow({ mode: 'open' });
-
-    const cleanHtml = DOMPurify.sanitize(html, {
-      ADD_TAGS: ['style', 'link'],
-      ADD_ATTR: ['class', 'id', 'style', 'href', 'target', 'rel'],
-      ALLOW_DATA_ATTR: true,
-      FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input', 'textarea', 'select'],
-      FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur'],
-    });
-
+    const cleanHtml = sanitizeHtml(html);
     shadow.innerHTML = cleanHtml;
 
     return () => {
