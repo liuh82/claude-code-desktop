@@ -457,6 +457,9 @@ export class ClaudeDirectClient {
     const maxToolRounds = 20;
     let round = 0;
 
+    let autoContinueCount = 0;
+    const maxAutoContinue = 5;
+
     while (round < maxToolRounds) {
       round++;
 
