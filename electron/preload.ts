@@ -62,6 +62,12 @@ const api = {
   // Slash Commands
   listSlashCommands: (args: { projectPath: string }) => ipcRenderer.invoke('list-slash-commands', args) as Promise<Array<{ name: string; description: string; source: string; pluginName?: string }>>,
 
+  // Log Viewer
+  getLogs: (filter?: { level?: string; source?: string; search?: string; since?: number }) =>
+    ipcRenderer.invoke('get-logs', filter),
+  clearLogs: () => ipcRenderer.invoke('clear-logs'),
+  getLogCount: () => ipcRenderer.invoke('get-log-count'),
+
   // Events from main process (CC CLI output)
   onClaudeOutput: (callback: (line: string, sessionId: string) => void) => {
     const handler = (_event: Electron.IpcRendererEvent, line: string, sessionId: string) => callback(line, sessionId);

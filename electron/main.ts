@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import path from 'path';
 import { spawn, ChildProcess } from 'child_process';
+import { initLogCapture, getLogs, clearLogs, getLogCount } from './log-capture';
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import { randomUUID } from 'crypto';
@@ -601,6 +602,17 @@ function handleDirectMessage(sessionId: string, projectPath: string, message: st
 // ── IPC Handlers ──
 
 function registerIpcHandlers() {
+  // ── Log Viewer ──
+  ipcMain.handle('get-logs', (_e, filter?: Record<string, any>) => {
+    return getLogs(filter);
+  });
+  ipcMain.handle('clear-logs', () => {
+    clearLogs();
+  });
+  ipcMain.handle('get-log-count', () => {
+    return getLogCount();
+  });
+
   // ── App ──
 
   ipcMain.handle('get-app-info', () => ({
@@ -1340,12 +1352,14 @@ fixPath();
 
 app.whenReady().then(() => {
   initDatabase();
+  initLogCapture();
   createWindow();
   registerIpcHandlers();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+      initLogCapture();
+  createWindow();
     }
   });
 });

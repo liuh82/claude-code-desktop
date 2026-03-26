@@ -26,6 +26,9 @@ interface ElectronAPI {
   openDirectoryDialog: () => Promise<string | null>;
   openFileDialog: (opts?: any) => Promise<string[]>;
   openInExternal: (url: string) => Promise<void>;
+  getLogs: (filter?: { level?: string; source?: string; search?: string; since?: number }) => Promise<Array<{ timestamp: number; level: string; source: string; message: string }>>;
+  clearLogs: () => Promise<void>;
+  getLogCount: () => Promise<number>;
   listSlashCommands: (args: { projectPath: string }) => Promise<Array<{ name: string; description: string; source: string; pluginName?: string }>>;
   onClaudeOutput: (cb: (line: string, sessionId: string) => void) => () => void;
   onClaudeStderr: (cb: (data: string, sessionId: string) => void) => () => void;
@@ -77,6 +80,9 @@ export const claudeApi: ElectronAPI = {
   openFileDialog: (o) => getApi()?.openFileDialog(o) ?? Promise.resolve([]),
   openInExternal: (u) => getApi()?.openInExternal(u) ?? Promise.resolve(),
   listSlashCommands: (a) => getApi()?.listSlashCommands(a) ?? Promise.resolve([]),
+  getLogs: (f) => getApi()?.getLogs(f) ?? Promise.resolve([]),
+  clearLogs: () => getApi()?.clearLogs() ?? Promise.resolve(),
+  getLogCount: () => getApi()?.getLogCount() ?? Promise.resolve(0),
   onClaudeOutput: (cb) => getApi()?.onClaudeOutput(cb) ?? (() => {}),
   onClaudeStderr: (cb) => getApi()?.onClaudeStderr(cb) ?? (() => {}),
   onClaudeExit: (cb) => getApi()?.onClaudeExit(cb) ?? (() => {}),

@@ -13,6 +13,7 @@ export interface KeyboardActions {
   onSplitPaneHorizontal?: () => void;
   onSplitPaneVertical?: () => void;
   onClosePane?: () => void;
+  onOpenLogViewer?: () => void;
 }
 
 export function useKeyboardShortcuts(actions: KeyboardActions) {
@@ -70,6 +71,13 @@ export function useKeyboardShortcuts(actions: KeyboardActions) {
       if (key === 'f' && shift) {
         e.preventDefault();
         actions.onToggleToolPanel?.();
+        return;
+      }
+
+      // Cmd/Ctrl+L — log viewer
+      if (key === 'l' && !shift) {
+        e.preventDefault();
+        actions.onOpenLogViewer?.();
         return;
       }
 

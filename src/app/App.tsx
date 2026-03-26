@@ -15,6 +15,7 @@ import { ProjectSelector } from '@/components/ProjectSelector';
 import { CommandPalette, type CommandItem } from '@/components/CommandPalette';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { HistoryDialog } from '@/components/HistoryDialog';
+import { LogViewer } from '@/components/LogViewer/LogViewer';
 import { TabBar } from '@/components/Pane/TabBar';
 import { PaneContainer } from '@/components/Pane/PaneContainer';
 import type { LayoutNode } from '@/types/pane';
@@ -49,6 +50,7 @@ function AppContent() {
 
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [logViewerOpen, setLogViewerOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(() => readBool(SIDEBAR_KEY, true));
   const [toolPanelOpen, setToolPanelOpen] = useState(() => readBool(TOOLPANEL_KEY, false));
@@ -169,6 +171,7 @@ function AppContent() {
       { id: 'toggle-theme', label: '切换主题', category: '外观', execute: toggleTheme },
       { id: 'open-project', label: '打开项目', shortcut: '⌘O', category: '项目', execute: handleOpenProject },
       { id: 'open-settings', label: '打开设置', shortcut: '⌘,', category: '偏好设置', execute: () => setSettingsOpen(true) },
+      { id: 'log-viewer', label: '日志查看器', shortcut: '⌘L', category: '工具', execute: () => setLogViewerOpen(true) },
     ],
     [handleNewTab, toggleSidebar, toggleToolPanel, toggleTheme, handleOpenProject],
   );
@@ -182,6 +185,7 @@ function AppContent() {
       onOpenSettings: () => setSettingsOpen(true),
       onOpenProject: handleOpenProject,
       onCommandPalette: () => setCommandPaletteOpen(true),
+      onOpenLogViewer: () => setLogViewerOpen(true),
       onOpenHistory: () => setHistoryOpen(true),
       onStopGeneration: () => {
         if (activePaneId) stopGeneration(activePaneId);
@@ -274,6 +278,7 @@ function AppContent() {
         projectPath={projectPath}
       />
       <SettingsDialog isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      {logViewerOpen && <LogViewer onClose={() => setLogViewerOpen(false)} />}
     </div>
   );
 }
