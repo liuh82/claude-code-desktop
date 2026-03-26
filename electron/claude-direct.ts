@@ -596,14 +596,15 @@ export class ClaudeDirectClient {
           const hasDoctype = fullText.includes('<!DOCTYPE') || fullText.includes('<html');
           const htmlContentIncomplete = hasHtmlSlide && hasDoctype && !hasClosingHtml;
 
-          if (hasUnclosedHtmlslide || htmlTruncated) {
-            logWarn('DirectAPI', `Detected truncated htmlslide (open=${htmlslideOpen}, close=${htmlslideClose}, html=${hasUnclosedHtml}/${hasClosingHtml}). Auto-continuing...`);
-            // Re-inject the assistant message and add a continuation prompt
-            this.messages.push({ role: 'assistant', content: assistantContent });
-            this.messages.push({ role: 'user', content: [{ type: 'text', text: '请继续完成上面的 htmlslide 代码块，从上次中断的地方继续，不要重复已有的内容。' }] });
-            continue; // will go to next iteration of the round loop
-          }
-
+          if ((hasUnclosedHtmlslide || htmlContentIncomplete) && autoContinueCount < maxAutoContinue) {
+              autoContinueCount++;
+              logWarn('DirectAPI', `Detected truncated htmlslide (unclosed=${hasUnclosedHtmlslide}, htmlIncomplete=${htmlContentIncomplete}). Auto-continue #${autoContinueCount}...`);
+              this.messages.push({ role: 'assistant', content: assistantContent });
+              this.messages.push({ role: 'user', content: [{ type: 'text', text: `请继续完成上面的代码。这是第${autoContinueCount}次续写，直接从上次停止的地方继续输出，不要重复已有内容，不要添加任何解释文字。` }] });
+              continue;
+            } else if (hasUnclosedHtmlslide || htmlContentIncomplete) {
+              logError('DirectAPI', `Auto-continue limit reached (${maxAutoContinue}). htmlslide still truncated.`);
+            }
           return;
         }
 
