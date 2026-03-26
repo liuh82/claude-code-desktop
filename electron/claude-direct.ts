@@ -4,6 +4,7 @@
  * executes tools locally, and manages multi-turn conversation history.
  */
 
+import { logInfo, logWarn, logError, logDebug } from './log-capture';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -478,7 +479,7 @@ export class ClaudeDirectClient {
           }));
         }
 
-        console.error(`[DirectAPI] Request body: tools=${(body.tools as any[])?.length || 0}, messages=${this.messages.length}`);
+        logDebug('DirectAPI', `[DirectAPI] Request body: tools=${(body.tools as any[])?.length || 0}, messages=${this.messages.length}`);
 
         // Build headers: always pass claude env as base, override auth
         const headers: Record<string, string> = {
@@ -521,7 +522,7 @@ export class ClaudeDirectClient {
         }
 
         const apiUrl = resolveApiUrl(this.config.baseUrl);
-        console.error(`[DirectAPI] Round ${round}: POST ${apiUrl} model=${this.config.model} msgs=${this.messages.length}`);
+        logInfo('DirectAPI', `Round ${round}: POST ${apiUrl} model=${this.config.model} msgs=${this.messages.length}`);
 
         // Automatic timeout for fetch (5 minutes) — abort controller handles cancellation
         const fetchTimeout = setTimeout(() => {
@@ -550,11 +551,11 @@ export class ClaudeDirectClient {
           return;
         }
 
-        console.error(`[DirectAPI] Stream started, status=${response.status}`);
+        logInfo('DirectAPI', `[DirectAPI] Stream started, status=${response.status}`);
 
         // Parse SSE stream
         const assistantContent = await this.parseSSEStream(response, onEvent);
-        console.error(`[DirectAPI] Stream done, ${assistantContent.length} content blocks`);
+        logInfo('DirectAPI', `[DirectAPI] Stream done, ${assistantContent.length} content blocks`);
 
         // If no content, we're done
         if (!assistantContent || assistantContent.length === 0) {
@@ -584,7 +585,7 @@ export class ClaudeDirectClient {
           // Request permission before executing
           const granted = await this.requestPermission(toolBlock.id, toolBlock.name, toolBlock.input);
           if (!granted) {
-            console.error(`[DirectAPI] Tool ${toolBlock.name}: granted=false (denied)`);
+            logWarn('DirectAPI', `[DirectAPI] Tool ${toolBlock.name}: granted=false (denied)`);
             toolResults.push({
               type: 'tool_result',
               tool_use_id: toolBlock.id,
@@ -604,7 +605,7 @@ export class ClaudeDirectClient {
             result = `Error: ${err.message}`;
             this.onToolExecution?.({ id: toolBlock.id, name: toolBlock.name, status: 'error', output: result });
             toolResults.push({ type: 'tool_result', tool_use_id: toolBlock.id, content: result });
-            console.error(`[DirectAPI] Tool ${toolBlock.name}: granted=true, error=${err.message}`);
+            logError('DirectAPI', `[DirectAPI] Tool ${toolBlock.name}: granted=true, error=${err.message}`);
             continue;
           }
 
@@ -615,7 +616,7 @@ export class ClaudeDirectClient {
             tool_use_id: toolBlock.id,
             content: result,
           });
-          console.error(`[DirectAPI] Tool ${toolBlock.name}: granted=true, result_len=${result.length}`);
+          logDebug('DirectAPI', `[DirectAPI] Tool ${toolBlock.name}: granted=true, result_len=${result.length}`);
         }
 
         // Add tool results as a new user message
@@ -627,13 +628,13 @@ export class ClaudeDirectClient {
       } catch (err: any) {
         if (err.name === 'AbortError') {
           // User cancelled — remove the last user message to avoid stale state
-          console.error('[DirectAPI] Request aborted by user');
+          logWarn('DirectAPI', '[DirectAPI] Request aborted by user');
           if (this.messages.length > 0 && this.messages[this.messages.length - 1].role === 'user') {
             this.messages.pop();
           }
           return;
         }
-        console.error(`[DirectAPI] Request failed: ${err.message}`, err.stack);
+        logError('DirectAPI', `[DirectAPI] Request failed: ${err.message}${err.stack ? '\n' + err.stack : ''}`);
         onError(`请求失败: ${err.message}`);
         return;
       }
@@ -660,24 +661,24 @@ export class ClaudeDirectClient {
     try {
       event = JSON.parse(jsonStr);
     } catch (e: any) {
-      console.error(`[DirectAPI SSE] JSON parse error: ${e.message}, raw: "${jsonStr.slice(0, 200)}"`);
+      logError('SSE', `[DirectAPI SSE] JSON parse error: ${e.message}, raw: "${jsonStr.slice(0, 200)}"`);
       return;
     }
 
-    console.error(`[DirectAPI SSE] event type: ${event.type}`);
+    logDebug('SSE', `[DirectAPI SSE] event type: ${event.type}`);
     onEvent(event);
 
     switch (event.type) {
       case 'message_start':
         if (event.message?.model) {
-          console.error(`[DirectAPI SSE] model: ${event.message.model}`);
+          logDebug('SSE', `[DirectAPI SSE] model: ${event.message.model}`);
         }
         break;
 
       case 'content_block_start': {
         const blockType = event.content_block?.type;
         if (blockType === 'tool_use') {
-          console.error(`[DirectAPI] Tool use detected: name=${event.content_block?.name}, id=${event.content_block?.id}`);
+          logDebug('SSE', `[DirectAPI] Tool use detected: name=${event.content_block?.name}, id=${event.content_block?.id}`);
         }
         if (blockType === 'text') {
           state.currentTextIndex = contentBlocks.length;
@@ -729,23 +730,32 @@ export class ClaudeDirectClient {
         break;
 
       case 'message_delta':
+        if (event.stop_reason) {
+          const reason = event.stop_reason;
+          if (reason === 'max_tokens') {
+            logError('DirectAPI', `⚠️ Response truncated: stop_reason=max_tokens (hit ${this.config.maxTokens} token limit)`);
+          } else {
+            logInfo('SSE', `stop_reason: ${reason}`);
+          }
+        }
         if (event.usage) {
-          console.error(`[DirectAPI SSE] usage: ${JSON.stringify(event.usage)}`);
+          logInfo('SSE', `usage: ${JSON.stringify(event.usage)}`);
         }
         break;
 
       case 'message_stop':
+        logInfo('SSE', 'Stream message complete');
         break;
 
       case 'ping':
         break;
 
       case 'error':
-        console.error(`[DirectAPI SSE] Error event in stream: ${JSON.stringify(event)}`);
+        logError('SSE', `[DirectAPI SSE] Error event in stream: ${JSON.stringify(event)}`);
         break;
 
       default:
-        console.error(`[DirectAPI SSE] Unknown event type: ${event.type}`);
+        logDebug('SSE', `[DirectAPI SSE] Unknown event type: ${event.type}`);
         break;
     }
 
@@ -821,11 +831,11 @@ export class ClaudeDirectClient {
           }
 
           // Non-standard line — log but don't crash
-          console.error(`[DirectAPI SSE] Skipping non-data line: "${trimmed.slice(0, 100)}"`);
+          logDebug('SSE', `[DirectAPI SSE] Skipping non-data line: "${trimmed.slice(0, 100)}"`);
         }
       }
     } catch (e: any) {
-      console.error(`[DirectAPI SSE] Stream read error: ${e.message}`);
+      logError('DirectAPI', `[DirectAPI SSE] Stream read error: ${e.message}`);
       throw e; // Re-throw so sendMessage's catch handles it
     }
 
@@ -1156,7 +1166,7 @@ export function loadDirectApiConfig(db?: any): DirectApiConfig | null {
   const maxTokens = appSettings.directMaxTokens || 16384;
   const maxContextMessages = appSettings.maxContextMessages || 20;
 
-  console.error(`[DirectAPI] Config loaded: baseUrl=${baseUrl}, model=${model}, anthNative=${isAnthropicNativeDomain(baseUrl)}`);
+  logInfo('DirectAPI', `[DirectAPI] Config loaded: baseUrl=${baseUrl}, model=${model}, anthNative=${isAnthropicNativeDomain(baseUrl)}`);
 
   return { apiKey, baseUrl, model, maxTokens, maxContextMessages, claudeEnv };
 }
