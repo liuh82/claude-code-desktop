@@ -15,7 +15,9 @@ function resolvePermissionInfo(name: string, input: Record<string, unknown>): Pe
     return { toolName: 'WRITE', toolIcon: 'edit_note', target: String(input.file_path || ''), isDangerous: false };
   }
   if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') {
-    return { toolName: 'EXEC', toolIcon: 'terminal', target: String(input.command || ''), isDangerous: true };
+    const cmd = String(input.command || '').trim();
+    const isDangerous = /(sudo|rm\s+-rf|rm\s+-r\s|mkfs|dd\s+if=|>|chmod\s+777|curl.*\|\s*(ba)?sh|wget.*\|\s*(ba)?sh)/.test(cmd);
+    return { toolName: 'EXEC', toolIcon: 'terminal', target: cmd, isDangerous };
   }
   return { toolName: name.toUpperCase(), toolIcon: 'security', target: '', isDangerous: false };
 }
