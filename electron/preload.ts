@@ -67,6 +67,10 @@ const api = {
     ipcRenderer.invoke('get-logs', filter),
   clearLogs: () => ipcRenderer.invoke('clear-logs'),
   getLogCount: () => ipcRenderer.invoke('get-log-count'),
+  getHistoryLogs: (filter?: { since?: number; until?: number; level?: string; source?: string; search?: string; offset?: number; limit?: number }) =>
+    ipcRenderer.invoke('get-history-logs', filter) as Promise<{ logs: Array<{ timestamp: number; level: string; source: string; message: string }>; total: number }>,
+  exportLogs: (filter?: { since?: number; until?: number; level?: string; search?: string }) =>
+    ipcRenderer.invoke('export-logs', filter) as Promise<string>,
 
   // Events from main process (CC CLI output)
   onClaudeOutput: (callback: (line: string, sessionId: string) => void) => {

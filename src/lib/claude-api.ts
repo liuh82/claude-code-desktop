@@ -29,6 +29,8 @@ interface ElectronAPI {
   getLogs: (filter?: { level?: string; source?: string; search?: string; since?: number }) => Promise<Array<{ timestamp: number; level: string; source: string; message: string }>>;
   clearLogs: () => Promise<void>;
   getLogCount: () => Promise<number>;
+  getHistoryLogs: (filter?: { since?: number; until?: number; level?: string; source?: string; search?: string; offset?: number; limit?: number }) => Promise<{ logs: Array<{ timestamp: number; level: string; source: string; message: string }>; total: number }>;
+  exportLogs: (filter?: { since?: number; until?: number; level?: string; search?: string }) => Promise<string>;
   listSlashCommands: (args: { projectPath: string }) => Promise<Array<{ name: string; description: string; source: string; pluginName?: string }>>;
   onClaudeOutput: (cb: (line: string, sessionId: string) => void) => () => void;
   onClaudeStderr: (cb: (data: string, sessionId: string) => void) => () => void;
@@ -83,6 +85,8 @@ export const claudeApi: ElectronAPI = {
   getLogs: (f) => getApi()?.getLogs(f) ?? Promise.resolve([]),
   clearLogs: () => getApi()?.clearLogs() ?? Promise.resolve(),
   getLogCount: () => getApi()?.getLogCount() ?? Promise.resolve(0),
+  getHistoryLogs: (f) => getApi()?.getHistoryLogs(f) ?? Promise.resolve({ logs: [], total: 0 }),
+  exportLogs: (f) => getApi()?.exportLogs(f) ?? Promise.resolve(''),
   onClaudeOutput: (cb) => getApi()?.onClaudeOutput(cb) ?? (() => {}),
   onClaudeStderr: (cb) => getApi()?.onClaudeStderr(cb) ?? (() => {}),
   onClaudeExit: (cb) => getApi()?.onClaudeExit(cb) ?? (() => {}),

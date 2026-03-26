@@ -1,7 +1,8 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import path from 'path';
 import { spawn, ChildProcess } from 'child_process';
-import { initLogCapture, getLogs, clearLogs, getLogCount } from './log-capture';
+import { initLogCapture, initLogPersistence, stopLogPersistence, getLogs, clearLogs, getLogCount } from './log-capture';
+import type { LogEntry } from './log-capture';
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import { randomUUID } from 'crypto';
@@ -127,6 +128,15 @@ function initDatabase() {
       key TEXT PRIMARY KEY,
       value TEXT
     );
+    CREATE TABLE IF NOT EXISTS logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      timestamp INTEGER NOT NULL,
+      level TEXT NOT NULL,
+      source TEXT NOT NULL,
+      message TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs(timestamp);
+    CREATE INDEX IF NOT EXISTS idx_logs_level ON logs(level);
   `);
 
   console.log('[CCDesk] Database initialized');
@@ -611,6 +621,103 @@ function registerIpcHandlers() {
   });
   ipcMain.handle('get-log-count', () => {
     return getLogCount();
+  });
+
+  // ── History Logs (SQLite) ──
+
+  ipcMain.handle('get-history-logs', (_e, filter?: {
+    since?: number;
+    until?: number;
+    level?: string;
+    source?: string;
+    search?: string;
+    offset?: number;
+    limit?: number;
+  }) => {
+    if (!db) return { logs: [], total: 0 };
+    const conditions: string[] = [];
+    const params: unknown[] = [];
+
+    if (filter?.since) {
+      conditions.push('timestamp >= ?');
+      params.push(filter.since);
+    }
+    if (filter?.until) {
+      conditions.push('timestamp <= ?');
+      params.push(filter.until);
+    }
+    if (filter?.level) {
+      conditions.push('level = ?');
+      params.push(filter.level);
+    }
+    if (filter?.source) {
+      conditions.push('source LIKE ?');
+      params.push(`%${filter.source}%`);
+    }
+    if (filter?.search) {
+      conditions.push('message LIKE ?');
+      params.push(`%${filter.search}%`);
+    }
+
+    const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
+    const limit = Math.min(filter?.limit || 200, 1000);
+    const offset = filter?.offset || 0;
+
+    const total = (db.prepare(`SELECT COUNT(*) as cnt FROM logs ${where}`).get(...params) as { cnt: number }).cnt;
+    const logs = db.prepare(
+      `SELECT timestamp, level, source, message FROM logs ${where} ORDER BY timestamp DESC LIMIT ? OFFSET ?`
+    ).all(...params, limit, offset) as LogEntry[];
+
+    return { logs, total };
+  });
+
+  ipcMain.handle('export-logs', async (_e, filter?: { since?: number; until?: number; level?: string; search?: string }) => {
+    if (!db || !mainWindow) return '';
+    const conditions: string[] = [];
+    const params: unknown[] = [];
+
+    if (filter?.since) {
+      conditions.push('timestamp >= ?');
+      params.push(filter.since);
+    }
+    if (filter?.until) {
+      conditions.push('timestamp <= ?');
+      params.push(filter.until);
+    }
+    if (filter?.level) {
+      conditions.push('level = ?');
+      params.push(filter.level);
+    }
+    if (filter?.search) {
+      conditions.push('message LIKE ?');
+      params.push(`%${filter.search}%`);
+    }
+
+    const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
+    const logs = db.prepare(
+      `SELECT timestamp, level, source, message FROM logs ${where} ORDER BY timestamp ASC`
+    ).all(...params) as Array<{ timestamp: number; level: string; source: string; message: string }>;
+
+    const text = logs.map(l => {
+      const d = new Date(l.timestamp);
+      const ts = d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0') + ' ' +
+        String(d.getHours()).padStart(2, '0') + ':' +
+        String(d.getMinutes()).padStart(2, '0') + ':' +
+        String(d.getSeconds()).padStart(2, '0') + '.' +
+        String(d.getMilliseconds()).padStart(3, '0');
+      return `[${ts}] [${l.level.toUpperCase()}] [${l.source}] ${l.message}`;
+    }).join('\n');
+
+    const result = await dialog.showSaveDialog(mainWindow, {
+      defaultPath: `ccdesk-logs-${new Date().toISOString().slice(0, 10)}.log`,
+      filters: [{ name: 'Log Files', extensions: ['log'] }, { name: 'All Files', extensions: ['*'] }],
+    });
+
+    if (result.canceled || !result.filePath) return '';
+    fs.writeFileSync(result.filePath, text, 'utf-8');
+    return result.filePath;
   });
 
   // ── App ──
@@ -1352,6 +1459,7 @@ fixPath();
 
 app.whenReady().then(() => {
   initDatabase();
+  initLogPersistence(db!);
   initLogCapture();
   createWindow();
   registerIpcHandlers();
@@ -1365,6 +1473,7 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
+  stopLogPersistence();
   if (process.platform !== 'darwin') {
     app.quit();
   }
