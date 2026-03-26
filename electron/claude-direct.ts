@@ -41,6 +41,11 @@ type ApiContentBlock =
   | { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> }
   | { type: 'tool_result'; tool_use_id: string; content: string };
 
+interface ParseSSEStreamResult {
+  content: ApiContentBlock[];
+  abnormalTermination: boolean;
+}
+
 // ── Tool definitions for Anthropic API ──
 
 const TOOL_DEFINITIONS = [
@@ -564,8 +569,60 @@ export class ClaudeDirectClient {
 
         logInfo('DirectAPI', `[DirectAPI] Stream started, status=${response.status}`);
 
-        // Parse SSE stream
-        const assistantContent = await this.parseSSEStream(response, onEvent);
+        // Parse SSE stream — with retry on abnormal termination (empty stream, no message_stop)
+        let assistantContent: ApiContentBlock[] = [];
+        const maxStreamAttempts = 3;
+        for (let attempt = 1; attempt <= maxStreamAttempts; attempt++) {
+          const result = await this.parseSSEStream(response, onEvent);
+          assistantContent = result.content;
+
+          if (!result.abnormalTermination || assistantContent.length > 0) {
+            // Stream completed normally, or had partial data — accept and continue
+            break;
+          }
+
+          // Abnormal termination with no content — retry
+          if (attempt < maxStreamAttempts) {
+            const retryNum = attempt;
+            logWarn('DirectAPI', `[DirectAPI] Round ${round} retry ${retryNum}/2 — stream had no message_stop`);
+
+            // Wait 1 second before retry
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Re-fetch for retry
+            const retryFetchTimeout = setTimeout(() => {
+              this.abortController?.abort();
+              console.warn(`[DirectAPI] Fetch timeout (300s) for round ${round} retry ${retryNum}`);
+            }, 300_000);
+
+            try {
+              response = await fetch(apiUrl, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(body),
+                signal: this.abortController.signal,
+              });
+            } finally {
+              clearTimeout(retryFetchTimeout);
+            }
+
+            if (!response.ok) {
+              const errText = await response.text().catch(() => 'Unknown error');
+              logError('DirectAPI', `[DirectAPI] Round ${round} retry ${retryNum}: HTTP ${response.status}: ${errText}`);
+              onError(`API 错误 (${response.status}): ${errText}`);
+              this.messages.pop();
+              return;
+            }
+
+            logInfo('DirectAPI', `[DirectAPI] Round ${round} retry ${retryNum}: stream started, status=${response.status}`);
+          } else {
+            logError('DirectAPI', `[DirectAPI] Round ${round}: all ${maxStreamAttempts} stream attempts failed with abnormal termination`);
+            onError('API 流异常终止（3 次重试均未收到 message_stop），已停止');
+            this.messages.pop();
+            return;
+          }
+        }
+
         logInfo('DirectAPI', `[DirectAPI] Stream done, ${assistantContent.length} content blocks`);
 
         // If no content, we're done
@@ -808,7 +865,7 @@ export class ClaudeDirectClient {
   private async parseSSEStream(
     response: Response,
     onEvent: (event: DirectSSEEvent) => void,
-  ): Promise<ApiContentBlock[]> {
+  ): Promise<ParseSSEStreamResult> {
     if (!response.body) {
       throw new Error('Response body is null — cannot read SSE stream');
     }
@@ -896,7 +953,7 @@ export class ClaudeDirectClient {
       );
     }
 
-    return contentBlocks;
+    return { content: contentBlocks, abnormalTermination: !messageStopReceived };
   }
 
   /**
