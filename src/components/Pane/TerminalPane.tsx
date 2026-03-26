@@ -40,14 +40,33 @@ const BUILT_IN_COMMANDS: SlashCommand[] = [
   { name: '/slide', description: 'PPT 风格信息幻灯片（如：/slide:business 项目概览）', source: 'built-in' },
 ];
 
-// Model list - dynamically loaded from Claude config
-const DEFAULT_MODELS = [
+// Model list base - Claude models
+const CLAUDE_MODELS = [
   { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
   { id: 'claude-opus-4-6', label: 'Opus 4.6' },
   { id: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5' },
   { id: 'claude-3-5-sonnet-20241022', label: 'Sonnet 3.5' },
   { id: 'claude-3-5-haiku-20241022', label: 'Haiku 3.5' },
 ];
+
+// Build dynamic model list: Claude models + current model (if not already listed)
+function buildModelList(currentModel: string) {
+  const ids = new Set(CLAUDE_MODELS.map(m => m.id));
+  const list = [...CLAUDE_MODELS];
+  if (currentModel && !ids.has(currentModel)) {
+    // Add current model to top of list
+    list.unshift({ id: currentModel, label: formatModelName(currentModel) });
+  }
+  return list;
+}
+
+// Format model ID to readable name
+function formatModelName(id: string): string {
+  return id
+    .replace('claude-', '')
+    .replace(/-\d{8}$/, '')
+    .replace(/-\d+-\d+-\d+$/, '');
+}
 
 // File extension → Material Symbols icon
 function getFileIcon(filename: string): { icon: string; colorClass: string } {
@@ -833,13 +852,13 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                     title="切换模型"
                   >
                     <span className={styles.modelSelectorCurrent}>
-                      {currentModel.replace('claude-', '').replace(/-\d{8}$/, '').replace(/-\d+-\d+-\d+$/, '')}
+                      {formatModelName(currentModel)}
                     </span>
                     <span className="material-symbols-outlined" style={{ fontSize: 14 }}>expand_more</span>
                   </button>
                   {showModelPicker && (
                     <div className={styles.modelDropdown}>
-                      {DEFAULT_MODELS.map((m) => (
+                      {buildModelList(currentModel).map((m) => (
                         <div
                           key={m.id}
                           className={`${styles.modelDropdownItem} ${currentModel === m.id ? styles.modelDropdownActive : ''}`}
@@ -884,7 +903,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
           {/* Bottom hint — 2-row layout */}
           <div className={styles.paneInputHint}>
             <div className={styles.paneInputHintRow}>
-              <span>{currentModel.replace('claude-', '').replace(/-\d{8}$/, '')}</span>
+              <span>{formatModelName(currentModel)}</span>
               <span className={styles.paneInputHintDot} />
               <span>{editMode === 'plan' ? 'Plan' : editMode === 'auto' ? 'Auto Edit' : 'Confirm Edit'}</span>
               <span className={styles.paneInputHintDot} />
