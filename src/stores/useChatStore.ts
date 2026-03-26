@@ -904,10 +904,8 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   },
 
   initPane: async (paneId: string, projectPath: string, model?: string) => {
-    // Resolve model: explicit arg > settings > claude config
     const settingsModel = useSettingsStore.getState().settings.defaultModel;
     const effectiveModel = model || get().currentModel || settingsModel || 'glm-4-plus';
-    console.log('[CCDesk] initPane effectiveModel:', JSON.stringify({ effectiveModel, model, global: get().currentModel, settings: settingsModel }));
 
     // Close existing session if any
     const existing = get().panes.get(paneId);
