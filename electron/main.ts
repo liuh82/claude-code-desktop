@@ -297,7 +297,7 @@ function spawnClaudeMessage(sessionId: string, projectPath: string, message: str
     sessions.delete(sessionId);
   }
 
-  const CCDESK_SYSTEM_PROMPT = "CCDesk 桌面客户端支持以下扩展语法，请在需要可视化数据时使用：\n1. 图表可视化：使用 ```chart 代码块，内容为 ECharts JSON 配置。支持折线图、柱状图、饼图、散点图、雷达图等所有类型。\n2. 文件引用：用户消息中的 @path/to/file 表示引用项目文件。";
+  const CCDESK_SYSTEM_PROMPT = "CCDesk 桌面客户端支持以下扩展语法：\n\n1. HTML 可视化卡片：当用户要求生成可视化内容（架构图、流程图、数据统计、对比分析、时间线、PPT 风格展示等），请将完整的 HTML+CSS 代码包裹在 \`\`\`htmlslide 代码块中。HTML 将在 Shadow DOM 中全宽内联渲染，支持所有现代 CSS 特性。示例：\n\`\`\`htmlslide\n<!DOCTYPE html><html><body><style>body{margin:0;padding:20px;background:#1e1e2e;color:#fff;font-family:sans-serif;}</style><h1>标题</h1></body></html>\n\`\`\`\n\n2. Mermaid 图表：使用 \`\`\`mermaid 代码块。支持 graph/flowchart/sequenceDiagram/classDiagram/erDiagram/gantt 等。\n\n3. 图表可视化：使用 \`\`\`chart 代码块，内容为 ECharts JSON 配置。\n\n4. 文件引用：用户消息中的 @path/to/file 表示引用项目文件。";
   const args = ['-p', '--output-format', 'stream-json', '--verbose', '--permission-mode', 'auto', '--append-system-prompt', CCDESK_SYSTEM_PROMPT];
   if (model) {
     args.push('--model', model);
