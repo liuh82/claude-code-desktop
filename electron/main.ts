@@ -158,6 +158,14 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 
+  // Prevent windows/popup from being opened by content (e.g. links inside Shadow DOM)
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    // Allow explicit user-triggered opens via open-in-external IPC
+    // Block everything else (auto-opening, target=_blank, etc.)
+    console.error(`[CCDesk] Blocked window.open: ${url}`);
+    return { action: 'deny' };
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
     // Kill all CLI sessions

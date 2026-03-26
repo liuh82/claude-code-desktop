@@ -22,7 +22,18 @@ function HtmlSlideBlock({ html }: HtmlSlideBlockProps) {
     const cleanHtml = sanitizeHtml(html);
     shadow.innerHTML = cleanHtml;
 
+    // Prevent links inside the slide from opening in external browser
+    const clickHandler = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'A' && target.hasAttribute('href')) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    shadow.addEventListener('click', clickHandler, true);
+
     return () => {
+      shadow.removeEventListener('click', clickHandler, true);
       if (container.shadowRoot) {
         container.shadowRoot.innerHTML = '';
       }
