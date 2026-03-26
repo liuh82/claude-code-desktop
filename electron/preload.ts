@@ -18,9 +18,9 @@ const api = {
     ipcRenderer.invoke('create-session', args),
   startSession: (args: { sessionId: string; projectPath: string; model?: string; permissionMode?: string }) =>
     ipcRenderer.invoke('start-session', args),
-  sendMessage: (args: { sessionId: string; projectPath: string; message: string; model?: string }) =>
+  sendMessage: (args: { sessionId: string; projectPath: string; message: string; model?: string; permissionMode?: string }) =>
     ipcRenderer.invoke('send-message', args),
-  sendMessageDirect: (args: { sessionId: string; projectPath: string; message: string; model?: string }) =>
+  sendMessageDirect: (args: { sessionId: string; projectPath: string; message: string; model?: string; permissionMode?: string }) =>
     ipcRenderer.invoke('send-message-direct', args),
   stopGeneration: (args: { sessionId: string }) =>
     ipcRenderer.invoke('stop-generation', args),

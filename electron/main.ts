@@ -464,7 +464,7 @@ function getApiMode(): 'cli' | 'direct' {
   return 'direct';
 }
 
-function handleDirectMessage(sessionId: string, projectPath: string, message: string, model?: string) {
+function handleDirectMessage(sessionId: string, projectPath: string, message: string, model?: string, permissionMode?: string) {
   const config = loadDirectApiConfig(db);
   if (!config) {
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -802,12 +802,12 @@ function registerIpcHandlers() {
    * Send message — spawns `claude -p "message"` and streams output back.
    * Routes to Direct API or CLI based on settings.
    */
-  ipcMain.handle('send-message', (_event, { sessionId, projectPath, message, model }: {
-    sessionId: string; projectPath: string; message: string; model?: string;
+  ipcMain.handle('send-message', (_event, { sessionId, projectPath, message, model, permissionMode }: {
+    sessionId: string; projectPath: string; message: string; model?: string; permissionMode?: string;
   }) => {
     const apiMode = getApiMode();
     if (apiMode === 'direct') {
-      handleDirectMessage(sessionId, projectPath, message, model);
+      handleDirectMessage(sessionId, projectPath, message, model, permissionMode);
     } else {
       const effectiveModel = model || sessionModels.get(sessionId) || undefined;
       spawnClaudeMessage(sessionId, projectPath, message, effectiveModel);
@@ -818,10 +818,10 @@ function registerIpcHandlers() {
   /**
    * Send message via Direct API only (explicit call from renderer).
    */
-  ipcMain.handle('send-message-direct', (_event, { sessionId, projectPath, message, model }: {
-    sessionId: string; projectPath: string; message: string; model?: string;
+  ipcMain.handle('send-message-direct', (_event, { sessionId, projectPath, message, model, permissionMode }: {
+    sessionId: string; projectPath: string; message: string; model?: string; permissionMode?: string;
   }) => {
-    handleDirectMessage(sessionId, projectPath, message, model);
+    handleDirectMessage(sessionId, projectPath, message, model, permissionMode);
     return;
   });
 

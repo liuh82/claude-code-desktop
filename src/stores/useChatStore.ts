@@ -1032,6 +1032,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
           sessionId: paneState.sessionId || 'default',
           projectPath: get().projectPath,
           message: resolvedText,
+          permissionMode: get().permissionMode,
         });
       } catch (err) {
         console.error('[CCDesk] sendMessage failed:', err);

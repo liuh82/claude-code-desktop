@@ -157,14 +157,14 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const pendingFileMention = useChatStore((s) => s.pendingFileMention);
   const tokenUsage = paneState?.tokenUsage ?? { input: 0, output: 0 };
   const currentModel = useChatStore((s) => s.currentModel) || 'claude-sonnet-4-6';
+  const setPermissionMode = useChatStore((s) => s.setPermissionMode);
   const permissionMode = useChatStore((s) => s.permissionMode);
   const grantPermission = useChatStore((s) => s.grantPermission);
   const denyPermission = useChatStore((s) => s.denyPermission);
-  const setPermissionMode = useChatStore((s) => s.setPermissionMode);
   const pendingPermission = useChatStore((s) => s.pendingPermission);
 
   const [text, setText] = useState('');
-  const [editMode, setEditMode] = useState<'plan' | 'auto' | 'confirm'>('confirm');
+  const editMode = useChatStore((s) => s.permissionMode);
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionIndex, setMentionIndex] = useState(0);
   const [showMention, setShowMention] = useState(false);
@@ -883,14 +883,14 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                 </div>
                 <div className={styles.modeSelector}>
                   {([
-                    { key: 'plan' as const, icon: 'psychology', label: 'Plan' },
+                    { key: 'ask' as const, icon: 'psychology', label: 'Plan' },
                     { key: 'auto' as const, icon: 'bolt', label: 'Auto Edit' },
-                    { key: 'confirm' as const, icon: 'verified', label: 'Confirm Edit' },
+                    { key: 'bypass' as const, icon: 'verified', label: 'Full Auto' },
                   ]).map((m) => (
                     <button
                       key={m.key}
                       className={`${styles.modeBtn} ${editMode === m.key ? styles.modeBtnActive : ''}`}
-                      onClick={() => setEditMode(m.key)}
+                      onClick={() => setPermissionMode(m.key)}
                       title={m.label}
                     >
                       <span className="material-symbols-outlined">{m.icon}</span>
@@ -916,7 +916,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
             <div className={styles.paneInputHintRow}>
               <span>{formatModelName(currentModel)}</span>
               <span className={styles.paneInputHintDot} />
-              <span>{editMode === 'plan' ? 'Plan' : editMode === 'auto' ? 'Auto Edit' : 'Confirm Edit'}</span>
+              <span>{editMode === 'ask' ? 'Plan' : editMode === 'auto' ? 'Auto Edit' : 'Full Auto'}</span>
               <span className={styles.paneInputHintDot} />
               <span>{permissionMode}</span>
             </div>
