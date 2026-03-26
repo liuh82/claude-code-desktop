@@ -260,6 +260,27 @@
 }
 
 /* ── Mode selector buttons ── */
+/* Model picker quick button */
+.modelPickerBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #2e2e3e);
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-muted);
+  transition: all 150ms;
+  flex-shrink: 0;
+}
+.modelPickerBtn:hover {
+  background: var(--accent-muted, rgba(99, 102, 241, 0.12));
+  color: var(--accent, #6366f1);
+  border-color: var(--accent, #6366f1);
+}
+
 .modeSelector {
   display: flex;
   align-items: center;

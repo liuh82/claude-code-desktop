@@ -1,13 +1,13 @@
-import { type ComponentPropsWithoutRef, type ReactNode } from 'react';
+import { type ComponentPropsWithoutRef, type ReactNode, memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { CodeBlock } from './CodeBlock';
 import { ChartBlock } from './ChartBlock';
 import { HtmlSlideBlock } from './HtmlSlideBlock';
-
-// Mermaid rendering with graceful fallback on syntax errors
 import { MermaidSafe } from "./MermaidSafe";
+
+const MemoHtmlSlideBlock = memo(HtmlSlideBlock);
 
 interface MarkdownRendererProps {
   content: string;
@@ -136,7 +136,7 @@ function MarkdownRenderer({ content, isStreaming }: MarkdownRendererProps) {
     <div className="markdown-body">
       {blocks.map((block, i) => {
         if (block.type === 'htmlslide') {
-          return <HtmlSlideBlock key={stableKey(block.html, i)} html={block.html} />;
+          return <MemoHtmlSlideBlock key={isStreaming ? `hs-${i}` : stableKey(block.html, i)} html={block.html} />;
         }
         if (block.type === 'htmlslide-incomplete') {
           // During streaming, show a lightweight placeholder instead of raw code
@@ -144,7 +144,7 @@ function MarkdownRenderer({ content, isStreaming }: MarkdownRendererProps) {
           return <HtmlSlideLoading key={`hslide-loading-${i}`} />;
         }
         return (
-          <ReactMarkdown key={stableKey(block.content, i)} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}
+          <ReactMarkdown key={isStreaming ? `md-${i}` : stableKey(block.content, i)} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}
             components={{
               ...sharedComponents,
               code: (props: ComponentPropsWithoutRef<'code'> & { children?: ReactNode }) =>

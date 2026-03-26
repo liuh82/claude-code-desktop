@@ -721,7 +721,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
               isDangerous={permissionInfo.isDangerous}
               onAllow={() => grantPermission()}
               onDeny={() => denyPermission()}
-              onAllowAlways={() => setPermissionMode('bypass')}
+              onAllowAlways={() => { grantPermission(); setPermissionMode('bypass'); }}
             />
           )}
 
@@ -844,6 +844,13 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
                   })}
                 </div>
                 <div className={styles.paneInputSpacer} />
+                <button
+                  className={styles.modelPickerBtn}
+                  onClick={() => setShowModelPicker(!showModelPicker)}
+                  title="切换模型"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>model_training</span>
+                </button>
                 <div className={styles.modeSelector}>
                   {([
                     { key: 'plan' as const, icon: 'psychology', label: 'Plan' },
