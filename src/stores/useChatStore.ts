@@ -5,8 +5,6 @@ import { parseClaudeLine, extractModel, isDirectApiLine, parseDirectApiLine } fr
 import type { ParsedAssistantMessage, ParsedResult, ParsedToolResult } from '@/lib/claude-parser';
 import type { DirectSSEEvent } from '@/types/chat';
 
-import { useSettingsStore } from './useSettingsStore';
-
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -904,8 +902,13 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   },
 
   initPane: async (paneId: string, projectPath: string, model?: string) => {
-    const settingsModel = useSettingsStore.getState().settings.defaultModel;
-    const effectiveModel = model || get().currentModel || settingsModel || 'glm-4-plus';
+    // Fetch model from Claude CLI config (~/.claude/settings.json)
+    let claudeConfigModel = '';
+    try {
+      const config = await claudeApi.getClaudeConfig();
+      if (config?.model) claudeConfigModel = config.model;
+    } catch {}
+    const effectiveModel = model || get().currentModel || claudeConfigModel || '';
 
     // Close existing session if any
     const existing = get().panes.get(paneId);

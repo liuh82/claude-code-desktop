@@ -2,7 +2,6 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useTabStore } from '@/stores/useTabStore';
 import { useChatStore } from '@/stores/useChatStore';
 import { useProjectStore } from '@/stores/useProjectStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
 import { MessageBubble } from '@/components/Chat/MessageBubble';
 import { PermissionBar } from '@/components/Chat/PermissionBar';
 import { claudeApi, isElectron } from '@/lib/claude-api';
@@ -156,8 +155,6 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const fileTree = useChatStore((s) => s.fileTree);
   const pendingFileMention = useChatStore((s) => s.pendingFileMention);
   const tokenUsage = paneState?.tokenUsage ?? { input: 0, output: 0 };
-  const settingsModel = useSettingsStore((s) => s.settings.defaultModel) || '';
-  const currentModel = paneState?.currentModel || settingsModel;
   const setPermissionMode = useChatStore((s) => s.setPermissionMode);
   const permissionMode = useChatStore((s) => s.permissionMode);
   const grantPermission = useChatStore((s) => s.grantPermission);
@@ -175,6 +172,17 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [dynamicCommands, setDynamicCommands] = useState<SlashCommand[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
+  const [claudeConfigModel, setClaudeConfigModel] = useState('');
+
+  // Fetch model from Claude CLI config on mount
+  useEffect(() => {
+    if (!isElectron()) return;
+    claudeApi.getClaudeConfig().then((config) => {
+      if (config?.model) setClaudeConfigModel(config.model);
+    }).catch(() => {});
+  }, []);
+
+  const currentModel = paneState?.currentModel || claudeConfigModel || '';
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -612,7 +620,6 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
     setShowModelPicker(false);
     const state = useChatStore.getState();
     state.setCurrentModel(modelId);
-    useSettingsStore.getState().updateSetting('defaultModel', modelId);
     // Also update pane-level model so it displays immediately
     useChatStore.setState((s) => {
       const next = new Map(s.panes);

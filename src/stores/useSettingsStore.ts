@@ -44,7 +44,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   fontSize: 14,
   fontFamily: 'JetBrains Mono',
   claudeCliPath: '',
-  defaultModel: 'glm-4-plus',
+  defaultModel: '',
   permissionMode: 'default',
   maxTokens: 32768,
   logLevel: 'info',
