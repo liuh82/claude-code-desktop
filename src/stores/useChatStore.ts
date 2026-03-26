@@ -4,6 +4,7 @@ import { claudeApi, isElectron } from '@/lib/claude-api';
 import { parseClaudeLine, extractModel, isDirectApiLine, parseDirectApiLine } from '@/lib/claude-parser';
 import type { ParsedAssistantMessage, ParsedResult, ParsedToolResult } from '@/lib/claude-parser';
 import type { DirectSSEEvent } from '@/types/chat';
+import { useSettingsStore } from './useSettingsStore';
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -902,6 +903,9 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   },
 
   initPane: async (paneId: string, projectPath: string, model?: string) => {
+    // Resolve model: explicit arg > settings > claude config
+    const effectiveModel = model || useSettingsStore.getState().settings.defaultModel || get().currentModel || '';
+
     // Close existing session if any
     const existing = get().panes.get(paneId);
     if (existing?.sessionId) {
@@ -949,7 +953,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
             panes: new Map(s.panes).set(paneId, {
               ...emptyPaneState(),
               sessionId: session_id,
-              currentModel: model || '',
+              currentModel: effectiveModel,
               messages: restoredMessages,
             }),
             projectPath,
@@ -965,7 +969,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         panes: new Map(s.panes).set(paneId, {
           ...emptyPaneState(),
           sessionId: session_id,
-          currentModel: model || '',
+          currentModel: effectiveModel,
         }),
         fileTree: tree as FileNode[],
         projectPath,

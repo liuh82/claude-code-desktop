@@ -610,8 +610,15 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const handleModelSelect = useCallback((modelId: string) => {
     setShowModelPicker(false);
     const state = useChatStore.getState();
-    state.currentModel = modelId;
+    state.setCurrentModel(modelId);
     useSettingsStore.getState().updateSetting('defaultModel', modelId);
+    // Also update pane-level model so it displays immediately
+    useChatStore.setState((s) => {
+      const next = new Map(s.panes);
+      const pane = next.get(paneId);
+      if (pane) next.set(paneId, { ...pane, currentModel: modelId });
+      return { panes: next };
+    });
     useChatStore.getState().addSystemMessage(paneId, '已切换模型: ' + modelId);
   }, [paneId]);
 
