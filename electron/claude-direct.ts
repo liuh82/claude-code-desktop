@@ -577,7 +577,29 @@ export class ClaudeDirectClient {
         );
 
         if (toolUseBlocks.length === 0) {
-          // No tool calls — conversation turn is done
+          // No tool calls — but check for truncated htmlslide blocks
+          const fullText = assistantContent
+            .filter(b => b.type === 'text')
+            .map(b => (b as { text: string }).text)
+            .join('');
+
+          const htmlslideOpen = (fullText.match(/\`\`\`htmlslide/g) || []).length;
+          const htmlslideClose = (fullText.match(/\`\`\`\s*$/gm) || []).length;
+          const hasUnclosedHtmlslide = htmlslideOpen > htmlslideClose;
+
+          // Also check for unclosed HTML tags (incomplete DOCTYPE/html)
+          const hasUnclosedHtml = fullText.includes('<!DOCTYPE') || fullText.includes('<html');
+          const hasClosingHtml = fullText.includes('</html>');
+          const htmlTruncated = hasUnclosedHtml && !hasClosingHtml;
+
+          if (hasUnclosedHtmlslide || htmlTruncated) {
+            logWarn('DirectAPI', `Detected truncated htmlslide (open=${htmlslideOpen}, close=${htmlslideClose}, html=${hasUnclosedHtml}/${hasClosingHtml}). Auto-continuing...`);
+            // Re-inject the assistant message and add a continuation prompt
+            this.messages.push({ role: 'assistant', content: assistantContent });
+            this.messages.push({ role: 'user', content: [{ type: 'text', text: '请继续完成上面的 htmlslide 代码块，从上次中断的地方继续，不要重复已有的内容。' }] });
+            continue; // will go to next iteration of the round loop
+          }
+
           return;
         }
 
