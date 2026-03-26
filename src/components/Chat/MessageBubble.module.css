@@ -97,7 +97,7 @@
   align-items: flex-start;
   min-width: 0;
   width: 100%;
-  overflow: visible;
+  overflow: hidden;
 }
 
 /* Inner wrapper for tool calls + text — stable DOM during streaming updates */
@@ -107,7 +107,7 @@
   gap: 0;
   min-width: 0;
   width: 100%;
-  overflow: visible;
+  overflow: hidden;
 }
 
 /* Meta: role + time */
