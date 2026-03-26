@@ -22,7 +22,7 @@ function getToolIcon(name: string): string {
   if (name === 'Edit') return 'edit';
   if (name === 'ExecuteCommand' || name === 'Bash' || name === 'Shell') return 'terminal';
   if (name === 'SearchFiles' || name === 'Grep') return 'search';
-  if (name === 'Glob') return 'folder_search';
+  if (name === 'Glob') return 'manage_search';
   return 'build';
 }
 
