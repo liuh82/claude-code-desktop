@@ -175,6 +175,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   const [dynamicCommands, setDynamicCommands] = useState<SlashCommand[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -284,9 +285,19 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   useEffect(() => {
     const isNewMessage = messages.length > prevMsgCountRef.current;
     prevMsgCountRef.current = messages.length;
-    // New message or stream finished → smooth scroll; during streaming → instant to avoid jitter
+    // Auto-scroll: only for new completed messages or when user is already near bottom
     const isStreaming = lastMsg?.isStreaming;
-    messagesEndRef.current?.scrollIntoView({ behavior: isNewMessage && !isStreaming ? 'smooth' : 'instant' });
+    const scrollContainer = messagesContainerRef.current;
+    if (scrollContainer) {
+      const nearBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight < 80;
+      if (isNewMessage && !isStreaming) {
+        // New completed message → smooth scroll
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      } else if (isStreaming && nearBottom) {
+        // Streaming → silent scroll without behavior to avoid jitter
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
   }, [messages.length, lastMsg?.content?.length, lastMsg?.isStreaming]);
 
   // ── Close dropdowns on outside click ──
@@ -713,7 +724,7 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
 
       {/* Messages */}
       <div className={styles.paneBody}>
-        <div className={styles.paneMessages}>
+        <div ref={messagesContainerRef} className={styles.paneMessages}>
           <div className={styles.paneMessagesInner}>
             {messages.length === 0 && (
               <div className={styles.paneEmpty}>
