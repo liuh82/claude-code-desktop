@@ -738,12 +738,15 @@ export class ClaudeDirectClient {
         break;
 
       case 'message_delta':
-        if (event.stop_reason) {
-          const reason = event.stop_reason;
-          if (reason === 'max_tokens') {
+        // stop_reason is in event.delta, not event top-level
+        const stopReason = (event as any).delta?.stop_reason || (event as any).stop_reason;
+        if (stopReason) {
+          if (stopReason === 'max_tokens') {
             logError('DirectAPI', `⚠️ Response truncated: stop_reason=max_tokens (hit ${this.config.maxTokens} token limit)`);
+          } else if (stopReason === 'tool_use') {
+            logInfo('DirectAPI', `stop_reason: tool_use (model wants to call tools)`);
           } else {
-            logInfo('SSE', `stop_reason: ${reason}`);
+            logInfo('DirectAPI', `stop_reason: ${stopReason}`);
           }
         }
         if (event.usage) {
@@ -752,7 +755,7 @@ export class ClaudeDirectClient {
         break;
 
       case 'message_stop':
-        logInfo('SSE', 'Stream message complete');
+        logInfo('DirectAPI', `Stream complete: ${contentBlocks.length} blocks (${contentBlocks.map(b => b.type).join(', ')})`);
         break;
 
       case 'ping':
