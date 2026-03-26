@@ -1,4 +1,4 @@
-import { type ComponentPropsWithoutRef, type ReactNode, memo } from 'react';
+import { type ComponentPropsWithoutRef, type ReactNode, memo, useRef, useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -128,8 +128,48 @@ const sharedComponents = {
   strong: Strong,
 };
 
+const STREAM_THROTTLE_MS = 80;
+
 function MarkdownRenderer({ content, isStreaming }: MarkdownRendererProps) {
-  const blocks = splitHtmlSlideBlocks(content, !!isStreaming);
+  // Throttle content updates during streaming to reduce DOM churn and jitter
+  const [displayContent, setDisplayContent] = useState(content);
+  const lastUpdateRef = useRef(0);
+  const rafRef = useRef(0);
+
+  useEffect(() => {
+    if (!isStreaming) {
+      setDisplayContent(content);
+      return;
+    }
+
+    const now = performance.now();
+    if (now - lastUpdateRef.current >= STREAM_THROTTLE_MS) {
+      lastUpdateRef.current = now;
+      setDisplayContent(content);
+    } else if (!rafRef.current) {
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = 0;
+        lastUpdateRef.current = performance.now();
+        setDisplayContent(content);
+      });
+    }
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
+    };
+  }, [content, isStreaming]);
+
+  // Ensure final content is shown when streaming ends
+  useEffect(() => {
+    if (!isStreaming) {
+      setDisplayContent(content);
+    }
+  }, [isStreaming, content]);
+
+  const blocks = splitHtmlSlideBlocks(displayContent, !!isStreaming);
   const hasIncompleteMermaid = isStreaming && isIncompleteMermaidBlock(content);
 
   return (

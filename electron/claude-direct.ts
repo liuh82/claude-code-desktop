@@ -590,10 +590,11 @@ export class ClaudeDirectClient {
           const htmlslideClose = (fullText.match(/\`\`\`\s*$/gm) || []).length;
           const hasUnclosedHtmlslide = htmlslideOpen > htmlslideClose;
 
-          // Also check for unclosed HTML tags (incomplete DOCTYPE/html)
-          const hasUnclosedHtml = fullText.includes('<!DOCTYPE') || fullText.includes('<html');
+          // Check for closed htmlslide block with incomplete HTML inside
+          const hasHtmlSlide = fullText.includes('htmlslide');
           const hasClosingHtml = fullText.includes('</html>');
-          const htmlTruncated = hasUnclosedHtml && !hasClosingHtml;
+          const hasDoctype = fullText.includes('<!DOCTYPE') || fullText.includes('<html');
+          const htmlContentIncomplete = hasHtmlSlide && hasDoctype && !hasClosingHtml;
 
           if (hasUnclosedHtmlslide || htmlTruncated) {
             logWarn('DirectAPI', `Detected truncated htmlslide (open=${htmlslideOpen}, close=${htmlslideClose}, html=${hasUnclosedHtml}/${hasClosingHtml}). Auto-continuing...`);
