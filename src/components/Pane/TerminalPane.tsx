@@ -191,13 +191,11 @@ function TerminalPane({ tabId, paneId, isActive }: TerminalPaneProps) {
   // ── Dynamic slash command loading ──
 
   useEffect(() => {
-    if (!isElectron() || !projectPath) return;
-    claudeApi.listSlashCommands({ projectPath }).then((cmds) => {
+    if (!isElectron()) return;
+    claudeApi.listSlashCommands({ projectPath: projectPath || "" }).then((cmds) => {
       setDynamicCommands(cmds as SlashCommand[]);
     }).catch(() => {});
   }, [projectPath]);
-
-  // Merge built-in + dynamic commands, deduplicated by name
   const allCommands = useMemo(() => {
     const seen = new Set<string>();
     const merged: SlashCommand[] = [];
