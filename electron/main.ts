@@ -1348,6 +1348,27 @@ function registerIpcHandlers() {
       } catch {}
     }
 
+    // 2.5 User-installed skills from ~/.claude/skills/*/SKILL.md
+    const userSkillsDir = path.join(home, ".claude", "skills");
+    if (fs.existsSync(userSkillsDir)) {
+      try {
+        for (const skillDir of fs.readdirSync(userSkillsDir)) {
+          const skillFile = path.join(userSkillsDir, skillDir, "SKILL.md");
+          if (!fs.existsSync(skillFile)) continue;
+          try {
+            const content = fs.readFileSync(skillFile, "utf-8");
+            const fm = parseFrontmatter(content);
+            const name = fm.name || skillDir;
+            commands.push({
+              name: "/" + name,
+              description: fm.description || name,
+              source: "skill",
+            });
+          } catch {}
+        }
+      } catch {}
+    }
+
     // 3. Project commands from {projectPath}/.claude/commands/*.md
     if (projectPath) {
       const projectCmdDir = path.join(projectPath, '.claude', 'commands');
