@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { FileNode } from '@/types/chat';
 import styles from './FileTree.module.css';
 
 interface FileTreeProps {
   nodes: FileNode[];
   onFileClick?: (node: FileNode) => void;
+  allCollapsed?: boolean;
 }
 
 function getFileIcon(name: string): string {
@@ -25,8 +26,16 @@ function getFileIcon(name: string): string {
   return 'description';
 }
 
-function TreeNode({ node, depth, onFileClick, defaultExpanded }: { node: FileNode; depth: number; onFileClick?: (node: FileNode) => void; defaultExpanded: boolean }) {
+function TreeNode({ node, depth, onFileClick, defaultExpanded, allCollapsed }: { node: FileNode; depth: number; onFileClick?: (node: FileNode) => void; defaultExpanded: boolean; allCollapsed: boolean }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
+
+  // allCollapsed 作为触发器：为 true 时收起，用户可单独展开
+  useEffect(() => {
+    if (allCollapsed) {
+      setExpanded(false);
+    }
+  }, [allCollapsed]);
+
   const isDir = node.type === 'directory';
   const hasChildren = isDir && node.children && node.children.length > 0;
 
@@ -73,6 +82,7 @@ function TreeNode({ node, depth, onFileClick, defaultExpanded }: { node: FileNod
               depth={depth + 1}
               onFileClick={onFileClick}
               defaultExpanded={depth < 1}
+              allCollapsed={allCollapsed}
             />
           ))}
         </div>
@@ -81,7 +91,7 @@ function TreeNode({ node, depth, onFileClick, defaultExpanded }: { node: FileNod
   );
 }
 
-function FileTree({ nodes, onFileClick }: FileTreeProps) {
+function FileTree({ nodes, onFileClick, allCollapsed }: FileTreeProps) {
   return (
     <div className={styles.tree}>
       {nodes.map((node) => (
@@ -91,6 +101,7 @@ function FileTree({ nodes, onFileClick }: FileTreeProps) {
           depth={0}
           onFileClick={onFileClick}
           defaultExpanded={true}
+          allCollapsed={allCollapsed ?? false}
         />
       ))}
     </div>

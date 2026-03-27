@@ -30,6 +30,7 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
 
   const activeDiffFile = diffFiles.length > 0 ? diffFiles[0].filePath : '';
   const [activeTab, setActiveTab] = useState<'files' | 'diff'>('files');
+  const [fileTreeCollapsed, setFileTreeCollapsed] = useState(false);
 
   const handleFileClick = useCallback((node: FileNode) => {
     useChatStore.getState().triggerFileMention(node.path);
@@ -109,6 +110,9 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
                 <button className={styles.fileTreeAction} title="搜索">
                   <span className="material-symbols-outlined">search</span>
                 </button>
+                <button className={styles.fileTreeAction} title={fileTreeCollapsed ? '展开全部' : '收缩全部'} onClick={() => setFileTreeCollapsed((v) => !v)}>
+                  <span className="material-symbols-outlined">{fileTreeCollapsed ? 'unfold_more' : 'unfold_less'}</span>
+                </button>
                 <button className={styles.fileTreeAction} title="刷新">
                   <span className="material-symbols-outlined">refresh</span>
                 </button>
@@ -116,7 +120,7 @@ function ToolPanel({ onClose, style }: ToolPanelProps & { style?: React.CSSPrope
             </div>
             <div className={styles.fileTreeBody}>
               <SafeRender>
-                <FileTree nodes={fileTree} onFileClick={handleFileClick} />
+                <FileTree nodes={fileTree} onFileClick={handleFileClick} allCollapsed={fileTreeCollapsed} />
               </SafeRender>
             </div>
           </div>

@@ -59,6 +59,8 @@ fn main() {
             // Settings commands
             commands::settings::get_settings,
             commands::settings::save_settings,
+            // Slash commands
+            commands::slash_commands::list_slash_commands,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
