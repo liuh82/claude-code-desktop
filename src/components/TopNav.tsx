@@ -2,11 +2,12 @@ import styles from './TopNav.module.css';
 
 interface TopNavProps {
   projectName: string;
+  onOpenSettings?: () => void;
 }
 
 const MENUS = ['File', 'Edit', 'View', 'Terminal', 'Window'];
 
-function TopNav({ projectName }: TopNavProps) {
+function TopNav({ projectName, onOpenSettings }: TopNavProps) {
   return (
     <header className={styles.topNav}>
       <div className={styles.topNavLeft}>
@@ -34,6 +35,9 @@ function TopNav({ projectName }: TopNavProps) {
           </button>
           <button className={`${styles.topNavAction} ${styles.topNavActionCta}`} title="Split View">
             <span className="material-symbols-outlined">splitscreen</span>
+          </button>
+          <button className={`${styles.topNavAction} ${styles.topNavActionCta}`} title="Settings" onClick={onOpenSettings}>
+            <span className="material-symbols-outlined">settings</span>
           </button>
         </div>
       </div>

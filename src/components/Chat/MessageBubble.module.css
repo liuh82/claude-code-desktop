@@ -4,6 +4,9 @@
   display: flex;
   gap: 24px;
   align-items: flex-start;
+  /* 跳过可视区域外的渲染，减少长消息列表的 reflow 开销 */
+  content-visibility: auto;
+  contain-intrinsic-height: 200px;
 }
 
 /* User message: same layout as AI (left-aligned) */

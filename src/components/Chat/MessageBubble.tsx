@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, memo } from 'react';
 import type { ChatMessage } from '@/types/chat';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ToolCallBlock } from './ToolCallBlock';
@@ -13,7 +13,7 @@ interface MessageBubbleProps {
   paneId: string;
 }
 
-function MessageBubble({ message, paneId }: MessageBubbleProps) {
+const MessageBubble = memo(function MessageBubble({ message, paneId }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const roleLabel = isUser ? '你' : 'Claude Code';
   const timeStr = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -125,6 +125,6 @@ function MessageBubble({ message, paneId }: MessageBubbleProps) {
       </div>
     </div>
   );
-}
+});
 
 export { MessageBubble };

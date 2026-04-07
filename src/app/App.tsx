@@ -16,6 +16,8 @@ import { CommandPalette, type CommandItem } from '@/components/CommandPalette';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { HistoryDialog } from '@/components/HistoryDialog';
 import { LogViewer } from '@/components/LogViewer/LogViewer';
+import { TopNav } from '@/components/TopNav';
+import StatusBar from '@/components/StatusBar';
 import { TabBar } from '@/components/Pane/TabBar';
 import { PaneContainer } from '@/components/Pane/PaneContainer';
 import type { LayoutNode } from '@/types/pane';
@@ -72,6 +74,18 @@ function AppContent() {
     loadSettings();
     loadRecentProjects();
   }, [loadSettings, loadRecentProjects]);
+
+  // Listen for ccdesk settings events
+  useEffect(() => {
+    const handleOpen = () => setSettingsOpen(true);
+    const handleClose = () => setSettingsOpen(false);
+    window.addEventListener('ccdesk:open-settings', handleOpen);
+    window.addEventListener('ccdesk:close-settings', handleClose);
+    return () => {
+      window.removeEventListener('ccdesk:open-settings', handleOpen);
+      window.removeEventListener('ccdesk:close-settings', handleClose);
+    };
+  }, []);
 
   // Auto-create first tab when project opens
   useEffect(() => {
@@ -163,6 +177,15 @@ function AppContent() {
     useTabStore.setState({ tabs: newTabs });
   }, [activeTab]);
 
+  // Derive StatusBar props
+  const settings = useSettingsStore((s) => s.settings);
+  const paneState = activePaneId ? useChatStore((s) => s.panes.get(activePaneId)) : undefined;
+  const sessionStatus: 'idle' | 'running' | 'waiting' | 'error' | 'starting' =
+    paneState?.isGenerating ? 'running' : 'idle';
+  const modelName = paneState?.currentModel || useChatStore((s) => s.currentModel) || settings.defaultModel || undefined;
+  const tokenUsage = paneState?.tokenUsage;
+  const projectName = activeProject?.name || projectPath.split('/').pop() || '';
+
   const commands: CommandItem[] = useMemo(
     () => [
       { id: 'new-tab', label: '新建会话', shortcut: '⌘T', category: '会话', execute: handleNewTab },
@@ -223,6 +246,7 @@ function AppContent() {
 
   return (
     <div className="appLayout">
+      <TopNav projectName={projectName} onOpenSettings={() => setSettingsOpen(true)} />
 
       <div className="appBody">
         <SidebarToggle sidebarOpen={sidebarOpen} onToggleSidebar={toggleSidebar} />
@@ -279,6 +303,15 @@ function AppContent() {
       />
       <SettingsDialog isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
       {logViewerOpen && <LogViewer onClose={() => setLogViewerOpen(false)} />}
+      <StatusBar
+        sessionStatus={sessionStatus}
+        modelName={modelName}
+        tokenUsage={tokenUsage}
+        projectPath={projectPath}
+        connected={true}
+        onToggleTheme={toggleTheme}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
     </div>
   );
 }

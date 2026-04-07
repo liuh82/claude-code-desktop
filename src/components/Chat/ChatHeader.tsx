@@ -8,7 +8,6 @@ const MORE_ACTIONS = [
   { id: 'copy', label: '复制对话', icon: 'content_copy' },
   { id: 'export', label: '导出对话', icon: 'download' },
   { id: 'clear', label: '清除对话', icon: 'delete_sweep' },
-  { id: 'settings', label: '设置', icon: 'settings' },
 ];
 
 function ChatHeader() {
@@ -60,9 +59,6 @@ function ChatHeader() {
       a.download = `claude-chat-${Date.now()}.md`;
       a.click();
       URL.revokeObjectURL(url);
-    }
-    if (id === 'settings') {
-      window.dispatchEvent(new CustomEvent('ccdesk:open-settings'));
     }
   }, []);
 
